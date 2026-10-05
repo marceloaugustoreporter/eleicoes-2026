@@ -3,9 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="refresh" content="0; url=painel-v61.html?v=61">
 <title>Central de Apuração · Eleições 2026</title>
-<script>location.replace("painel-v61.html?v=61");</script>
+<script>
+(function(){
+  const p=new URLSearchParams(location.search);
+  p.set('v','62');
+  location.replace('painel-v62.html?'+p.toString()+location.hash);
+})();
+</script>
 </head>
-<body>Abrindo Central de Apuração 2026...</body>
+<body>
+Abrindo Central de Apuração 2026...
+<noscript><a href="painel-v62.html?v=62">Abrir painel</a></noscript>
+</body>
 </html>
