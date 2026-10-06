@@ -1,0 +1,1112 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#06101a">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Eleições 2026">
+  <title>Central de Apuração 2026 · Marcelo Augusto</title>
+  <!-- Versão 6.10: correção dos campos TSE de eleitorado e votos -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    :root{--bg:#06101a;--bg2:#081522;--panel:#0b1928;--panel2:#0d2033;--line:#20394f;--text:#f7fbff;--muted:#96abc0;--cyan:#35d0f6;--yellow:#ffd34e;--violet:#a78bfa;--green:#4fe0ad;--red:#ff6b7a;--orange:#ff9f43;--shadow:0 12px 34px rgba(0,0,0,.22)}
+    *{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:linear-gradient(180deg,#07131f 0,#06101a 42%,#06101a 100%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh}
+    button,input{font:inherit}.app{max-width:760px;margin:0 auto;min-height:100vh;padding-bottom:90px}.top{position:sticky;top:0;z-index:20;background:rgba(6,16,26,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:calc(12px + env(safe-area-inset-top)) 14px 11px}.eyebrow{font-size:10px;letter-spacing:1.8px;font-weight:900;color:var(--cyan)}.toprow{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}.title{font-weight:950;font-size:27px;line-height:1.02;margin-top:3px}.status{display:inline-flex;gap:7px;align-items:center;font-size:11px;font-weight:850;color:var(--muted);white-space:nowrap}.dot{width:8px;height:8px;border-radius:50%;background:var(--yellow);box-shadow:0 0 0 4px rgba(255,211,78,.10)}.dot.ok{background:var(--green);box-shadow:0 0 0 4px rgba(79,224,173,.10)}.dot.err{background:var(--red);box-shadow:0 0 0 4px rgba(255,107,122,.10)}.meta{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:9px;font-size:11px;color:var(--muted);font-weight:700}.refresh{border:1px solid #2a4963;background:#0b1c2b;color:#eaf7ff;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:850}.refresh:active{transform:scale(.98)}
+    .nav{position:sticky;top:79px;z-index:18;display:flex;gap:8px;overflow:auto;scrollbar-width:none;padding:9px 12px;background:rgba(7,19,31,.96);border-bottom:1px solid var(--line)}.nav::-webkit-scrollbar{display:none}.nav button{flex:0 0 auto;border:1px solid #29465f;background:#0c1b2b;color:#eaf4fb;border-radius:999px;padding:10px 13px;font-size:13px;font-weight:850}.nav button.on{background:var(--cyan);color:#03111b;border-color:var(--cyan)}
+    main{padding:12px}.notice{border:1px solid rgba(255,211,78,.35);background:rgba(255,211,78,.07);color:#f9e8a1;border-radius:14px;padding:11px 12px;font-size:12px;line-height:1.45;margin-bottom:12px}.notice.ok{border-color:rgba(79,224,173,.35);background:rgba(79,224,173,.06);color:#c9ffe9}.notice.err{border-color:rgba(255,107,122,.35);background:rgba(255,107,122,.06);color:#ffd2d7}.card{background:linear-gradient(180deg,var(--panel),#091725);border:1px solid #24435d;border-radius:18px;padding:15px;margin-bottom:12px;box-shadow:var(--shadow)}.card.flat{box-shadow:none}.k{font-size:10px;letter-spacing:1.5px;font-weight:900;color:var(--cyan)}.h1{font-size:25px;line-height:1.05;font-weight:950;margin:4px 0 3px}.sub{font-size:12px;color:var(--muted);font-weight:680;line-height:1.35}.progressLine{height:5px;background:#10273b;border-radius:8px;overflow:hidden;margin-top:10px}.progressLine i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:8px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.metric{background:#071522;border:1px solid #1f3a52;border-radius:13px;padding:11px;min-width:0}.lab{font-size:10px;color:var(--muted);font-weight:800;line-height:1.2}.val{font-size:25px;font-weight:950;margin-top:2px;overflow-wrap:anywhere}.hint{font-size:10px;color:#7f95a9;margin-top:2px;line-height:1.25}.candidate{padding:13px 0;border-top:1px solid #1c3347}.candidate:first-of-type{border-top:0}.row{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}.name{font-size:18px;font-weight:900;min-width:0;line-height:1.06}.partyTag{font-size:10px;color:var(--muted);font-weight:800;margin-top:3px}.pct{font-size:27px;font-weight:950;white-space:nowrap}.votes{font-size:12px;color:var(--muted);font-weight:750;margin-top:3px}.bar{height:9px;background:#10263a;border-radius:10px;overflow:hidden;margin-top:7px}.fill{height:100%;border-radius:10px}.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.chip{border:1px solid #27445e;background:#0b1a29;border-radius:999px;padding:5px 8px;font-size:10px;color:#a9c0d3;font-weight:800}.chip.good{color:#b9f8dc;border-color:rgba(79,224,173,.45);background:rgba(79,224,173,.06)}.chip.warn{color:#ffe9a0;border-color:rgba(255,211,78,.45);background:rgba(255,211,78,.06)}.chip.bad{color:#ffd0d5;border-color:rgba(255,107,122,.45);background:rgba(255,107,122,.06)}
+    .verdict{margin-top:10px;border-radius:11px;padding:9px 10px;text-align:center;font-size:11px;line-height:1.2;font-weight:950;letter-spacing:.35px;border:1px solid #29465f}
+    .verdict.wait{color:#ffe8a0;border-color:rgba(255,211,78,.5);background:rgba(255,211,78,.08)}
+    .verdict.in{color:#bff9df;border-color:rgba(79,224,173,.55);background:rgba(79,224,173,.09)}
+    .verdict.out{color:#ffd1d6;border-color:rgba(255,107,122,.55);background:rgba(255,107,122,.09)}
+    .verdict.na{color:#c5d4e0;border-color:#35536a;background:#0c1d2b}
+    .mon{display:grid;grid-template-columns:1fr;gap:9px}.person{background:#071522;border:1px solid #213d55;border-radius:15px;padding:12px}.person.focus{border-color:rgba(53,208,246,.65);background:linear-gradient(135deg,rgba(53,208,246,.08),#071522 45%)}.personHead{display:flex;justify-content:space-between;gap:10px}.personName{font-size:18px;font-weight:930;line-height:1.05}.personNum{font-size:12px;font-weight:900;color:var(--cyan)}.bigVotes{font-size:30px;font-weight:950;margin-top:7px}.small{font-size:11px;color:var(--muted);line-height:1.35}.seatbox{margin-top:9px;background:#091b2a;border:1px solid #203c55;border-radius:12px;padding:10px}.seatline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px}.seatline strong{font-size:19px}.delta{font-size:11px;font-weight:850}.delta.up{color:var(--green)}.delta.down{color:var(--yellow)}
+    .partyrow{padding:12px 0;border-top:1px solid #1c3347}.partyrow:first-of-type{border-top:0}.partyTop{display:flex;justify-content:space-between;gap:8px;align-items:flex-end}.sig{font-size:18px;font-weight:950}.chairs{font-size:26px;font-weight:950}.seats{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}.seat{width:10px;height:10px;border-radius:3px;background:#173048;border:1px solid #2b4c67}.seat.on{background:var(--cyan);border-color:var(--cyan)}
+    .seat.qp{background:var(--cyan);border-color:var(--cyan)}
+    .seat.sobra{background:var(--yellow);border-color:var(--yellow)}
+    .seatLegend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:9.5px;color:var(--muted);font-weight:800}
+    .seatLegend span{display:inline-flex;align-items:center;gap:5px}
+    .seatLegend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+    .seatLegend .lqp{background:var(--cyan)}
+    .seatLegend .lsobra{background:var(--yellow)}
+    .breakdown{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+    .bdg{display:inline-flex;align-items:center;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:950;letter-spacing:.1px}
+    .bdg.qp{color:#c8f5ff;border:1px solid rgba(53,208,246,.38);background:rgba(53,208,246,.08)}
+    .bdg.sobra{color:#fff0ad;border:1px solid rgba(255,211,78,.42);background:rgba(255,211,78,.08)}
+    .bdg.total{color:#d5e5f1;border:1px solid #31516b;background:#0b1e2d}
+    .seatSummary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+    .seatSummary .metric{padding:10px}
+    .seatSummary .val{font-size:21px}
+    .calcNote{margin-top:9px;padding:9px 10px;border:1px solid #27455e;border-radius:10px;background:#071722;color:#9fb3c4;font-size:9.5px;line-height:1.35}
+    .sobraAlert{margin:12px 0 4px;padding:11px;border-radius:12px;border:1px solid rgba(255,211,78,.42);background:rgba(255,211,78,.07)}
+    .sobraAlert strong{color:#fff0ad}
+
+    .distBox{margin:12px 0 8px;padding:13px;border:1px solid #284962;border-radius:13px;background:linear-gradient(145deg,#071724,#091b2a)}
+    .distTitle{font-size:11px;font-weight:950;letter-spacing:1.15px;color:var(--cyan);margin-bottom:9px}
+    .distGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+    .distItem{border:1px solid #234158;border-radius:10px;padding:9px;background:#07131e}
+    .distItem .n{font-size:23px;font-weight:950;line-height:1}
+    .distItem .l{font-size:9px;color:var(--muted);font-weight:850;margin-top:4px;line-height:1.2}
+    .distItem.sob{border-color:rgba(255,211,78,.38);background:rgba(255,211,78,.055)}
+    .distItem.sob .n{color:#ffe58a}
+    .distItem.qp2{border-color:rgba(53,208,246,.35);background:rgba(53,208,246,.045)}
+    .distItem.qp2 .n{color:#bff3ff}
+    .partyEquation{font-size:10px;font-weight:900;color:#c8d8e4;margin-top:6px}
+    .versionTag{display:inline-block;margin-top:6px;padding:3px 6px;border:1px solid #29465f;border-radius:999px;font-size:8px;color:#89a4b8}
+
+    .officialNote{margin:10px 0 12px;padding:10px 11px;border:1px solid #29485f;border-radius:11px;background:#071724;color:#a9bdcc;font-size:10px;line-height:1.4}
+
+    .voteStats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:11px 0}
+    .voteStat{border:1px solid #203e55;border-radius:11px;background:#071522;padding:9px 10px;min-width:0}
+    .voteStat b{display:block;font-size:18px;line-height:1.05;overflow-wrap:anywhere}
+    .voteStat span{display:block;font-size:8.5px;color:var(--muted);font-weight:800;margin-top:3px;line-height:1.25}
+    .voteStat .pctmini{color:#b9d1e2}
+    .voteStatsNote{grid-column:1/-1;padding:8px 9px;border:1px solid rgba(255,211,78,.32);border-radius:9px;background:rgba(255,211,78,.06);font-size:9px;color:#f0dfa0;line-height:1.35}
+    .cargoTitle.federal strong{color:var(--cyan)}
+    .cargoTitle.estadual strong{color:var(--yellow)}
+    .officialRow{grid-template-columns:34px 58px minmax(0,1fr) auto}
+    .officialPhoto{width:54px;height:54px;border-radius:50%;overflow:hidden;border:1px solid #31516b;background:#10263a;display:grid;place-items:center;position:relative;color:#9fc0d7;font-size:11px;font-weight:950}
+    .officialPhoto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .officialPhoto span{display:none}
+    .understandIntro{padding:12px;border:1px solid #2b4b65;border-radius:13px;background:linear-gradient(145deg,#071724,#0a2030);margin:10px 0 12px}
+    .understandIntro h3{margin:0 0 5px;font-size:18px}
+    .understandIntro p{margin:0;color:#b4c8d7;font-size:10px;line-height:1.5}
+    .explainBlock{border:1px solid #24435d;border-radius:13px;background:#071522;margin:9px 0;padding:12px}
+    .explainBlock h3{font-size:15px;margin:0 0 5px}
+    .explainBlock p{font-size:10px;color:#afc2d2;line-height:1.5;margin:5px 0}
+    .formula{margin:8px 0;padding:9px 10px;border-radius:9px;background:#0c2233;border:1px solid #31546e;color:#e9f8ff;font-size:11px;font-weight:900;line-height:1.45}
+    .systemFlow{display:grid;grid-template-columns:1fr;gap:6px;margin-top:8px}
+    .systemStep{padding:9px 10px;border:1px solid #29465f;border-radius:10px;background:#091a28}
+    .systemStep b{display:block;font-size:11px;color:#fff}
+    .systemStep span{display:block;font-size:9px;color:var(--muted);margin-top:2px;line-height:1.35}
+    @media(min-width:560px){.voteStats{grid-template-columns:repeat(3,minmax(0,1fr))}.systemFlow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+    .judicialBox{margin:0 0 14px;border:1px solid #7c6327;border-radius:14px;background:linear-gradient(180deg,#241d0b,#15130c);overflow:hidden}
+    .judicialHead{padding:12px 13px;border-bottom:1px solid #5b4920}
+    .judicialK{font-size:9px;font-weight:950;letter-spacing:.08em;color:#ffd96b}
+    .judicialTitle{font-size:17px;font-weight:950;margin-top:2px}
+    .judicialSub{font-size:9.5px;color:#d9cda8;margin-top:3px;line-height:1.4}
+    .judicialRow{padding:12px 13px;border-top:1px solid rgba(255,255,255,.06)}
+    .judicialTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .judicialName{font-size:14px;font-weight:950}
+    .judicialMeta{font-size:9px;color:#d0c4a2;margin-top:2px}
+    .judicialBadge{display:inline-block;margin-top:6px;padding:4px 7px;border-radius:999px;background:#5b4310;border:1px solid #8c6e23;color:#ffe28a;font-size:8.5px;font-weight:950}
+    .judicialVotes{font-size:18px;font-weight:950;text-align:right}
+    .judicialLabel{font-size:8px;color:#c8b98e;text-align:right}
+    .judicialGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+    .judicialMetric{border:1px solid #4c421f;border-radius:9px;padding:8px;background:#17150d}
+    .judicialMetric b{display:block;font-size:15px}
+    .judicialMetric span{font-size:8.5px;color:#c8bb91}
+    .judicialImpact{margin-top:9px;padding:9px 10px;border-radius:9px;background:#0c1a24;border:1px solid #315067;color:#d8e8f3;font-size:9.5px;line-height:1.45}
+    .judicialFoot{padding:10px 13px;border-top:1px solid #5b4920;color:#cdbf95;font-size:9px;line-height:1.45}
+
+    .cargoTitle{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:14px 0 7px}
+    .cargoTitle strong{font-size:18px}
+    .cargoTitle span{font-size:10px;color:var(--muted);font-weight:800}
+    .partyBlock{border:1px solid #24435d;border-radius:14px;overflow:hidden;margin:10px 0;background:#071522}
+    .partyBlockHead{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 12px;background:#0a1d2c;border-bottom:1px solid #24435d}
+    .partyBlockHead strong{font-size:15px}
+    .partyCounts{font-size:9px;color:var(--muted);font-weight:850;text-align:right}
+    .officialRow{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;padding:10px 11px;border-top:1px solid #193247}
+    .officialRow:first-of-type{border-top:0}
+    .officialPos{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:#10263a;color:var(--cyan);font-size:10px;font-weight:950}
+    .officialName{font-size:14px;font-weight:930;line-height:1.08}
+    .officialMeta{font-size:9px;color:var(--muted);font-weight:750;margin-top:2px}
+    .officialVotes{text-align:right;font-size:13px;font-weight:950}
+    .officialBadge{display:inline-flex;margin-top:4px;padding:3px 6px;border-radius:999px;font-size:8px;font-weight:950}
+    .officialBadge.eleito{color:#bff6dc;background:rgba(79,224,173,.08);border:1px solid rgba(79,224,173,.4)}
+    .officialBadge.suplente{color:#ffeaa4;background:rgba(255,211,78,.08);border:1px solid rgba(255,211,78,.4)}
+    .rankControls{display:grid;grid-template-columns:1fr;gap:8px;margin:11px 0}
+    .rankControls select,.rankControls button{width:100%;border:1px solid #2b4b65;background:#071522;color:#f2f8fc;border-radius:11px;padding:11px 12px;font-size:14px;font-weight:800}
+    .rankControls button{background:#0d2a3d;color:#eaf8ff}
+    .rankControls button.primary{background:var(--cyan);color:#03111b;border-color:var(--cyan)}
+    .rankControls button:disabled,.rankControls select:disabled{opacity:.55}
+    .rankProgressBox{margin:10px 0;padding:10px;border:1px solid #29465f;border-radius:11px;background:#071522}
+    .rankProgressLine{height:8px;background:#142c3e;border-radius:99px;overflow:hidden;margin-top:7px}
+    .rankProgressLine i{display:block;height:100%;background:var(--cyan);border-radius:99px}
+    .rankSummary{display:flex;justify-content:space-between;gap:10px;align-items:end;margin:12px 0 6px}
+    .rankSummary strong{font-size:18px}
+    .rankSummary span{font-size:10px;color:var(--muted);text-align:right}
+    .rankRow{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;padding:10px 5px;border-top:1px solid #1c3347}
+    .rankRow .place{font-weight:950;color:var(--cyan)}
+    .rankCity{font-size:14px;font-weight:900}
+    .rankMini{font-size:9px;color:var(--muted);margin-top:2px}
+    .rankVotes{text-align:right;font-size:14px;font-weight:950}
+    .rankFoot{font-size:9px;color:var(--muted);line-height:1.35;margin-top:10px}
+
+    .searchModes{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:11px 0}
+    .searchModes button{border:1px solid #29465f;background:#081a29;color:#bdd0de;border-radius:11px;padding:10px;font-size:12px;font-weight:900}
+    .searchModes button.on{background:var(--cyan);border-color:var(--cyan);color:#04121c}
+    .shareInline{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #3b617c;background:#0d2739;color:#eef9ff;border-radius:10px;padding:9px 11px;font-size:11px;font-weight:900;cursor:pointer}
+    .candidateHero{margin:12px 0;padding:14px;border:1px solid #2a4a62;border-radius:14px;background:linear-gradient(145deg,#071622,#0a2132)}
+    .candidateHeroTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .candidateHeroName{font-size:24px;font-weight:950;line-height:1}
+    .candidateHeroMeta{font-size:10px;color:var(--muted);font-weight:800;margin-top:5px}
+    .candidateHeroVotes{font-size:28px;font-weight:950;margin-top:10px}
+    .candidateHeroVotes small{display:block;font-size:9px;color:var(--muted);font-weight:800;margin-top:3px}
+    .citySearch{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;margin:11px 0}
+    .citySearch input{min-width:0;background:#071522;color:#fff;border:1px solid #28465f;border-radius:11px;padding:11px 12px;font-size:16px;outline:none}
+    .citySearch button{border:1px solid var(--cyan);background:var(--cyan);color:#03111b;border-radius:11px;padding:0 14px;font-weight:950}
+    .cityHero{margin:12px 0;padding:14px;border:1px solid #2a4a62;border-radius:14px;background:linear-gradient(145deg,#071622,#0a2132)}
+    .cityHero h2{margin:0;font-size:25px;line-height:1}
+    .cityHero p{margin:5px 0 0;color:var(--muted);font-size:10px}
+    .officeDetails{border:1px solid #24435d;border-radius:13px;background:#071522;margin:9px 0;overflow:hidden}
+    .officeDetails summary{cursor:pointer;padding:12px;font-size:14px;font-weight:950;background:#0a1d2d;display:flex;justify-content:space-between;gap:8px;list-style:none}
+    .officeDetails summary::-webkit-details-marker{display:none}
+    .officeDetails summary span{font-size:9px;color:var(--muted);font-weight:800}
+    .officeRows{padding:0 10px}
+    .officeRow{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;padding:10px 2px;border-top:1px solid #1b3448}
+    .officeRow:first-child{border-top:0}
+    .officeRow .n{font-weight:950;color:var(--cyan);font-size:11px}
+    .officeRow .nm{font-size:13px;font-weight:900}
+    .officeRow .meta{font-size:9px;color:var(--muted);margin-top:2px}
+    .officeRow .v{text-align:right;font-size:13px;font-weight:950}
+    
+    .candidateIdentity{display:flex;align-items:center;gap:10px;min-width:0}
+    .candidatePhoto{width:54px;height:54px;flex:0 0 54px;border-radius:50%;overflow:hidden;border:1px solid #31516b;background:#0d2232}
+    .candidatePhoto img{width:100%;height:100%;object-fit:cover;display:block}
+    .leaderIdentity{display:flex;align-items:center;gap:8px;min-width:0}
+    .leaderPhoto{width:42px;height:42px;flex:0 0 42px;border-radius:50%;overflow:hidden;border:1px solid #31516b;background:#0d2232}
+    .leaderPhoto img{width:100%;height:100%;object-fit:cover;display:block}
+    .officeRow.withPhoto{grid-template-columns:34px 42px minmax(0,1fr) auto}
+    .officeMiniPhoto{width:38px;height:38px;border-radius:50%;overflow:hidden;border:1px solid #31516b;background:#0d2232}
+    .officeMiniPhoto img{width:100%;height:100%;object-fit:cover;display:block}
+
+    .candidateLink{color:inherit;text-decoration:none}
+    .candidateLink:hover{text-decoration:underline}
+    .shareToast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);z-index:60;background:#0b2334;color:#eaf8ff;border:1px solid #31516b;border-radius:999px;padding:9px 13px;font-size:10px;font-weight:900;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+
+    .mapCard{margin:13px 0;border:1px solid #294a63;border-radius:15px;background:linear-gradient(180deg,#071724,#06131f);overflow:hidden}
+    .mapHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-end;padding:12px 13px 8px}
+    .mapHead strong{font-size:16px}
+    .mapHead span{font-size:9px;color:var(--muted);font-weight:800;text-align:right}
+    .mapWrap{position:relative;padding:2px 8px 8px}
+    .mgMap{width:100%;height:auto;display:block;max-height:520px}
+    .mgMun{stroke:#183347;stroke-width:.45;vector-effect:non-scaling-stroke;cursor:pointer;transition:opacity .12s,stroke-width .12s}
+    .mgMun:hover{stroke:#fff;stroke-width:1.2}
+    .mgMun.zero{fill:#0b1823}
+    .mgMun.vote1{fill:#2ec7e6}
+    .mgMun.vote2{fill:#18d6c3}
+    .mgMun.vote3{fill:#63dd7a}
+    .mgMun.vote4{fill:#d8de59}
+    .mgMun.vote5{fill:#f2a93f}
+    .mgMun.vote6{fill:#ef6a43}
+    .mgMun.topcity{stroke:#fff4a6;stroke-width:1.4}
+    .mapLegend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;padding:0 13px 12px;font-size:9px;color:#c7d8e5;font-weight:850}
+    .mapLegendItem{display:flex;align-items:center;gap:6px;min-width:0}
+    .mapLegend i{flex:0 0 18px;width:18px;height:10px;border-radius:3px;border:1px solid rgba(255,255,255,.12)}
+    .mapLegendTitle{grid-column:1/-1;color:#fff;font-size:10px;margin-bottom:1px}
+    .mapLegend .lz{background:#0b1823}
+    .mapLegend .l1{background:#2ec7e6}
+    .mapLegend .l2{background:#18d6c3}
+    .mapLegend .l3{background:#63dd7a}
+    .mapLegend .l4{background:#d8de59}
+    .mapLegend .l5{background:#f2a93f}
+    .mapLegend .l6{background:#ef6a43}
+    .mapLegend .ltop{background:transparent;border:1px solid #fff4a6}
+    .mapTip{position:absolute;z-index:3;left:14px;bottom:14px;min-width:150px;max-width:75%;padding:8px 10px;border-radius:10px;background:rgba(3,17,27,.96);border:1px solid #355a74;box-shadow:0 8px 25px rgba(0,0,0,.32);pointer-events:none}
+    .mapTip strong{display:block;font-size:12px}
+    .mapTip span{display:block;margin-top:2px;font-size:10px;color:#b7cad8}
+    .mapLoad{padding:22px 14px;text-align:center;color:var(--muted);font-size:11px}
+    .mapLoad button{margin-top:9px;border:1px solid var(--cyan);background:var(--cyan);color:#03111b;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:950}
+    .mapStats{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:0 13px 10px}
+    .mapStat{border:1px solid #214058;border-radius:10px;padding:8px;background:#071522}
+    .mapStat b{display:block;font-size:17px}
+    .mapStat span{font-size:8.5px;color:var(--muted);font-weight:800}
+
+    @media(min-width:700px){.citySearch{grid-template-columns:minmax(320px,1fr) 150px}}
+
+    @media(min-width:700px){.rankControls{grid-template-columns:180px minmax(280px,1fr) 210px}}
+
+    @media(max-width:420px){.distGrid{grid-template-columns:1fr 1fr}.distItem:first-child{grid-column:1/-1}}
+
+    @media(max-width:420px){.seatSummary{grid-template-columns:1fr 1fr}.seatSummary .metric:first-child{grid-column:1/-1}}
+    .psdrow{display:grid;grid-template-columns:35px 1fr auto;gap:8px;align-items:center;padding:10px 5px;border-top:1px solid #1c3347}.psdrow.focus{border:1px solid rgba(255,211,78,.45);background:rgba(255,211,78,.07);border-radius:12px;padding:9px}.pos{font-weight:950;color:var(--cyan)}.pname{font-size:14px;font-weight:850;line-height:1.12}.pvotes{font-size:13px;font-weight:950;text-align:right}.numtiny{display:block;font-size:9px;color:var(--muted);margin-top:2px}.cityControls{display:flex;gap:7px;margin-top:10px}.cityControls input{width:100%;min-width:0;background:#071522;color:#fff;border:1px solid #28465f;border-radius:11px;padding:11px 12px;font-size:16px;outline:none}.cityControls button{border:1px solid #2c4b65;background:#0e2436;color:#eef8ff;border-radius:11px;padding:0 13px;font-weight:900}.suggest{margin-top:7px;display:flex;gap:6px;overflow:auto;scrollbar-width:none}.suggest button{flex:0 0 auto;border:1px solid #29465f;background:#0a1a28;color:#b8cada;border-radius:999px;padding:7px 9px;font-size:11px;font-weight:800}.cityResult{margin-top:11px}.cityline{display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 0;border-top:1px solid #1d3447}.cityline strong{font-size:15px}.cityline span{font-size:14px;font-weight:900}.citymini{font-size:10px;color:var(--muted)}
+    .spark{margin-top:10px;background:#06131f;border:1px solid #1b3449;border-radius:13px;padding:8px}.sparkTitle{font-size:10px;font-weight:850;color:#afc2d3;margin-bottom:3px}.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:9px;color:var(--muted);margin-top:2px}.sw{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:3px}.empty{text-align:center;color:var(--muted);padding:24px 8px;font-size:13px}.loader{display:inline-block;width:15px;height:15px;border:2px solid #31516a;border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:6px}@keyframes spin{to{transform:rotate(360deg)}}
+    .foot{font-size:10px;color:#71879a;line-height:1.45;padding:4px 5px 18px}.bottom{position:fixed;bottom:0;left:0;right:0;z-index:25;background:rgba(6,16,26,.97);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:7px 7px calc(7px + env(safe-area-inset-bottom));display:flex;justify-content:center}.bottomInner{display:grid;grid-template-columns:repeat(5,1fr);width:min(760px,100%)}.bottom button{border:0;background:transparent;color:#9eb2c4;padding:7px 2px;font-size:9px;font-weight:850}.bottom button b{display:block;font-size:15px;line-height:1.1;margin-bottom:2px}.bottom button.on{color:var(--cyan)}
+    @media(min-width:620px){.mon{grid-template-columns:1fr 1fr}.title{font-size:30px}.nav{top:82px}.h1{font-size:29px}.candidate .name{font-size:20px}}
+  
+    /* Painel horizontal para computador */
+    @media (min-width: 960px){
+      .app{max-width:1440px;padding-bottom:28px}
+      .top{padding:14px 24px 12px}
+      .title{font-size:34px}
+      .eyebrow{font-size:11px}
+      .meta{font-size:12px}
+      .nav{top:88px;padding:10px 22px;justify-content:center;overflow:visible;flex-wrap:wrap}
+      .nav button{font-size:13px;padding:9px 14px}
+      main{padding:18px 22px 28px}
+      .card{padding:20px;border-radius:20px;margin-bottom:16px}
+      .h1{font-size:30px}
+      .sub{font-size:13px}
+      .mon{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+      .candidateGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:30px}
+      .candidateGrid .candidate:nth-child(2){border-top:0}
+      .name{font-size:19px}
+      .pct{font-size:28px}
+      .personName{font-size:19px}
+      .bigVotes{font-size:32px}
+      .bottom{display:none}
+      .foot{font-size:11px;padding-bottom:4px}
+      .cityControls{max-width:760px}
+    }
+    @media (min-width:1280px){
+      .candidateGrid{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:30px}
+      .candidateGrid .candidate:nth-child(3){border-top:0}
+    }
+
+  
+    /* Refinamento visual profissional — mantém a lógica da V4.5 */
+    body{
+      background:
+        radial-gradient(circle at 12% -5%,rgba(53,208,246,.10),transparent 32%),
+        radial-gradient(circle at 92% 3%,rgba(255,211,78,.06),transparent 28%),
+        linear-gradient(180deg,#07131f 0,#06101a 45%,#05101a 100%);
+    }
+    .top{position:relative;top:auto;padding:14px 14px 12px;background:rgba(6,16,26,.98);border-bottom:1px solid #213c52}
+    .top::after{content:"";display:block;height:2px;margin:12px -14px -12px;background:linear-gradient(90deg,#35d0f6 0 46%,#f6c700 46% 72%,#4fe0ad 72% 100%);opacity:.8}
+    .brandline{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brandWrap{display:flex;align-items:center;gap:12px;min-width:0}
+    .logoBox{flex:0 0 auto;background:#fff;border-radius:12px;padding:6px 8px;box-shadow:0 8px 24px rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.65)}
+    .officialLogo{display:block;width:118px;height:auto}
+    .brandText{min-width:0}
+    .brandText .eyebrow{font-size:9px;letter-spacing:1.55px}
+    .brandText .title{font-size:22px;margin-top:3px;letter-spacing:-.35px}
+    .independent{font-size:9.5px;color:#9fb5c7;font-weight:700;margin-top:4px;line-height:1.25}
+    .statusWrap{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+    .status{background:#091927;border:1px solid #25455f;border-radius:999px;padding:7px 9px}
+    .refresh{padding:6px 10px;border-radius:999px}
+    .meta{margin-top:10px;padding:8px 10px;border-radius:10px;background:#081725;border:1px solid #1e394f}
+    .sourcepill{font-size:10px;color:#9fb5c7;font-weight:800;white-space:nowrap}
+    .nav{top:0}
+    .card{border-color:#25465f;box-shadow:0 15px 38px rgba(0,0,0,.20)}
+    .k{letter-spacing:1.65px}
+    .progressLine{height:6px}
+    .foot{border-top:1px solid #183044;margin-top:5px;padding-top:12px;color:#8298aa}
+    @media(max-width:480px){
+      .officialLogo{width:102px}
+      .brandWrap{gap:9px}
+      .brandText .title{font-size:19px}
+      .brandText .eyebrow{font-size:8px}
+      .independent{font-size:8.5px}
+      .status{font-size:9px;padding:6px 7px}
+      .refresh{font-size:9px;padding:6px 8px}
+      .sourcepill{display:none}
+    }
+    @media(min-width:960px){
+      .top{padding:16px 24px 14px}
+      .top::after{margin:14px -24px -14px}
+      .officialLogo{width:165px}
+      .brandWrap{gap:16px}
+      .brandText .eyebrow{font-size:10px}
+      .brandText .title{font-size:30px}
+      .independent{font-size:11px}
+      .statusWrap{flex-direction:row;align-items:center}
+      .meta{padding:9px 12px}
+      .nav{top:0}
+    }
+
+  
+    /* V5.0 · acabamento editorial e dashboard responsivo */
+    html{scroll-behavior:smooth}
+    body{font-variant-numeric:tabular-nums}
+    .officialLogo{width:92px}
+    .logoBox{border-radius:10px;padding:5px 7px}
+    .brandText .title{font-size:20px;letter-spacing:-.45px}
+    .top{box-shadow:0 12px 34px rgba(0,0,0,.14)}
+    .nav{box-shadow:0 7px 22px rgba(0,0,0,.14)}
+    .notice{font-size:11px;padding:9px 11px;border-radius:11px}
+    .overviewHero{padding:18px;background:
+      radial-gradient(circle at 90% 10%,rgba(53,208,246,.12),transparent 38%),
+      linear-gradient(145deg,#0c1e2f,#081623 68%)}
+    .overviewTop{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+    .overviewTitle{font-size:22px;font-weight:950;line-height:1.02;margin-top:3px}
+    .overviewPct{font-size:42px;font-weight:950;line-height:.95;letter-spacing:-1.8px}
+    .overviewLabel{font-size:10px;color:var(--muted);font-weight:850;text-align:right;margin-top:4px}
+    .overviewMeta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+    .overviewMeta .metric{padding:10px 11px}
+    .raceGrid{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:12px}
+    .raceSummary{margin:0;min-width:0}
+    .raceSummary .h1{font-size:20px}
+    .raceTop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .raceProgress{font-size:11px;color:var(--muted);font-weight:850;white-space:nowrap}
+    .summaryWait{margin-top:13px;padding:15px 12px;border:1px dashed #29465f;border-radius:12px;color:#94aabd;font-size:12px;text-align:center}
+    .leaderLine{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:9px;align-items:center;padding:10px 0;border-top:1px solid #1d3549}
+    .leaderLine:first-of-type{border-top:0}
+    .leaderPos{width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:#10263a;border:1px solid #284a65;color:var(--cyan);font-size:11px;font-weight:950}
+    .leaderName{font-size:14px;font-weight:900;line-height:1.08}
+    .leaderMeta{font-size:9.5px;color:var(--muted);font-weight:750;margin-top:2px}
+    .leaderPct{text-align:right;font-size:20px;font-weight:950;white-space:nowrap}
+    .leaderVotes{font-size:9.5px;color:var(--muted);font-weight:750;margin-top:2px}
+    .seatTag{display:inline-flex;margin-top:4px;border:1px solid rgba(79,224,173,.45);background:rgba(79,224,173,.08);color:#bdf7dc;border-radius:999px;padding:3px 6px;font-size:8.5px;font-weight:900}
+    .sectionHead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:12px}
+    .sectionHead .h1{margin-bottom:0}
+    .sectionNote{font-size:10px;color:var(--muted);text-align:right;max-width:230px;line-height:1.3}
+    .summaryMonGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .summaryPerson{background:#071522;border:1px solid #213d55;border-radius:14px;padding:11px;min-width:0}
+    .summaryPerson.focus{border-color:rgba(53,208,246,.52);background:linear-gradient(145deg,rgba(53,208,246,.06),#071522 55%)}
+    .summaryPersonName{font-size:14px;font-weight:930;line-height:1.08}
+    .summaryPersonMeta{font-size:9px;color:var(--muted);font-weight:750;margin-top:3px}
+    .summaryPersonVotes{font-size:22px;font-weight:950;margin-top:8px}
+    .summaryVerdict{margin-top:7px;border-radius:8px;padding:6px 7px;font-size:8.5px;font-weight:950;text-align:center;letter-spacing:.25px}
+    .summaryVerdict.wait{color:#ffe8a0;background:rgba(255,211,78,.07);border:1px solid rgba(255,211,78,.35)}
+    .summaryVerdict.in{color:#bdf7dc;background:rgba(79,224,173,.08);border:1px solid rgba(79,224,173,.4)}
+    .summaryVerdict.out{color:#ffd0d5;background:rgba(255,107,122,.08);border:1px solid rgba(255,107,122,.4)}
+    .summaryVerdict.na{color:#c4d4e0;background:#0b1b29;border:1px solid #35536a}
+    .summarySeatLine{font-size:9px;color:#9db1c2;margin-top:6px;line-height:1.25}
+    .cityGroup{margin-top:12px;border:1px solid #203d55;border-radius:13px;overflow:hidden;background:#071522}
+    .cityGroupHead{display:flex;justify-content:space-between;align-items:center;padding:9px 11px;background:#0a1d2c;border-bottom:1px solid #203d55}
+    .cityGroupTitle{font-size:10px;letter-spacing:1.2px;font-weight:950;color:var(--cyan)}
+    .cityGroupPct{font-size:10px;color:var(--muted);font-weight:850}
+    .cityGroup .cityline{padding:10px 11px;border-top:1px solid #183044}
+    .cityGroup .cityline:first-of-type{border-top:0}
+    .cityGroup .cityline span{font-size:16px}
+    .citySummaryTitle{display:flex;justify-content:space-between;align-items:end;gap:10px;margin-top:10px}
+    .citySummaryTitle strong{font-size:19px}
+    .citySummaryTitle span{font-size:10px;color:var(--muted);font-weight:800}
+    .foot{text-align:left}
+    @media(max-width:380px){
+      .summaryMonGrid{grid-template-columns:1fr}
+      .overviewPct{font-size:36px}
+    }
+    @media(min-width:700px){
+      .raceGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .summaryMonGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .overviewHero{padding:21px}
+      .overviewTitle{font-size:26px}
+    }
+    @media(min-width:960px){
+      .officialLogo{width:122px}
+      .brandText .title{font-size:29px}
+      .raceGrid{gap:14px}
+      .raceSummary{padding:17px}
+      .summaryMonGrid{grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+      .summaryPerson{padding:12px}
+      .summaryPersonName{font-size:15px}
+      .overviewHero{display:grid;grid-template-columns:1.35fr .65fr;gap:22px;align-items:center}
+      .overviewMeta{margin-top:0}
+      .overviewPct{font-size:54px}
+      .overviewTitle{font-size:31px}
+    }
+
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brandline">
+      <div class="brandWrap">
+        <div class="logoBox"><img class="officialLogo" src="https://www.tse.jus.br/imagens/fotos/logo-eleicoes-2026-26-06.2025/%40%40images/image-1140-078045b4b6162455b4992c9b1b33d714.jpeg" alt="Eleições 2026"></div>
+        <div class="brandText">
+          <div class="eyebrow">CENTRAL DE APURAÇÃO</div>
+          <div class="title">Central de Apuração 2026 — Marcelo Augusto</div>
+          <div class="independent">Monitoramento e organização dos resultados oficiais do TSE</div>
+        </div>
+      </div>
+      <div class="statusWrap">
+        <div class="status"><span id="dot" class="dot"></span><span id="statusText">Conectando</span></div>
+        <button class="refresh" id="shareBtn" type="button">Compartilhar</button>
+        <button class="refresh" id="refreshBtn" type="button">Atualizar</button>
+      </div>
+    </div>
+    <div class="meta"><span id="metaText">MG · aguardando dados</span><span class="sourcepill">Atualização automática a cada 30s</span></div>
+  </header>
+  <nav class="nav" id="nav">
+    <button data-view="resumo">Resumo</button><button data-view="presbr">Presidente BR</button><button data-view="presmg">Presidente MG</button><button data-view="gov">Governador</button><button data-view="sen">Senado</button><button data-view="fed">Federal</button><button data-view="est">Estadual</button><button data-view="eleitos">Eleitos</button><button data-view="pesquisa">Pesquisa</button><button data-view="mon">Monitorados</button><button data-view="entenda">Entenda</button>
+  </nav>
+  <main><div id="notice"></div><div id="content"><div class="card"><div class="empty"><span class="loader"></span>Carregando dados oficiais do TSE…</div></div></div><div class="foot">Painel desenvolvido e monitorado por Marcelo Augusto. Acompanhamento independente com dados oficiais do Tribunal Superior Eleitoral (TSE). Não é um produto oficial da Justiça Eleitoral e não substitui a divulgação do TSE. Em cargos proporcionais, “posição por votos” e “vagas da legenda” são indicadores da parcial; a situação oficial do candidato é a informada pelo TSE. <span class="versionTag">Painel v6.10</span></div></main>
+</div>
+<nav class="bottom"><div class="bottomInner"><button data-view="resumo"><b>◉</b>Resumo</button><button data-view="eleitos"><b>✓</b>Eleitos</button><button data-view="pesquisa"><b>⌕</b>Pesquisa</button><button data-view="mon"><b>★</b>Monitorados</button><button data-view="entenda"><b>?</b>Entenda</button></div></nav>
+<script>
+const CFG={base:'https://resultados.tse.jus.br/oficial/ele2026',fedEle:'6257',estEle:'6259',poll:30000,region:['Passos','São Sebastião do Paraíso','Itaú de Minas','Alpinópolis','Cássia','Piumhi','Capitólio','São João Batista do Glória','Delfinópolis','Fortaleza de Minas','Pratápolis','Jacuí','Bom Jesus da Penha','São José da Barra','Carmo do Rio Claro','Guapé','Ibiraci','Monte Santo de Minas','Guaranésia','Nova Resende'],mon:[{name:'Cássio Soares',num:'5588',cargo:'fed',label:'Deputado Federal',focus:true},{name:'Emidinho Madeira',num:'2240',cargo:'fed',label:'Deputado Federal'},{name:'Renato Andrade',num:'4000',cargo:'fed',label:'Deputado Federal',focus:true},{name:'Diego Oliveira',num:'55888',cargo:'est',label:'Deputado Estadual',focus:true},{name:'Antônio Carlos Arantes',num:'22123',cargo:'est',label:'Deputado Estadual'},{name:'Belinha',num:'22322',cargo:'est',label:'Deputada Estadual',focus:true}],psd:[['55995','Beatriz Andrade'],['55200','Bosco'],['55555','Delegado Christiano Xavier'],['55888','Diego Oliveira'],['55123','Doutor Wilson Batista'],['55789','Duarte'],['55100','Elismar Prado'],['55678','Enes Cândido'],['55321','Eugênio Vilela'],['55210','Gil Pereira'],['55000','Gustavo Valadares'],['55900','Helton Junior'],['55035','Igor Tavares'],['55133','João Magalhães'],['55444','Leandro Genaro'],['55111','Olivia Sousa'],['55055','Pacheco'],['55031','Rafael Martins'],['55700','Raul Belém'],['55240','Tito Torres']]};
+const PRODUCT_ARCH={
+  edition:'free',
+  year:2026,
+  future:{historical:true,broadcastHorizontal:false,broadcastVertical:false,exports:false,customBrand:false}
+};
+const COLORS=['#35d0f6','#ffd34e','#a78bfa','#4fe0ad','#ff9f43','#ff6b7a'];
+const S={view:'resumo',data:{},errors:{},last:null,loading:false,mun:[],city:null,cityLoading:false,hist:loadHist(),searchMode:'cand',rankCargo:'est',rankNum:'',rankRows:[],rankLoading:false,rankProgress:{done:0,total:0,errors:0},rankUpdated:null,rankRun:0,cityQuery:'',cityAll:null,cityAllLoading:false,mgGeo:null,mgGeoLoading:false,mgGeoError:false,mapTip:null};
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)]; const nf=n=>new Intl.NumberFormat('pt-BR').format(Number(n||0));
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const num=v=>{if(typeof v==='number')return v; if(v==null||v==='')return 0; return Number(String(v).replace(/\./g,'').replace(',','.'))||0};
+const pct=v=>num(v); const ptxt=v=>pct(v).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+'%';
+const pad=(v,n)=>String(v).padStart(n,'0');
+function resultUrl(ele,uf,cargo,mun=''){const folder=uf;const scope=mun?uf+pad(mun,5):uf;return `${CFG.base}/${ele}/dados/${folder}/${scope}-c${pad(cargo,4)}-e${pad(ele,6)}-u.json`}
+function munUrl(){return `${CFG.base}/${CFG.estEle}/config/mun-e${pad(CFG.estEle,6)}-cm.json`}
+async function getJSON(url){const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+
+function electionStats(data){
+  const el=data?.e||{};
+  const vo=data?.v||{};
+  const e=num(el.te),c=num(el.c),a=num(el.a);
+  const tv=num(vo.tv),vv=num(vo.vv),vb=num(vo.vb),tn=num(vo.tvn),vansj=num(vo.vansj);
+  return{
+    e,c,a,tv,vv,vb,tn,vansj,
+    pc:pct(el.pc),pa:pct(el.pa),pvb:pct(vo.pvb),ptvn:pct(vo.ptvn),
+    validPct:pct(vo.pvv)|| (tv>0?(vv/tv*100):0)
+  };
+}
+function voteStats(data,compact=false){
+  if(!data)return'';
+  const x=electionStats(data);
+  if(!(x.e||x.c||x.a||x.tv||x.vv||x.vb||x.tn))return'';
+  const item=(label,val,sub='')=>`<div class="voteStat"><b>${nf(val)}</b><span>${esc(label)}${sub?`<span class="pctmini">${esc(sub)}</span>`:''}</span></div>`;
+  let note='';
+  if(x.vansj>0)note=`<div class="voteStatsNote">${nf(x.vansj)} voto${x.vansj===1?'':'s'} anulado${x.vansj===1?'':'s'} sub judice nesta abrangência. Esse total não deve ser confundido com votos válidos enquanto permanecer com essa destinação.</div>`;
+  return `<div class="voteStats ${compact?'compact':''}">`+
+    item('eleitores aptos',x.e)+
+    item('comparecimento',x.c,x.pc?ptxt(x.pc):'')+
+    item('abstenção',x.a,x.pa?ptxt(x.pa):'')+
+    item('votos válidos',x.vv,x.validPct?ptxt(x.validPct)+' do total de votos':'')+
+    item('votos brancos',x.vb,x.pvb?ptxt(x.pvb):'')+
+    item('votos nulos',x.tn,x.ptvn?ptxt(x.ptvn):'')+
+    note+`</div>`;
+}
+
+function cargo(data){return data?.carg?.[0]||null}
+function totalPct(data){return pct(data?.s?.pst ?? data?.s?.psa ?? 0)}
+function flatten(data){const c=cargo(data); if(!c)return[];const out=[];(c.agr||[]).forEach(a=>(a.par||[]).forEach(p=>(p.cand||[]).forEach(x=>out.push({...x,party:p.sg||'',partyName:p.nm||'',partySeats:num(p.vag),aggName:a.nm||p.nm||'',aggType:a.tp||'',aggSeats:num(a.vag),aggVotes:aggregationVotes(a),qe:num(c.qe),nv:num(c.nv)}))));return out}
+function findCand(data,n){return flatten(data).find(x=>String(x.n)===String(n))||null}
+function aggFor(data,cand){if(!cand)return null;const c=cargo(data);for(const a of c?.agr||[]){for(const p of a.par||[]){if((p.cand||[]).some(x=>String(x.n)===String(cand.n)))return a}}return null}
+function rankContext(data,cand){if(!cand)return null;const a=aggFor(data,cand);if(!a)return null;const arr=[];(a.par||[]).forEach(p=>(p.cand||[]).forEach(x=>arr.push({...x,party:p.sg})));arr.sort((x,y)=>num(y.vap)-num(x.vap));const idx=arr.findIndex(x=>String(x.n)===String(cand.n));const seats=num(a.vag);let diff=null,label='';if(seats>0&&idx>=0){if(idx<seats&&arr[seats]){diff=num(cand.vap)-num(arr[seats].vap);label='margem sobre o 1º fora da faixa por votos'}else if(idx>=seats&&arr[seats-1]){diff=num(arr[seats-1].vap)-num(cand.vap);label='diferença para a última posição da faixa por votos'}}return{rank:idx+1,seats,diff,label,agg:a,arr}}
+function stChip(c){if(!c)return'';const st=String(c.st||'').trim();if(!st)return'';const cl=/não eleit|nao eleit|suplente/i.test(st)?'warn':/eleit|2º turno|segundo turno/i.test(st)?'good':'';return `<span class="chip ${cl}">${esc(st)}</span>`}
+function cardHead(k,t,sub=''){return `<section class="card"><div class="k">${esc(k)}</div><div class="h1">${esc(t)}</div>${sub?`<div class="sub">${esc(sub)}</div>`:''}`}
+function uniqueCandidates(data){const m=new Map();flatten(data).forEach(x=>{const key=String(x.n||'')+'|'+String(x.nmu||x.nm||'');const old=m.get(key);if(!old||num(x.vap)>num(old.vap))m.set(key,x)});return[...m.values()]}
+function candList(data,limit=8,senate=false,cargoKey=''){
+  const started=totalPct(data)>0;
+  const arr=uniqueCandidates(data);
+  arr.sort((a,b)=>started?(num(b.vap)-num(a.vap)||String(a.nmu||a.nm||'').localeCompare(String(b.nmu||b.nm||''),'pt-BR')):String(a.nmu||a.nm||'').localeCompare(String(b.nmu||b.nm||''),'pt-BR'));
+  const shown=arr.slice(0,limit);
+  if(!shown.length)return'<div class="empty">Aguardando votação.</div>';
+  const max=Math.max(1,...shown.map(x=>pct(x.pvap)));
+  return shown.map((x,i)=>{
+    const senateChip=senate&&started&&i<2?`<span class="chip good">${i+1}ª posição · faixa das 2 vagas na parcial</span>`:'';
+    const photo=cargoKey?candidatePhotoUrl(x,cargoKey):'';
+    return `<div class="candidate"><div class="row"><div class="candidateIdentity">${cargoKey?`<div class="candidatePhoto">${photo?`<img src="${photo}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}</div>`:''}<div><div class="name">${esc(x.nmu||x.nm)}</div><div class="partyTag">${esc(x.party)} · ${x.n}</div></div></div><div class="pct">${ptxt(x.pvap)}</div></div><div class="votes">${nf(x.vap)} votos</div><div class="bar"><div class="fill" style="width:${Math.max(1,pct(x.pvap)/max*100)}%;background:${COLORS[i%COLORS.length]}"></div></div><div class="chips">${senateChip}${stChip(x)}</div></div>`;
+  }).join('')
+}
+function topProgress(data){const p=totalPct(data);return `<div class="progressLine"><i style="width:${Math.min(100,p)}%"></i></div><div class="small" style="margin-top:5px">${ptxt(p)} das seções totalizadas</div>`}
+function majorCard(k,title,data,limit=5,cargoKey=''){return cardHead(k,title,`${data?.dg||'--'} · ${data?.hg||'--'}`)+topProgress(data)+voteStats(data)+`<div class="candidateGrid">`+candList(data,limit,false,cargoKey)+`</div>`+sparkFor(title)+`</section>`}
+function senateCard(){const data=S.data.sen;const qtd=uniqueCandidates(data).length;const started=totalPct(data)>0;return cardHead('SENADO · 2 VAGAS','Senado · Minas Gerais',`${data?.dg||'--'} · ${data?.hg||'--'}`)+topProgress(data)+voteStats(data)+`<div class="small" style="margin-top:8px">${qtd?nf(qtd)+' candidaturas únicas carregadas':''}${qtd&&started?' · ordem pela votação parcial':qtd?' · ordem alfabética enquanto a apuração está zerada':''}</div><div class="candidateGrid">`+candList(data,99,true,'sen')+`</div></section>`}
+
+
+function aggregationVotes(a){
+  if(!a)return 0;
+  const directValid=num(a.tval ?? a.tvan);
+  if(directValid>0)return directValid;
+  const directNomLeg=num(a.tvtn)+num(a.tvtl);
+  if(directNomLeg>0)return directNomLeg;
+  const parts=a.par||[];
+  const byPartyValid=parts.reduce((s,p)=>s+num(p.tval ?? p.tvan),0);
+  if(byPartyValid>0)return byPartyValid;
+  const byPartyNomLeg=parts.reduce((s,p)=>s+num(p.tvtn)+num(p.tvtl),0);
+  if(byPartyNomLeg>0)return byPartyNomLeg;
+  const candVotes=parts.reduce((s,p)=>s+(p.cand||[]).reduce((q,c)=>q+num(c.vap),0),0);
+  const legendVotes=parts.reduce((s,p)=>s+num(p.tvtl||p.vleg||p.vl),0);
+  return candVotes+legendVotes;
+}
+
+function aggCandidates(a){
+  const out=[];
+  (a?.par||[]).forEach(p=>(p.cand||[]).forEach(x=>out.push({...x,party:p.sg||''})));
+  return out;
+}
+function seatBreakdown(data,a){
+  const c=cargo(data),seats=num(a?.vag),qe=num(c?.qe),votes=aggregationVotes(a);
+  const cand=aggCandidates(a);
+  const st=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const explicitQP=cand.filter(x=>/\bqp\b|quociente/.test(st(x.st))).length;
+  const explicitSobra=cand.filter(x=>/media|sobra/.test(st(x.st))).length;
+  if(seats>0 && explicitQP+explicitSobra===seats){
+    return{qp:explicitQP,sobra:explicitSobra,seats,source:'tse'};
+  }
+  const qpRaw=qe>0?Math.floor(votes/qe):0;
+  const aptos10=qe>0?cand.filter(x=>num(x.vap)>=qe*.10).length:0;
+  const qp=Math.max(0,Math.min(seats,qpRaw,aptos10));
+  return{qp,sobra:Math.max(0,seats-qp),seats,source:'calc'};
+}
+function seatTotals(data){
+  const c=cargo(data);if(!c)return{qp:0,sobra:0,seats:0};
+  return (c.agr||[]).reduce((acc,a)=>{const b=seatBreakdown(data,a);acc.qp+=b.qp;acc.sobra+=b.sobra;acc.seats+=b.seats;return acc},{qp:0,sobra:0,seats:0});
+}
+function psdSobraAlert(data){
+  const diego=findCand(data,'55888'),rc=rankContext(data,diego);
+  if(!diego||!rc||!totalPct(data))return'';
+  const b=seatBreakdown(data,rc.agg);
+  if(rc.rank===rc.seats+1){
+    return `<div class="sobraAlert"><strong>Diego Oliveira está como 1º suplente na parcial.</strong><div class="small" style="margin-top:4px">A legenda/federação tem ${rc.seats} cadeiras neste momento (${b.qp} por QP e ${b.sobra} por sobras/médias, segundo o indicador do painel). Se passar a ${rc.seats+1} cadeiras e Diego mantiver a posição entre os candidatos aptos, ele entra na faixa da parcial.</div></div>`;
+  }
+  return'';
+}
+
+function partyRows(data){
+  const c=cargo(data);if(!c)return'<div class="empty">Aguardando dados.</div>';
+  const a=[...(c.agr||[])].sort((x,y)=>num(y.vag)-num(x.vag)||((num(y.tvtn)+num(y.tvtl))-(num(x.tvtn)+num(x.tvtl))));
+  return a.map((x,i)=>{
+    const votes=aggregationVotes(x),b=seatBreakdown(data,x),seats=b.seats;
+    const seatDots=Array.from({length:Math.min(18,Math.max(1,seats+2))},(_,j)=>{
+      const cls=j<b.qp?'qp':j<seats?'sobra':'';
+      return `<i class="seat ${cls}"></i>`;
+    }).join('');
+    return `<div class="partyrow"><div class="partyTop"><div><div class="sig">${esc(x.nm||x.sg||'Legenda')}</div><div class="small">${nf(votes)} votos válidos · ${esc(x.com||'')}</div><div class="partyEquation">${seats} cadeira${seats===1?'':'s'} = ${b.qp} por QP + ${b.sobra} por sobras/médias</div><div class="breakdown"><span class="bdg qp">${b.qp} QP</span><span class="bdg sobra">${b.sobra} sobras</span></div></div><div style="text-align:right"><div class="chairs">${seats}</div><div class="small">cadeiras</div></div></div><div class="seats">${seatDots}</div></div>`;
+  }).join('');
+}
+function propCard(data,title,vagas){
+  const c=cargo(data),tot=seatTotals(data),isEst=/Estadual/i.test(title);
+  return cardHead('SISTEMA PROPORCIONAL',title,`${vagas} vagas em Minas Gerais`)+topProgress(data)+voteStats(data)+
+  `<div class="grid2"><div class="metric"><div class="lab">Quociente eleitoral</div><div class="val">${c?nf(c.qe):'—'}</div><div class="hint">valor informado no arquivo oficial</div></div><div class="metric"><div class="lab">Vagas do cargo</div><div class="val">${c?nf(c.nv||vagas):vagas}</div><div class="hint">Minas Gerais</div></div></div>`+
+  `<div class="distBox"><div class="distTitle">DISTRIBUIÇÃO DAS CADEIRAS NA PARCIAL</div><div class="distGrid"><div class="distItem"><div class="n">${nf(tot.seats)}</div><div class="l">cadeiras já atribuídas às legendas/federações</div></div><div class="distItem qp2"><div class="n">${nf(tot.qp)}</div><div class="l">indicadas pelo painel como QP</div></div><div class="distItem sob"><div class="n">${nf(tot.sobra)}</div><div class="l">indicadas pelo painel como sobras/médias</div></div></div><div class="seatLegend"><span><i class="lqp"></i>cadeira por QP</span><span><i class="lsobra"></i>cadeira por sobra/média</span></div></div>`+
+  (isEst?psdSobraAlert(data):'')+
+  partyRows(data)+
+  `<div class="calcNote">O número total de cadeiras atribuído a cada legenda/federação é lido do arquivo do TSE. A divisão QP × sobras/médias é um indicador calculado pelo painel a partir dos dados disponíveis na parcial e pode mudar durante a totalização. Para a situação oficial, prevalece a informação do TSE.</div></section>`;
+}
+function monitorCard(m){const data=m.cargo==='fed'?S.data.fed:S.data.est;const c=findCand(data,m.num);if(!c)return `<div class="person ${m.focus?'focus':''}"><div class="personHead"><div><div class="personName">${esc(m.name)}</div><div class="small">${esc(m.label)} · ${esc(m.num)}</div></div></div><div class="verdict wait">AGUARDANDO APURAÇÃO</div><div class="bigVotes">—</div><div class="small">aguardando dados oficiais</div></div>`;const started=totalPct(data)>0;const rc=started?rankContext(data,c):null;let verdict='<div class="verdict wait">AGUARDANDO APURAÇÃO</div>';if(started&&rc){verdict=rc.seats>0&&rc.rank<=rc.seats?'<div class="verdict in">DENTRO DA FAIXA NA PARCIAL</div>':'<div class="verdict out">FORA DA FAIXA NA PARCIAL</div>'}else if(started&&!rc){verdict='<div class="verdict na">FAIXA AINDA INDISPONÍVEL</div>'}const delta=rc?.diff!=null?`<div class="seatline"><span class="small">${esc(rc.label)}</span><span class="delta ${rc.rank<=rc.seats?'up':'down'}">${rc.rank<=rc.seats?'+':'−'}${nf(Math.abs(rc.diff))}</span></div>`:'';return `<div class="person ${m.focus?'focus':''}"><div class="personHead"><div><div class="personName">${esc(c.nmu||m.name)}</div><div class="small">${esc(m.label)} · ${esc(c.party)} · ${c.n}</div></div><div>${stChip(c)}</div></div>${verdict}<div class="bigVotes">${nf(c.vap)}</div><div class="small">${ptxt(c.pvap)} dos votos válidos computados para o cargo</div><div class="seatbox"><div class="seatline"><span class="small">Posição por votos na legenda/federação</span><strong>${started?(rc?.rank?rc.rank+'º':'—'):'aguardando'}</strong></div><div class="seatline"><span class="small">Vagas atribuídas à legenda na parcial</span><strong>${started?(rc?.seats??'—'):'—'}</strong></div><div class="seatline"><span class="small">QE</span><strong>${started?nf(c.qe):'—'}</strong></div>${delta}</div><div class="small" style="margin-top:7px">Indicador da parcial por votos e cadeiras da legenda/federação. A situação oficial do candidato é informada pelo TSE.</div>${sparkCandidate(m.num,m.name)}</div>`}
+
+function summaryRace(data,k,title,senate=false,cargoKey=''){
+  const p=totalPct(data),started=p>0;
+  let body='<div class="summaryWait">Aguardando os primeiros votos totalizados.</div>';
+  if(started){
+    const arr=uniqueCandidates(data).sort((a,b)=>num(b.vap)-num(a.vap)).slice(0,2);
+    body=arr.map((x,i)=>{
+      const photo=cargoKey?candidatePhotoUrl(x,cargoKey):'';
+      return `<div class="leaderLine"><div class="leaderPos">${i+1}º</div><div class="leaderIdentity">${cargoKey?`<div class="leaderPhoto">${photo?`<img src="${photo}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}</div>`:''}<div><div class="leaderName">${esc(x.nmu||x.nm)}</div><div class="leaderMeta">${esc(x.party)} · ${esc(x.n)}</div>${senate&&i<2?'<span class="seatTag">FAIXA DAS 2 VAGAS NA PARCIAL</span>':''}</div></div><div><div class="leaderPct">${ptxt(x.pvap)}</div><div class="leaderVotes">${nf(x.vap)} votos</div></div></div>`;
+    }).join('');
+  }
+  return `<section class="card raceSummary"><div class="raceTop"><div><div class="k">${esc(k)}</div><div class="h1">${esc(title)}</div></div><div class="raceProgress">${ptxt(p)} apurado</div></div>${topProgress(data)}${voteStats(data,true)}${body}</section>`;
+}
+function summaryMonitor(m){
+  const data=m.cargo==='fed'?S.data.fed:S.data.est;
+  const c=findCand(data,m.num);
+  const started=totalPct(data)>0;
+  if(!c)return `<div class="summaryPerson ${m.focus?'focus':''}"><div class="summaryPersonName">${esc(m.name)}</div><div class="summaryPersonMeta">${esc(m.label)} · ${esc(m.num)}</div><div class="summaryPersonVotes">—</div><div class="summaryVerdict wait">AGUARDANDO APURAÇÃO</div></div>`;
+  const rc=started?rankContext(data,c):null;
+  let cls='wait',label='AGUARDANDO APURAÇÃO',seat='';
+  if(started&&rc){
+    if(rc.seats>0&&rc.rank<=rc.seats){cls='in';label='DENTRO DA FAIXA NA PARCIAL'}
+    else{cls='out';label='FORA DA FAIXA NA PARCIAL'}
+    seat=`<div class="summarySeatLine">${rc.rank}º por votos · ${rc.seats} cadeira${rc.seats===1?'':'s'} na legenda/federação</div>`;
+  }else if(started&&!rc){cls='na';label='FAIXA AINDA INDISPONÍVEL'}
+  return `<div class="summaryPerson ${m.focus?'focus':''}"><div class="summaryPersonName">${esc(c.nmu||m.name)}</div><div class="summaryPersonMeta">${esc(c.party)} · ${esc(c.n)} · ${esc(m.label)}</div><div class="summaryPersonVotes">${nf(c.vap)}</div><div class="summaryPersonMeta">${ptxt(c.pvap)} dos votos válidos do cargo</div><div class="summaryVerdict ${cls}">${label}</div>${seat}</div>`;
+}
+
+function renderResumo(){
+  const p=Math.max(totalPct(S.data.gov),totalPct(S.data.est),totalPct(S.data.fed),totalPct(S.data.presbr));
+  const last=S.last?S.last.toLocaleTimeString('pt-BR'):'—';
+  return `<section class="card overviewHero"><div><div class="k">MINAS GERAIS · ELEIÇÕES 2026</div><div class="overviewTitle">Acompanhe a totalização em tempo real</div><div class="sub" style="margin-top:6px">Resultados oficiais organizados em um painel independente, com atualização automática enquanto a página estiver aberta.</div></div><div><div class="overviewTop"><div><div class="overviewPct">${ptxt(p)}</div><div class="small" style="margin-top:4px">seções totalizadas</div></div><div class="overviewLabel">ÚLTIMA LEITURA<br><span style="font-size:17px;color:#f5fbff">${last}</span></div></div><div class="overviewMeta"><div class="metric"><div class="lab">ATUALIZAÇÃO</div><div class="val" style="font-size:18px">30 s</div><div class="hint">enquanto a página estiver aberta</div></div><div class="metric"><div class="lab">FONTE</div><div class="val" style="font-size:18px">TSE</div><div class="hint">arquivos oficiais de divulgação</div></div></div></div></section>
+  <div class="raceGrid">${summaryRace(S.data.presbr,'PRESIDENTE','Brasil',false,'pres')}${summaryRace(S.data.gov,'GOVERNADOR','Minas Gerais',false,'gov')}${summaryRace(S.data.sen,'SENADO','Minas Gerais',true,'sen')}</div>
+  <section class="card"><div class="sectionHead"><div><div class="k">MONITORADOS DA REGIÃO</div><div class="h1">Acompanhamento especial</div></div><div class="sectionNote">Faixa calculada com os votos e as cadeiras atribuídas à legenda/federação naquela parcial.</div></div><div class="summaryMonGrid">${CFG.mon.map(m=>summaryMonitor(m)).join('')}</div></section>`;
+}
+
+function renderEntenda(){
+  return cardHead('COMO FUNCIONA','Entenda o sistema eleitoral brasileiro','Um guia rápido para interpretar corretamente os números do painel')+
+  `<div class="understandIntro"><h3>Majoritário x proporcional</h3><p>Presidente, governador e senador são escolhidos pelo sistema majoritário. Deputados federais e estaduais são escolhidos pelo sistema proporcional, em que os votos ajudam primeiro a definir quantas cadeiras cabem a cada partido ou federação.</p></div>`+
+  `<div class="explainBlock"><h3>Quociente eleitoral (QE)</h3><p>É a referência inicial para a distribuição das vagas nos cargos proporcionais.</p><div class="formula">QE = votos válidos ÷ número de vagas</div><p>Na regra legal, a fração igual ou inferior a 0,5 é desprezada; se for superior a 0,5, arredonda-se para cima.</p></div>`+
+  `<div class="explainBlock"><h3>Quociente partidário (QP)</h3><p>Indica quantas vagas o partido ou a federação obtém diretamente pelo quociente.</p><div class="formula">QP = votos válidos do partido/federação ÷ QE</div><p>A fração é desprezada. Depois disso, ainda podem existir cadeiras a distribuir pelas regras de sobras e médias.</p></div>`+
+  `<div class="explainBlock"><h3>Sobras e maiores médias</h3><p>As cadeiras que não forem preenchidas pelo QP são distribuídas por médias, conforme as regras eleitorais vigentes. O painel mostra a quantidade total de cadeiras informada pelo TSE e apresenta a separação QP × sobras como indicador de leitura.</p></div>`+
+  `<div class="explainBlock"><h3>Votos válidos, brancos e nulos</h3><div class="systemFlow"><div class="systemStep"><b>Votos válidos</b><span>Nos cargos proporcionais, incluem votos nominais válidos e votos de legenda.</span></div><div class="systemStep"><b>Brancos</b><span>São contabilizados, mas não entram no cálculo do quociente eleitoral.</span></div><div class="systemStep"><b>Nulos</b><span>Também não entram no cálculo do quociente eleitoral.</span></div><div class="systemStep"><b>Anulados sub judice</b><span>São votos ligados a candidaturas com situação jurídica pendente e podem mudar de destinação após decisão judicial.</span></div></div></div>`+
+  `<div class="explainBlock"><h3>Eleitorado, comparecimento e abstenção</h3><p><strong>Eleitores aptos</strong> é o total habilitado naquela abrangência. <strong>Comparecimento</strong> é quem efetivamente votou nas seções totalizadas; <strong>abstenção</strong> é quem não compareceu. Durante a apuração, esses números crescem conforme as urnas são totalizadas.</p></div>`+
+  `<div class="explainBlock"><h3>Como ler este painel</h3><p>Use o percentual de seções totalizadas para acompanhar o andamento da apuração. Para situação de eleitos, suplentes, destinação dos votos e eventual re-totalização, prevalecem sempre os dados oficiais da Justiça Eleitoral.</p></div>`+
+  `</section>`;
+}
+
+function renderMon(){return cardHead('CANDIDATOS MONITORADOS','Acompanhamento especial','Dados oficiais do arquivo de deputado federal e estadual')+`<div class="mon" style="margin-top:10px">${CFG.mon.map(m=>monitorCard(m)).join('')}</div></section>`}
+function renderPSD(){
+  const estAll=flatten(S.data.est).filter(x=>String(x.party).toUpperCase()==='PSD');
+  const estWanted=CFG.psd.map(([n,name])=>{
+    const c=estAll.find(x=>String(x.n)===n);
+    return{n,name,c,votos:c?num(c.vap):-1}
+  }).sort((a,b)=>b.votos-a.votos||String(a.c?.nmu||a.name).localeCompare(String(b.c?.nmu||b.name),'pt-BR'));
+  const estSeats=estAll[0]?rankContext(S.data.est,estAll[0])?.seats:0;
+  const estadual=cardHead(
+    'PSD · DEPUTADO ESTADUAL',
+    'Ranking dos 20 monitorados · mais votado primeiro',
+    `${estSeats||0} cadeiras atribuídas à legenda/federação na parcial`
+  )+(estWanted.map((x,i)=>`<div class="psdrow ${x.n==='55888'?'focus':''}"><div class="pos">${x.c?(i+1)+'º':'—'}</div><div class="pname">${esc(x.c?.nmu||x.name)}<span class="numtiny">${x.n}</span></div><div class="pvotes">${x.c?nf(x.c.vap):'—'}</div></div>`).join('')||'<div class="empty">Aguardando dados.</div>')+`</section>`;
+
+  const fedAll=flatten(S.data.fed)
+    .filter(x=>String(x.party).toUpperCase()==='PSD')
+    .sort((a,b)=>num(b.vap)-num(a.vap)||String(a.nmu||a.nm||'').localeCompare(String(b.nmu||b.nm||''),'pt-BR'));
+  const fedSeats=fedAll[0]?rankContext(S.data.fed,fedAll[0])?.seats:0;
+  const federal=cardHead(
+    'PSD · DEPUTADO FEDERAL',
+    'Ranking dos candidatos · mais votado primeiro',
+    `${fedSeats||0} cadeiras atribuídas à legenda/federação na parcial`
+  )+(fedAll.map((c,i)=>`<div class="psdrow"><div class="pos">${i+1}º</div><div class="pname">${esc(c.nmu||c.nm)}<span class="numtiny">${esc(c.n)}</span></div><div class="pvotes">${nf(c.vap)}</div></div>`).join('')||'<div class="empty">Aguardando dados.</div>')+`</section>`;
+
+  return estadual+federal;
+}
+function renderCities(){const selected=S.city;return cardHead('MONITORADOS DA REGIÃO','Votação por município','Cássio, Emidinho, Renato, Diego, Antônio Carlos Arantes e Belinha')+`<div class="cityControls"><input id="cityInput" list="cityList" placeholder="Digite o município" autocomplete="off" value="${selected?esc(selected.nm):''}"><datalist id="cityList">${S.mun.map(x=>`<option value="${esc(x.nm)}"></option>`).join('')}</datalist><button id="cityBtn" type="button">Buscar</button></div><div class="suggest">${CFG.region.slice(0,10).map(n=>`<button type="button" data-city="${esc(n)}">${esc(n)}</button>`).join('')}</div><div id="cityBox" class="cityResult">${S.cityLoading?'<div class="empty"><span class="loader"></span>Consultando o TSE…</div>':selected?renderCityResult(selected):'<div class="empty">Escolha um município. O painel consulta somente essa cidade, economizando dados móveis.</div>'}</div></section>`}
+function renderCityResult(city){
+  const a=city.results||{};
+  const group=(cargoKey,label)=>{
+    const data=cargoKey==='fed'?a.fed:a.est;
+    const rows=CFG.mon.filter(m=>m.cargo===cargoKey).map(m=>{
+      const c=findCand(data,m.num),party=c?.party||'';
+      return `<div class="cityline"><div><strong>${esc(c?.nmu||m.name)}</strong><div class="citymini">${esc(m.label)}${party?' · '+esc(party):''} · ${esc(m.num)}</div></div><span>${c?nf(c.vap):'—'}</span></div>`;
+    }).join('');
+    const pctCargo=data?ptxt(totalPct(data)):'—';
+    return `<div class="cityGroup"><div class="cityGroupHead"><div class="cityGroupTitle">${label}</div><div class="cityGroupPct">${pctCargo} apurado</div></div>${rows}</div>`;
+  };
+  return `<div class="citySummaryTitle"><strong>${esc(city.nm)} · MG</strong><span>votação dos 6 monitorados</span></div>${group('fed','DEPUTADO FEDERAL')}${group('est','DEPUTADO ESTADUAL')}`;
+}
+function loadHist(){try{return JSON.parse(localStorage.getItem('ce26hist')||'[]')}catch{return[]}}
+function saveHist(){try{localStorage.setItem('ce26hist',JSON.stringify(S.hist.slice(-180)))}catch{}}
+function snapshot(){const now=Date.now(),last=S.hist.at(-1);if(last&&now-last.t<30000)return;const take=(data,n)=>{const c=findCand(data,n);return c?num(c.vap):null};const top=(data)=>flatten(data).sort((a,b)=>num(b.vap)-num(a.vap)).slice(0,2).map(x=>({n:String(x.n),name:x.nmu||x.nm,v:num(x.vap),pct:pct(x.pvap)}));S.hist.push({t:now,cassio:take(S.data.fed,'5588'),emidinho:take(S.data.fed,'2240'),renato:take(S.data.fed,'4000'),diego:take(S.data.est,'55888'),arantes:take(S.data.est,'22123'),belinha:take(S.data.est,'22322'),pres:top(S.data.presbr),gov:top(S.data.gov)});saveHist()}
+function sparkSVG(series){const pts=series.filter(x=>x.v!=null);const W=560,H=125,P=12;if(!pts.length)return'';if(pts.length===1){return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="105" preserveAspectRatio="none"><line x1="${P}" y1="${H/2}" x2="${W-P}" y2="${H/2}" stroke="#1d3a50" stroke-width="2" stroke-dasharray="7 7"/><circle cx="${W/2}" cy="${H/2}" r="8" fill="${COLORS[0]}"/><circle cx="${W/2}" cy="${H/2}" r="15" fill="none" stroke="${COLORS[0]}" stroke-opacity=".25" stroke-width="4"/></svg>`}const min=Math.min(...pts.map(x=>x.v)),max=Math.max(...pts.map(x=>x.v));const span=Math.max(1,max-min);const xy=pts.map((x,i)=>`${P+i*(W-2*P)/(pts.length-1)},${H-P-(x.v-min)*(H-2*P)/span}`).join(' ');return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="105" preserveAspectRatio="none"><line x1="${P}" y1="${H-P}" x2="${W-P}" y2="${H-P}" stroke="#173248" stroke-width="2"/><polyline fill="none" stroke="${COLORS[0]}" stroke-width="5" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" points="${xy}"/><circle cx="${xy.split(' ').at(-1).split(',')[0]}" cy="${xy.split(' ').at(-1).split(',')[1]}" r="6" fill="${COLORS[0]}"/></svg>`}
+function sparkCandidate(n,name){const keys={'5588':'cassio','2240':'emidinho','4000':'renato','55888':'diego','22123':'arantes','22322':'belinha'};const key=keys[String(n)];if(!key)return'';const series=S.hist.map(h=>({v:h[key],t:h.t})).filter(x=>x.v!=null);if(!series.length)return `<div class="spark"><div class="sparkTitle">Evolução neste aparelho · ${esc(name)}</div><div class="small" style="padding:10px 4px">Aguardando a primeira leitura.</div></div>`;const first=series[0].v,last=series.at(-1).v,delta=last-first;const info=series.length===1?'1 leitura registrada · histórico iniciado agora':`${series.length} leituras · ${delta>=0?'+':''}${nf(delta)} votos desde a primeira leitura deste histórico`;return `<div class="spark"><div class="sparkTitle">Evolução neste aparelho · ${esc(name)}</div>${sparkSVG(series)}<div class="small" style="margin-top:2px">${info}</div></div>`}
+function sparkFor(title){let key=/Presidente/.test(title)?'pres':/Governador/.test(title)?'gov':null;if(!key)return'';const rows=S.hist.filter(h=>h[key]?.length);if(rows.length<2)return'';const names=[];rows.forEach(r=>r[key].forEach(x=>{if(!names.some(n=>n.n===x.n))names.push({n:x.n,name:x.name})}));const W=560,H=130,P=10;const all=[];names.slice(0,2).forEach(n=>rows.forEach(r=>{const x=r[key].find(y=>y.n===n.n);if(x)all.push(x.pct)}));if(!all.length)return'';const min=Math.min(...all),max=Math.max(...all);const lines=names.slice(0,2).map((n,k)=>{const pts=rows.map((r,i)=>{const x=r[key].find(y=>y.n===n.n);return x?`${P+i*(W-2*P)/(rows.length-1)},${H-P-(x.pct-min)*(H-2*P)/Math.max(.1,max-min)}`:null}).filter(Boolean).join(' ');return `<polyline fill="none" stroke="${COLORS[k]}" stroke-width="5" vector-effect="non-scaling-stroke" points="${pts}"/>`}).join('');return `<div class="spark"><div class="sparkTitle">Evolução registrada neste aparelho</div><svg viewBox="0 0 ${W} ${H}" width="100%" height="110" preserveAspectRatio="none">${lines}</svg><div class="legend">${names.slice(0,2).map((n,k)=>`<span><i class="sw" style="background:${COLORS[k]}"></i>${esc(n.name)}</span>`).join('')}</div></div>`}
+function renderNotice(){const n=$('#notice');const errs=Object.keys(S.errors);const p=Math.max(totalPct(S.data.gov),totalPct(S.data.est),totalPct(S.data.fed),totalPct(S.data.presbr));if(S.loading){n.innerHTML='<div class="notice"><span class="loader"></span>Atualizando arquivos oficiais do TSE…</div>';return}if(errs.length&&Object.keys(S.data).length===0){n.innerHTML='<div class="notice err">Ainda não foi possível carregar os arquivos de resultado. Antes do início da divulgação isso é esperado. O TSE informa que a divulgação começa às 17h, horário de Brasília.</div>';return}if(p===0){n.innerHTML='<div class="notice">Conexão com a estrutura oficial preparada. A votação ainda está zerada ou a totalização ainda não começou. O painel continuará tentando automaticamente.</div>';return}n.innerHTML='<div class="notice ok">Dados oficiais carregados. O painel atualiza automaticamente enquanto esta página estiver aberta.</div>'}
+
+function normStatus(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
+function officialType(c){
+  const st=normStatus(c?.st);
+  if(/suplent/.test(st))return'suplente';
+  if(/nao eleit|não eleit/.test(st))return null;
+  if(/eleit/.test(st))return'eleito';
+  if(String(c?.e||'').toLowerCase()==='s')return'eleito';
+  return null;
+}
+
+function candidatePhotoUrl(c,cargoKey){
+  if(!c?.sqcand)return'';
+  const ele=(cargoKey==='pres')?CFG.fedEle:CFG.estEle;
+  const uf=(cargoKey==='pres')?'br':'mg';
+  return `${CFG.base}/${ele}/fotos/${uf}/${c.sqcand}.jpeg`;
+}
+function initials(name){
+  return String(name||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();
+}
+
+function officialCargoBlock(data,title,cargoKey){
+  const arr=uniqueCandidates(data).map(c=>({...c,_type:officialType(c)})).filter(c=>c._type);
+  const cargoClass=cargoKey==='fed'?'federal':'estadual';
+  if(!arr.length)return `<div class="cargoTitle ${cargoClass}"><strong>${esc(title)}</strong><span>status oficial ainda não disponível</span></div><div class="empty">O TSE ainda não preencheu a situação final dos candidatos deste cargo.</div>`;
+  const groups=new Map();
+  arr.forEach(c=>{const p=c.party||'SEM PARTIDO';if(!groups.has(p))groups.set(p,[]);groups.get(p).push(c)});
+  const blocks=[...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0],'pt-BR')).map(([party,rows])=>{
+    rows.sort((a,b)=>(a._type===b._type?num(b.vap)-num(a.vap):(a._type==='eleito'?-1:1)));
+    const elected=rows.filter(x=>x._type==='eleito').length,supl=rows.filter(x=>x._type==='suplente').length;
+    return `<div class="partyBlock"><div class="partyBlockHead"><strong>${esc(party)}</strong><div class="partyCounts">${elected} eleito${elected===1?'':'s'} · ${supl} suplente${supl===1?'':'s'}</div></div>${rows.map((c,i)=>{
+      const photo=candidatePhotoUrl(c,cargoKey);
+      return `<div class="officialRow"><div class="officialPos">${i+1}º</div><div class="officialPhoto">${photo?`<img src="${photo}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}</div><div><div class="officialName"><a class="candidateLink" href="${candidateUrl(cargoKey,c.n)}">${esc(c.nmu||c.nm)}</a></div><div class="officialMeta">${esc(c.party)} · ${esc(c.n)}</div><span class="officialBadge ${c._type}">${esc(c.st|| (c._type==='eleito'?'Eleito':'Suplente'))} · TSE</span></div><div><div class="officialVotes">${nf(c.vap)}</div><div class="officialMeta">votos</div></div></div>`;
+    }).join('')}</div>`;
+  }).join('');
+  const elected=arr.filter(x=>x._type==='eleito').length,supl=arr.filter(x=>x._type==='suplente').length;
+  return `<div class="cargoTitle ${cargoClass}"><strong>${esc(title)}</strong><span>${elected} eleitos · ${supl} suplentes com status TSE</span></div>${blocks}`;
+}
+
+
+const LEGAL_WATCH={
+  'fed:1089':{
+    name:'Eduardo Cunha',
+    status:'INDEFERIDO EM PRAZO RECURSAL OU COM RECURSO',
+    tag:'SUB JUDICE',
+    updated:'29/09/2026',
+    source:'TSE · DivulgaCandContas',
+    sourceUrl:'https://divulgacandcontas.tse.jus.br/divulga/#/',
+    note:'O registro foi indeferido, mas há recurso pendente. Enquanto o recurso não é julgado definitivamente, a candidatura permanece sub judice e os votos recebidos ficam anulados sub judice. Se a decisão for revertida, esses votos poderão ser validados e poderá haver nova totalização.'
+  }
+};
+function legalKey(cargoKey,c){return `${cargoKey}:${String(c?.n||'')}`}
+function legalInfo(c,cargoKey){
+  return LEGAL_WATCH[legalKey(cargoKey,c)]||null;
+}
+function judicialStatusText(c,cargoKey){
+  const known=legalInfo(c,cargoKey);
+  if(known)return known.status;
+  return String(c?.sitRegistro||c?.situacaoRegistro||c?.dsSituacaoCandidato||c?.st_judicial||'').trim();
+}
+function isJudicialCase(c,cargoKey){
+  if(legalInfo(c,cargoKey))return true;
+  const s=normText(judicialStatusText(c,cargoKey));
+  return /sub judice|anulad|indeferid|cassad|recurso/.test(s);
+}
+function judicialCases(data,cargoKey){
+  return uniqueCandidates(data)
+    .filter(c=>isJudicialCase(c,cargoKey))
+    .map(c=>{
+      const rc=rankContext(data,c);
+      return {...c,_cargo:cargoKey,_rc:rc,_legal:legalInfo(c,cargoKey)};
+    })
+    .sort((a,b)=>num(b.vap)-num(a.vap));
+}
+function currentSeatLabel(c){
+  const seats=c?._rc?.seats;
+  return Number.isFinite(seats)?nf(seats):'—';
+}
+function judicialImpactText(c,cargoKey){
+  const known=legalInfo(c,cargoKey)||c?._legal;
+  if(known?.note)return known.note;
+  const s=normText(judicialStatusText(c,cargoKey));
+  if(/anulad.*sub judice|sub judice.*anulad/.test(s)){
+    return 'Os votos estão identificados como anulados sub judice e não devem ser tratados como votos válidos no cálculo proporcional atual. Se o indeferimento for mantido em definitivo, esses votos continuam fora do cálculo. Se a decisão for revertida, a Justiça Eleitoral pode realizar nova totalização, com possível alteração na distribuição das cadeiras.';
+  }
+  if(/indeferid|recurso|sub judice/.test(s)){
+    return 'A situação ainda depende de decisão judicial. Uma mudança no status pode exigir nova totalização e alterar votos válidos, quocientes, médias e a distribuição de cadeiras. O painel não antecipa quem entra ou sai antes da re-totalização oficial.';
+  }
+  if(/cassad|anulad/.test(s)){
+    return 'A situação jurídica pode afetar a validade dos votos e a composição final. Eventual alteração de cadeiras deve ser confirmada pela nova totalização oficial da Justiça Eleitoral.';
+  }
+  return 'A situação jurídica desta candidatura pode ter efeito na totalização. Para qualquer mudança de cadeira, prevalece a re-totalização oficial da Justiça Eleitoral.';
+}
+function renderJudicialWatch(){
+  const cases=[
+    ...judicialCases(S.data.fed,'fed'),
+    ...judicialCases(S.data.est,'est')
+  ];
+  if(!cases.length)return '';
+  const rows=cases.map(c=>{
+    const cargo=c._cargo==='fed'?'Deputado Federal':'Deputado Estadual';
+    const url=candidateUrl(c._cargo,c.n);
+    const known=c._legal;
+    const source=known?`<div class="judicialMeta" style="margin-top:7px">Fonte: ${esc(known.source)} · situação consultada em ${esc(known.updated)}</div>`:'';
+    return `<div class="judicialRow"><div class="judicialTop"><div><div class="judicialName"><a class="candidateLink" href="${url}">${esc(c.nmu||c.nm)}</a></div><div class="judicialMeta">${cargo} · ${esc(c.party)} · ${esc(c.n)}</div><span class="judicialBadge">${esc(known?.tag||judicialStatusText(c,c._cargo)||'Situação judicial')}</span></div><div><div class="judicialVotes">${nf(c.vap)}</div><div class="judicialLabel">votos recebidos</div></div></div><div class="judicialGrid"><div class="judicialMetric"><b>${currentSeatLabel(c)}</b><span>cadeiras atuais da legenda/federação</span></div><div class="judicialMetric"><b>${c._rc?.rank?c._rc.rank+'º':'—'}</b><span>posição por votos na legenda/federação</span></div></div><div class="judicialImpact"><strong>${esc(judicialStatusText(c,c._cargo))}</strong><br>${judicialImpactText(c,c._cargo)}</div>${source}</div>`;
+  }).join('');
+  return `<div class="judicialBox"><div class="judicialHead"><div class="judicialK">SITUAÇÕES JUDICIAIS</div><div class="judicialTitle">Candidaturas com possível impacto na totalização</div><div class="judicialSub">A situação jurídica é tratada separadamente do arquivo de apuração, porque o resultado eleitoral e o registro da candidatura são bases diferentes da Justiça Eleitoral.</div></div>${rows}<div class="judicialFoot">Importante: a quantidade de votos recebidos não significa, necessariamente, votos válidos para o cálculo proporcional. Qualquer mudança de cadeira depende da re-totalização oficial da Justiça Eleitoral.</div></div>`;
+}
+
+function renderEleitos(){
+  return cardHead('RESULTADO PROPORCIONAL','Eleitos e suplentes por partido','Situação informada nos arquivos oficiais do TSE')+
+  `<div class="officialNote">A lista usa o campo de situação oficial do TSE. Quando houver federação, o candidato aparece agrupado aqui pelo seu partido de filiação; a ordem legal de suplência pode ser definida pela lista da federação.</div>`+
+  renderJudicialWatch()+
+  officialCargoBlock(S.data.fed,'Deputado Federal · Minas Gerais','fed')+
+  officialCargoBlock(S.data.est,'Deputado Estadual · Minas Gerais','est')+
+  `</section>`;
+}
+
+const CARGO_META={
+  pres:{label:'Presidente · votação em MG',short:'Presidente',code:1,ele:()=>CFG.fedEle,data:()=>S.data.presmg},
+  gov:{label:'Governador · MG',short:'Governador',code:3,ele:()=>CFG.estEle,data:()=>S.data.gov},
+  sen:{label:'Senador · MG',short:'Senador',code:5,ele:()=>CFG.estEle,data:()=>S.data.sen},
+  fed:{label:'Deputado Federal · MG',short:'Deputado Federal',code:6,ele:()=>CFG.estEle,data:()=>S.data.fed},
+  est:{label:'Deputado Estadual · MG',short:'Deputado Estadual',code:7,ele:()=>CFG.estEle,data:()=>S.data.est}
+};
+function cargoMeta(k=S.rankCargo){return CARGO_META[k]||CARGO_META.est}
+function rankData(){return cargoMeta().data()}
+function rankCargoCode(){return cargoMeta().code}
+function rankElection(){return cargoMeta().ele()}
+function rankCandidates(){
+  return uniqueCandidates(rankData()).filter(c=>num(c.vap)>0).sort((a,b)=>String(a.nmu||a.nm||'').localeCompare(String(b.nmu||b.nm||''),'pt-BR'));
+}
+function rankCacheKey(){return `ce26-cityrank-v3-${S.rankCargo}-${S.rankNum}`}
+function getRankCache(){
+  if(!S.rankNum)return null;
+  try{return JSON.parse(localStorage.getItem(rankCacheKey())||'null')}catch{return null}
+}
+function saveRankCache(obj){
+  try{localStorage.setItem(rankCacheKey(),JSON.stringify(obj))}catch{}
+}
+function loadCachedRank(){
+  const c=getRankCache();
+  if(c?.rows?.length){S.rankRows=c.rows;S.rankUpdated=c.t?new Date(c.t):null;setTimeout(ensureMGMap,0);return true}
+  S.rankRows=[];S.rankUpdated=null;return false;
+}
+function appRoot(){
+  const p=location.pathname.replace(/painel-v\d+\.html$/i,'').replace(/\/?$/,'/');
+  return location.origin+p;
+}
+function candidateUrl(cargoKey,numCand){
+  const u=new URL(appRoot());
+  u.searchParams.set('view','pesquisa');u.searchParams.set('modo','candidato');
+  u.searchParams.set('cargo',cargoKey);u.searchParams.set('cand',String(numCand));
+  return u.toString();
+}
+function cityUrl(name){
+  const u=new URL(appRoot());
+  u.searchParams.set('view','pesquisa');u.searchParams.set('modo','cidade');
+  u.searchParams.set('cidade',String(name||''));
+  return u.toString();
+}
+function currentStateUrl(){
+  const u=new URL(appRoot());
+  if(S.view!=='resumo')u.searchParams.set('view',S.view);
+  if(S.view==='pesquisa'){
+    u.searchParams.set('modo',S.searchMode==='city'?'cidade':'candidato');
+    if(S.searchMode==='cand'){
+      u.searchParams.set('cargo',S.rankCargo);
+      if(S.rankNum)u.searchParams.set('cand',S.rankNum);
+    }else if(S.cityQuery){
+      u.searchParams.set('cidade',S.cityQuery);
+    }
+  }
+  return u.toString();
+}
+function syncUrl(){
+  try{history.replaceState(null,'',currentStateUrl())}catch{}
+}
+function shareTitle(){
+  if(S.view==='pesquisa'&&S.searchMode==='cand'&&S.rankNum){
+    const c=findCand(rankData(),S.rankNum);if(c)return `${c.nmu||c.nm} · Eleições 2026`;
+  }
+  if(S.view==='pesquisa'&&S.searchMode==='city'&&S.cityQuery)return `${S.cityQuery} · Eleições 2026`;
+  const labels={resumo:'Resumo',presbr:'Presidente Brasil',presmg:'Presidente em Minas',gov:'Governador',sen:'Senado',fed:'Deputado Federal',est:'Deputado Estadual',eleitos:'Eleitos e suplentes',mon:'Monitorados',entenda:'Entenda',pesquisa:'Pesquisa'};
+  return `Central de Apuração 2026 · ${labels[S.view]||'Resultados'}`;
+}
+function flashShare(msg){
+  const old=document.querySelector('.shareToast');if(old)old.remove();
+  const d=document.createElement('div');d.className='shareToast';d.textContent=msg;document.body.appendChild(d);
+  setTimeout(()=>d.remove(),2200);
+}
+async function shareCurrent(){
+  const url=currentStateUrl(),title=shareTitle(),data={title,text:'Confira os resultados oficiais da apuração no painel.',url};
+  try{
+    if(navigator.share){await navigator.share(data);return}
+    await navigator.clipboard.writeText(url);flashShare('Link copiado para compartilhar');
+  }catch(e){
+    if(e?.name!=='AbortError'){
+      try{await navigator.clipboard.writeText(url);flashShare('Link copiado para compartilhar')}catch{prompt('Copie este link:',url)}
+    }
+  }
+}
+function applyUrlState(){
+  const q=new URLSearchParams(location.search);
+  const v=q.get('view');
+  const allowed=['resumo','presbr','presmg','gov','sen','fed','est','eleitos','pesquisa','mon','entenda'];
+  if(v&&allowed.includes(v))S.view=v;
+  const modo=q.get('modo');
+  if(S.view==='pesquisa')S.searchMode=modo==='cidade'?'city':'cand';
+  const ck=q.get('cargo');
+  if(ck&&CARGO_META[ck])S.rankCargo=ck;
+  const cand=q.get('cand');if(cand)S.rankNum=cand;
+  const cidade=q.get('cidade');if(cidade){S.cityQuery=cidade;S.searchMode='city';S.view='pesquisa'}
+}
+
+const MG_GEO_URL='https://raw.githubusercontent.com/csmartins8/Mapas-de-Minas-Gerais/HEAD/MG_municipios_simplificado.json';
+async function ensureMGMap(){
+  if(S.mgGeo||S.mgGeoLoading||S.mgGeoError)return;
+  S.mgGeoLoading=true;if(S.view==='pesquisa')render();
+  try{
+    const r=await fetch(MG_GEO_URL,{cache:'force-cache'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    S.mgGeo=await r.json();
+  }catch(e){console.warn('mapa MG',e);S.mgGeoError=true}
+  finally{S.mgGeoLoading=false;if(S.view==='pesquisa')render()}
+}
+function geomPoints(g,out=[]){
+  if(!g?.coordinates)return out;
+  const walk=a=>{
+    if(Array.isArray(a)&&typeof a[0]==='number'&&typeof a[1]==='number'){out.push(a);return}
+    if(Array.isArray(a))a.forEach(walk);
+  };
+  walk(g.coordinates);return out;
+}
+function mapBounds(features){
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  features.forEach(f=>geomPoints(f.geometry).forEach(([x,y])=>{if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y}));
+  return{minX,minY,maxX,maxY};
+}
+function geoPath(g,b,W=760,H=520,P=12){
+  const sx=(W-2*P)/(b.maxX-b.minX),sy=(H-2*P)/(b.maxY-b.minY),s=Math.min(sx,sy);
+  const usedW=(b.maxX-b.minX)*s,usedH=(b.maxY-b.minY)*s,ox=(W-usedW)/2,oy=(H-usedH)/2;
+  const pt=([x,y])=>[(ox+(x-b.minX)*s).toFixed(1),(oy+(b.maxY-y)*s).toFixed(1)];
+  const ring=r=>r.map((p,i)=>{const [x,y]=pt(p);return`${i?'L':'M'}${x},${y}`}).join(' ')+' Z';
+  if(g.type==='Polygon')return (g.coordinates||[]).map(ring).join(' ');
+  if(g.type==='MultiPolygon')return (g.coordinates||[]).flatMap(poly=>poly.map(ring)).join(' ');
+  return'';
+}
+function voteClass(v,max){
+  if(!v)return'zero';
+  if(v===1)return'vote1';
+  if(v<=10)return'vote2';
+  if(v<=50)return'vote3';
+  if(v<=200)return'vote4';
+  if(v<=1000)return'vote5';
+  return'vote6';
+}
+function renderVoteMap(){
+  if(!S.rankRows.length){
+    return `<div class="mapCard"><div class="mapHead"><strong>Mapa da votação em Minas</strong><span>distribuição municipal</span></div><div class="mapLoad">Para desenhar o mapa, primeiro precisamos levantar a votação do candidato nos municípios.<br><button type="button" id="mapBuildBtn">${S.rankLoading?'Levantamento em andamento…':'Carregar mapa e cidades'}</button></div></div>`;
+  }
+  if(S.mgGeoLoading)return `<div class="mapCard"><div class="mapHead"><strong>Mapa da votação em Minas</strong><span>853 municípios</span></div><div class="mapLoad"><span class="loader"></span> Carregando a malha municipal de Minas Gerais…</div></div>`;
+  if(S.mgGeoError)return `<div class="mapCard"><div class="mapHead"><strong>Mapa da votação em Minas</strong><span>malha municipal</span></div><div class="mapLoad">Não foi possível carregar o mapa agora. A lista de cidades continua disponível abaixo.<br><button type="button" id="mapRetryBtn">Tentar novamente</button></div></div>`;
+  if(!S.mgGeo){setTimeout(ensureMGMap,0);return `<div class="mapCard"><div class="mapHead"><strong>Mapa da votação em Minas</strong><span>carregando</span></div><div class="mapLoad"><span class="loader"></span> Preparando o mapa…</div></div>`}
+  const features=S.mgGeo.features||[],b=mapBounds(features);
+  const byId=new Map(S.rankRows.filter(r=>r.cdi).map(r=>[String(r.cdi),r]));
+  const byName=new Map(S.rankRows.map(r=>[normMapName(r.city),r]));
+  const topIds=new Set(S.rankRows.slice(0,10).filter(r=>r.cdi).map(r=>String(r.cdi)));
+  const topNames=new Set(S.rankRows.slice(0,10).map(r=>normMapName(r.city)));
+  let matched=0;
+  const paths=features.map(f=>{
+    const name=f.properties?.name||f.properties?.NM_MUN||f.properties?.nome||'';
+    const fid=String(f.properties?.id||f.properties?.CD_MUN||f.properties?.codigo_ibge||'');
+    const row=(fid&&byId.get(fid))||byName.get(normMapName(name)),v=row?.v||0;if(v>0)matched++;
+    const isTop=(fid&&topIds.has(fid))||topNames.has(normMapName(name));
+    const cls=voteClass(v,0)+(isTop?' topcity':'');
+    return `<path class="mgMun ${cls}" data-mapcity="${esc(name)}" data-mapvotes="${v}" d="${geoPath(f.geometry,b)}"><title>${esc(name)} · ${nf(v)} votos</title></path>`;
+  }).join('');
+  const top=S.rankRows[0];
+  const err=S.rankProgress?.errors||0;
+  const coverage=S.mun.length?`${nf(S.rankRows.length)} de ${nf(S.mun.length)}`:nf(S.rankRows.length);
+  return `<div class="mapCard"><div class="mapHead"><strong>Mapa da votação em Minas</strong><span>cor = faixa de votos no município</span></div><div class="mapStats"><div class="mapStat"><b>${coverage}</b><span>municípios com pelo menos 1 voto</span></div><div class="mapStat"><b>${top?nf(top.v):'—'}</b><span>${top?esc(top.city)+' · maior votação':'maior votação municipal'}</span></div></div><div class="mapWrap"><svg class="mgMap" viewBox="0 0 760 520" role="img" aria-label="Mapa de Minas Gerais com votação municipal do candidato">${paths}</svg><div id="mapTip" class="mapTip" style="display:none"></div></div><div class="mapLegend"><div class="mapLegendTitle">Legenda · votos recebidos em cada município</div><div class="mapLegendItem"><i class="lz"></i><span>0 votos</span></div><div class="mapLegendItem"><i class="l1"></i><span>1 voto</span></div><div class="mapLegendItem"><i class="l2"></i><span>2 a 10 votos</span></div><div class="mapLegendItem"><i class="l3"></i><span>11 a 50 votos</span></div><div class="mapLegendItem"><i class="l4"></i><span>51 a 200 votos</span></div><div class="mapLegendItem"><i class="l5"></i><span>201 a 1.000 votos</span></div><div class="mapLegendItem"><i class="l6"></i><span>mais de 1.000 votos</span></div><div class="mapLegendItem"><i class="ltop"></i><span>contorno claro = top 10</span></div></div><div class="rankFoot" style="padding:0 13px 11px">${nf(matched)} municípios com voto associados ao mapa.${err?` Atenção: ${nf(err)} consulta(s) falharam mesmo após novas tentativas.`:''}</div></div>`;
+}
+
+function renderCandidateResearch(){
+  const opts=rankCandidates();
+  if(S.rankNum && opts.length && !opts.some(c=>String(c.n)===String(S.rankNum)))S.rankNum='';
+  const cand=S.rankNum?findCand(rankData(),S.rankNum):null;
+  const p=S.rankProgress,total=p.total||S.mun.length||0;
+  const prog=total?Math.min(100,(p.done/total)*100):0;
+  const cargoOpts=Object.entries(CARGO_META).map(([k,m])=>`<option value="${k}" ${S.rankCargo===k?'selected':''}>${esc(m.short)}</option>`).join('');
+  const controls=`<div class="rankControls"><select id="rankCargo" ${S.rankLoading?'disabled':''}>${cargoOpts}</select><select id="rankCand" ${S.rankLoading?'disabled':''}><option value="">Selecione o candidato</option>${opts.map(c=>`<option value="${esc(c.n)}" ${String(c.n)===String(S.rankNum)?'selected':''}>${esc(c.nmu||c.nm)} · ${esc(c.party)} · ${esc(c.n)}</option>`).join('')}</select><button id="rankGo" class="primary" ${(!S.rankNum||S.rankLoading)?'disabled':''}>${S.rankRows.length?'Atualizar cidades':'Levantar votação por cidade'}</button></div>`;
+  const hero=cand?`<div class="candidateHero"><div class="candidateHeroTop"><div><div class="candidateHeroName">${esc(cand.nmu||cand.nm)}</div><div class="candidateHeroMeta">${esc(cargoMeta().label)} · ${esc(cand.party)} · ${esc(cand.n)}</div><div class="chips" style="margin-top:6px">${stChip(cand)}</div></div><button class="shareInline" id="shareInline">Compartilhar</button></div><div class="candidateHeroVotes">${nf(cand.vap)} votos<small>${ptxt(cand.pvap)} dos votos válidos computados para o cargo em Minas Gerais</small></div>${isJudicialCase(cand,S.rankCargo)?(()=>{const li=legalInfo(cand,S.rankCargo);return `<div class="judicialImpact" style="margin-top:10px"><div class="judicialBadge" style="margin:0 0 7px">${esc(li?.tag||'SITUAÇÃO JUDICIAL')}</div><br><strong>${esc(judicialStatusText(cand,S.rankCargo))}</strong><br>${judicialImpactText(cand,S.rankCargo)}${li?`<div class="judicialMeta" style="margin-top:7px">Fonte: ${esc(li.source)} · situação consultada em ${esc(li.updated)}</div>`:''}</div>`})():''}</div>`:'';
+  const progress=S.rankLoading?`<div class="rankProgressBox"><div class="small">Consultando municípios de Minas Gerais: ${nf(p.done)} de ${nf(total)}${p.errors?' · '+nf(p.errors)+' falhas':''}</div><div class="rankProgressLine"><i style="width:${prog}%"></i></div><div class="small" style="margin-top:5px">O levantamento é feito somente quando solicitado para reduzir o número de consultas ao TSE.</div></div>`:'';
+  let rows='';
+  if(S.rankRows.length){
+    const totalCand=num(cand?.vap);
+    rows=renderVoteMap()+`<div class="rankSummary"><strong>Votação por cidade</strong><span>${nf(S.rankRows.length)} municípios com voto${S.rankUpdated?' · atualizado '+S.rankUpdated.toLocaleTimeString('pt-BR'):''}</span></div>`+
+    S.rankRows.map((r,i)=>`<div class="rankRow"><div class="place">${i+1}º</div><div><div class="rankCity">${esc(r.city)}</div><div class="rankMini">${r.cityPct!=null?ptxt(r.cityPct)+' dos votos válidos do cargo no município':''}${totalCand>0?' · '+((r.v/totalCand)*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'% da votação do candidato em MG':''}</div></div><div class="rankVotes">${nf(r.v)}<div class="rankMini">votos</div></div></div>`).join('');
+  }else if(S.rankNum&&!S.rankLoading){
+    rows=renderVoteMap()+`<div class="empty">A página individual já pode ser compartilhada. O mapa e a lista completa são montados a partir do levantamento municipal.</div>`;
+  }else{
+    rows='<div class="empty">Escolha qualquer candidato a presidente, governador, senador, deputado federal ou deputado estadual.</div>';
+  }
+  return `${controls}${hero}${cand?voteStats(rankData(),true):''}${progress}${rows}<div class="rankFoot">A página compartilhada preserva o cargo e o candidato selecionados. O ranking de todos os municípios é gerado sob demanda em cada aparelho, evitando centenas de consultas automáticas ao TSE.</div>`;
+}
+function cityOfficeBlock(key,label,data,open=false){
+  const arr=uniqueCandidates(data).filter(c=>num(c.vap)>0).sort((a,b)=>num(b.vap)-num(a.vap)||String(a.nmu||a.nm||'').localeCompare(String(b.nmu||b.nm||''),'pt-BR'));
+  if(!data)return `<details class="officeDetails"><summary>${esc(label)}<span>dados indisponíveis</span></summary><div class="empty">Não foi possível carregar este cargo.</div></details>`;
+  const showPhoto=['pres','gov','sen'].includes(key);
+  return `<details class="officeDetails" ${open?'open':''}><summary>${esc(label)}<span>${ptxt(totalPct(data))} apurado · ${nf(arr.length)} candidatos com voto</span></summary><div style="padding:0 10px">${voteStats(data,true)}</div><div class="officeRows">${arr.map((c,i)=>{
+    const photo=showPhoto?candidatePhotoUrl(c,key):'';
+    return `<div class="officeRow ${showPhoto?'withPhoto':''}"><div class="n">${i+1}º</div>${showPhoto?`<div class="officeMiniPhoto">${photo?`<img src="${photo}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}</div>`:''}<div><div class="nm"><a class="candidateLink" href="${candidateUrl(key,c.n)}">${esc(c.nmu||c.nm)}</a></div><div class="meta">${esc(c.party)} · ${esc(c.n)} ${c.st?'· '+esc(c.st):''}</div></div><div class="v">${nf(c.vap)}<div class="meta">${ptxt(c.pvap)}</div></div></div>`;
+  }).join('')||'<div class="empty">Nenhum voto registrado.</div>'}</div></details>`;
+}
+function renderCityResearch(){
+  const city=S.cityAll;
+  const box=S.cityAllLoading?'<div class="empty"><span class="loader"></span>Consultando os cinco cargos no TSE…</div>':
+    city?`<div class="cityHero"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h2>${esc(city.nm)} · MG</h2><p>Resultado municipal para todos os cargos disputados</p></div><button class="shareInline" id="shareInline">Compartilhar</button></div></div>`+
+      cityOfficeBlock('pres','PRESIDENTE',city.results?.pres,true)+
+      cityOfficeBlock('gov','GOVERNADOR',city.results?.gov,true)+
+      cityOfficeBlock('sen','SENADOR',city.results?.sen,true)+
+      cityOfficeBlock('fed','DEPUTADO FEDERAL',city.results?.fed,false)+
+      cityOfficeBlock('est','DEPUTADO ESTADUAL',city.results?.est,false):
+      '<div class="empty">Digite um município de Minas Gerais para abrir sua página completa.</div>';
+  return `<div class="citySearch"><input id="allCityInput" list="allCityList" placeholder="Digite o município" autocomplete="off" value="${esc(S.cityQuery||'')}"><datalist id="allCityList">${S.mun.map(x=>`<option value="${esc(x.nm)}"></option>`).join('')}</datalist><button id="allCityBtn" type="button">Buscar</button></div>${box}<div class="rankFoot">Presidente, governador, senador, deputado federal e deputado estadual são mostrados em ordem de votação no município. Toque no nome de um candidato para abrir sua página individual.</div>`;
+}
+function renderPesquisa(){
+  const modes=`<div class="searchModes"><button type="button" data-searchmode="cand" class="${S.searchMode==='cand'?'on':''}">Por candidato</button><button type="button" data-searchmode="city" class="${S.searchMode==='city'?'on':''}">Por cidade</button></div>`;
+  return cardHead('PESQUISA ELEITORAL','Resultados detalhados','Consulte um candidato ou abra a página completa de um município')+modes+(S.searchMode==='cand'?renderCandidateResearch():renderCityResearch())+`</section>`;
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function buildMunicipalRanking(){
+  if(S.rankLoading||!S.rankNum)return;
+  if(!S.mun.length)await loadMunicipios();
+  const municipalities=[...S.mun],numCand=String(S.rankNum),cargoCode=rankCargoCode(),election=rankElection(),run=++S.rankRun;
+  S.rankLoading=true;S.rankRows=[];S.rankProgress={done:0,total:municipalities.length,errors:0};render();
+  let next=0,done=0,errors=0;const rows=[];
+  async function worker(){
+    while(true){
+      if(run!==S.rankRun)return;
+      const idx=next++;if(idx>=municipalities.length)return;
+      const m=municipalities[idx];
+      let ok=false,lastErr=null;
+      for(let attempt=1;attempt<=3&&!ok;attempt++){
+        try{
+          const j=await getJSON(resultUrl(election,'mg',cargoCode,m.cd));
+          const c=findCand(j,numCand),v=c?num(c.vap):0;
+          if(v>0)rows.push({city:m.nm,cd:m.cd,cdi:m.cdi,v,cityPct:c?pct(c.pvap):0});
+          ok=true;
+        }catch(e){
+          lastErr=e;
+          if(attempt<3)await sleep(350*attempt);
+        }
+      }
+      if(!ok)errors++;
+      done++;
+      if(done%12===0||done===municipalities.length){
+        S.rankProgress={done,total:municipalities.length,errors};
+        S.rankRows=[...rows].sort((a,b)=>b.v-a.v||a.city.localeCompare(b.city,'pt-BR'));
+        if(S.view==='pesquisa'&&S.searchMode==='cand')render();
+      }
+      await sleep(220);
+    }
+  }
+  await Promise.all(Array.from({length:3},()=>worker()));
+  if(run!==S.rankRun)return;
+  S.rankRows=rows.sort((a,b)=>b.v-a.v||a.city.localeCompare(b.city,'pt-BR'));
+  S.rankLoading=false;S.rankProgress={done:municipalities.length,total:municipalities.length,errors};S.rankUpdated=new Date();
+  saveRankCache({t:S.rankUpdated.toISOString(),rows:S.rankRows});
+  ensureMGMap();render();syncUrl();
+}
+async function selectCityAll(name){
+  if(!S.mun.length)await loadMunicipios();
+  const q=String(name||'').trim();
+  const m=S.mun.find(x=>normText(x.nm)===normText(q))||S.mun.find(x=>normText(x.nm).includes(normText(q)));
+  if(!m){alert('Município não encontrado.');return}
+  S.cityQuery=m.nm;S.cityAll={...m};S.cityAllLoading=true;render();syncUrl();
+  const jobs={
+    pres:resultUrl(CFG.fedEle,'mg',1,m.cd),
+    gov:resultUrl(CFG.estEle,'mg',3,m.cd),
+    sen:resultUrl(CFG.estEle,'mg',5,m.cd),
+    fed:resultUrl(CFG.estEle,'mg',6,m.cd),
+    est:resultUrl(CFG.estEle,'mg',7,m.cd)
+  };
+  const entries=await Promise.all(Object.entries(jobs).map(async([k,u])=>{try{return[k,await getJSON(u)]}catch{return[k,null]}}));
+  S.cityAll={...m,results:Object.fromEntries(entries)};S.cityAllLoading=false;render();syncUrl();
+}
+
+function render(){renderNotice();let h='';switch(S.view){case'resumo':h=renderResumo();break;case'presbr':h=majorCard('PRESIDENTE','Presidente · Brasil',S.data.presbr,99,'pres');break;case'presmg':h=majorCard('PRESIDENTE EM MINAS','Presidente · Minas Gerais',S.data.presmg,99,'pres');break;case'gov':h=majorCard('GOVERNADOR','Governador · Minas Gerais',S.data.gov,99,'gov');break;case'sen':h=senateCard();break;case'fed':h=propCard(S.data.fed,'Deputado Federal · MG',53);break;case'est':h=propCard(S.data.est,'Deputado Estadual · MG',77);break;case'eleitos':h=renderEleitos();break;case'pesquisa':h=renderPesquisa();break;case'mon':h=renderMon();break;case'entenda':h=renderEntenda();break}$('#content').innerHTML=h;$$('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===S.view));wireView()}
+function wireView(){
+  const shareInline=$('#shareInline');if(shareInline)shareInline.addEventListener('click',shareCurrent);
+
+  const mapBuild=$('#mapBuildBtn');if(mapBuild&&!S.rankLoading)mapBuild.addEventListener('click',buildMunicipalRanking);
+  const mapRetry=$('#mapRetryBtn');if(mapRetry)mapRetry.addEventListener('click',()=>{S.mgGeoError=false;ensureMGMap()});
+  $$('.mgMun').forEach(p=>{
+    const show=()=>{
+      const t=$('#mapTip');if(!t)return;
+      t.innerHTML=`<strong>${esc(p.dataset.mapcity)}</strong><span>${nf(p.dataset.mapvotes)} votos</span>`;
+      t.style.display='block';
+    };
+    p.addEventListener('mouseenter',show);p.addEventListener('click',show);
+    p.addEventListener('mouseleave',()=>{const t=$('#mapTip');if(t)t.style.display='none'});
+  });
+
+  if(S.view==='pesquisa'){
+    $$('[data-searchmode]').forEach(b=>b.addEventListener('click',()=>{
+      S.searchMode=b.dataset.searchmode==='city'?'city':'cand';syncUrl();render();
+    }));
+    if(S.searchMode==='cand'){
+      const cargoSel=$('#rankCargo'),candSel=$('#rankCand'),go=$('#rankGo');
+      if(cargoSel)cargoSel.addEventListener('change',()=>{
+        S.rankCargo=cargoSel.value;S.rankNum='';S.rankRows=[];S.rankUpdated=null;S.rankProgress={done:0,total:0,errors:0};syncUrl();render();
+      });
+      if(candSel)candSel.addEventListener('change',()=>{
+        S.rankNum=candSel.value;S.rankRows=[];S.rankUpdated=null;S.rankProgress={done:0,total:0,errors:0};
+        loadCachedRank();syncUrl();render();
+      });
+      if(go)go.addEventListener('click',buildMunicipalRanking);
+    }else{
+      const input=$('#allCityInput'),btn=$('#allCityBtn');
+      if(btn)btn.addEventListener('click',()=>selectCityAll(input.value));
+      if(input)input.addEventListener('keydown',e=>{if(e.key==='Enter')selectCityAll(input.value)});
+    }
+  }
+}
+function normText(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
+function normMapName(s){return normText(s).replace(/[^a-z0-9]+/g,' ').replace(/\bthome\b/g,'tome').replace(/\s+/g,' ').trim()}
+async function selectCity(name){const m=S.mun.find(x=>normText(x.nm)===normText(name))||S.mun.find(x=>normText(x.nm).includes(normText(name)));if(!m){alert('Município não encontrado.');return}S.city={...m};S.cityLoading=true;render();try{const [fed,est]=await Promise.all([getJSON(resultUrl(CFG.estEle,'mg',6,m.cd)),getJSON(resultUrl(CFG.estEle,'mg',7,m.cd))]);S.city={...m,results:{fed,est}}}catch(e){S.city={...m,results:{}};alert('O TSE ainda não disponibilizou os arquivos desta cidade ou houve falha de conexão.')}finally{S.cityLoading=false;render()}}
+async function loadMunicipios(){try{const j=await getJSON(munUrl());const mg=(j.abr||[]).find(x=>String(x.cd).toLowerCase()==='mg');S.mun=(mg?.mu||[]).map(x=>({cd:pad(x.cd,5),nm:x.nm,cdi:x.cdi})).sort((a,b)=>a.nm.localeCompare(b.nm,'pt-BR'))}catch(e){console.warn('mun',e)}}
+async function refresh(){if(S.loading)return;S.loading=true;renderNotice();const jobs={presbr:resultUrl(CFG.fedEle,'br',1),presmg:resultUrl(CFG.fedEle,'mg',1),gov:resultUrl(CFG.estEle,'mg',3),sen:resultUrl(CFG.estEle,'mg',5),fed:resultUrl(CFG.estEle,'mg',6),est:resultUrl(CFG.estEle,'mg',7)};const entries=await Promise.all(Object.entries(jobs).map(async([k,u])=>{try{return[k,await getJSON(u),null]}catch(e){return[k,null,e]}}));S.errors={};for(const[k,d,e]of entries){if(d)S.data[k]=d;if(e)S.errors[k]=e.message}S.last=new Date();S.loading=false;snapshot();updateHeader();render()}
+function updateHeader(){const p=Math.max(totalPct(S.data.gov),totalPct(S.data.est),totalPct(S.data.fed));const dot=$('#dot'),txt=$('#statusText');if(Object.keys(S.data).length){dot.className='dot ok';txt.textContent='TSE conectado'}else if(Object.keys(S.errors).length){dot.className='dot err';txt.textContent='Aguardando TSE'}else{dot.className='dot';txt.textContent='Conectando'}$('#metaText').textContent=`MG · ${ptxt(p)} · ${S.last?S.last.toLocaleTimeString('pt-BR'):'--:--:--'}`}
+applyUrlState();
+$$('[data-view]').forEach(b=>b.addEventListener('click',()=>{S.view=b.dataset.view;if(S.view==='pesquisa'&&!S.searchMode)S.searchMode='cand';syncUrl();render();window.scrollTo({top:0,behavior:'smooth'})}));
+$('#refreshBtn').addEventListener('click',refresh);$('#shareBtn').addEventListener('click',shareCurrent);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+loadMunicipios().then(()=>{
+  if(S.view==='pesquisa'&&S.searchMode==='city'&&S.cityQuery)selectCityAll(S.cityQuery);
+});
+refresh().then(()=>{
+  if(S.view==='pesquisa'&&S.searchMode==='cand'&&S.rankNum){loadCachedRank();render()}
+});
+setInterval(()=>{if(!document.hidden)refresh()},CFG.poll);updateHeader();render();
+</script>
+</body>
+</html>
