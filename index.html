@@ -3,17 +3,45 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
 <title>Central de Apuração · Eleições 2026</title>
+
 <script>
-(function(){
-  const p=new URLSearchParams(location.search);
-  p.set('v','67');
-  location.replace('painel-v67.html?'+p.toString()+location.hash);
+(async function(){
+
+  if ('serviceWorker' in navigator) {
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg) {
+        await reg.update();
+      }
+    } catch(e) {}
+  }
+
+  const p = new URLSearchParams(location.search);
+
+  p.set('v','68');
+  p.set('_t', Date.now());
+
+  location.replace(
+    'painel-v68.html?' + p.toString() + location.hash
+  );
+
 })();
 </script>
 </head>
+
 <body>
 Abrindo Central de Apuração 2026...
-<noscript><a href="painel-v67.html?v=67">Abrir painel</a></noscript>
+
+<noscript>
+<a href="painel-v68.html?v=68">
+Abrir painel
+</a>
+</noscript>
+
 </body>
 </html>
