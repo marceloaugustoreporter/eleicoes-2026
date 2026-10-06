@@ -1,6 +1,29 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <script>
+(async function(){
+  try{
+    const r = await fetch('./latest.json?_=' + Date.now(), {cache:'no-store'});
+    if(!r.ok) return;
+
+    const j = await r.json();
+    const latest = String(j.panel || '').trim();
+
+    if(latest && !location.pathname.endsWith('/' + latest)){
+      const u = new URL(location.href);
+      const p = u.searchParams;
+
+      p.delete('_t');
+      p.set('v', String(j.version || ''));
+
+      location.replace(
+        latest + '?' + p.toString() + u.hash
+      );
+    }
+  }catch(e){}
+})();
+  </script>
 
 <script>
 (async function(){
