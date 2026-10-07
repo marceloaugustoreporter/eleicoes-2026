@@ -4,48 +4,99 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#06101a">
-  <title>Central de Apuração · V7</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>Central de Apuração · V7.1</title>
   <style>
-    :root {
-      --bg:#06101a; --panel:#0b1928; --panel2:#0e2234; --line:#27455e;
-      --text:#f7fbff; --muted:#98adbf; --cyan:#35d0f6; --green:#4fe0ad;
-      --yellow:#ffd34e; --red:#ff6b7a;
+    :root{
+      --bg:#06101a;--panel:#0b1928;--panel2:#0e2234;--line:#27455e;
+      --text:#f7fbff;--muted:#98adbf;--cyan:#35d0f6;--green:#4fe0ad;
+      --yellow:#ffd34e;--red:#d71920;--blue:#2374e1;--danger:#ff6b7a;
     }
     *{box-sizing:border-box}
+    html{background:var(--bg)}
     body{margin:0;background:linear-gradient(180deg,#07131f,#06101a);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh}
-    button,input{font:inherit}
-    .wrap{max-width:880px;margin:0 auto;padding:22px 16px 60px}
-    .brand{display:flex;gap:12px;align-items:center;margin-bottom:24px}
-    .mark{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#17425e,#0a1e2e);border:1px solid #315a76;display:grid;place-items:center;font-weight:950;color:var(--cyan)}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .wrap{max-width:1040px;margin:0 auto;padding:18px 14px 64px}
+    .brand{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+    .mark{width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#17425e,#0a1e2e);border:1px solid #315a76;display:grid;place-items:center;font-weight:950;color:var(--cyan)}
     .eyebrow{font-size:10px;font-weight:900;letter-spacing:1.5px;color:var(--cyan)}
     h1{font-size:26px;line-height:1.05;margin:3px 0 0}
     .muted{color:var(--muted);font-size:12px;line-height:1.45}
-    .card{background:linear-gradient(180deg,var(--panel),#091725);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:14px}
-    .login{max-width:460px;margin:40px auto 0}
+    .card{background:linear-gradient(180deg,var(--panel),#091725);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:12px}
+    .login{max-width:460px;margin:38px auto 0}
     label{display:block;font-size:11px;font-weight:850;color:#c5d6e2;margin:12px 0 6px}
-    input{width:100%;background:#071522;border:1px solid #31516b;border-radius:11px;color:#fff;padding:12px 13px;font-size:16px;outline:none}
-    input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(53,208,246,.10)}
-    .btn{width:100%;border:0;border-radius:11px;padding:12px 14px;margin-top:14px;background:var(--cyan);color:#03111b;font-weight:950;cursor:pointer}
+    input,select{width:100%;background:#071522;border:1px solid #31516b;border-radius:11px;color:#fff;padding:11px 12px;font-size:16px;outline:none}
+    input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(53,208,246,.10)}
+    .btn{border:0;border-radius:11px;padding:11px 13px;background:var(--cyan);color:#03111b;font-weight:950}
+    .btn.block{width:100%;margin-top:14px}
     .btn.secondary{background:#10283a;color:#eaf8ff;border:1px solid #31516b}
-    .btn:disabled{opacity:.55;cursor:not-allowed}
-    .error{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(255,107,122,.08);border:1px solid rgba(255,107,122,.4);color:#ffd5da;font-size:12px;display:none}
-    .ok{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(79,224,173,.08);border:1px solid rgba(79,224,173,.4);color:#c9ffe9;font-size:12px;display:none}
+    .btn.ghost{background:transparent;color:#ddecf5;border:1px solid #31516b}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .error,.ok,.notice{margin-top:12px;padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.4}
+    .error{background:rgba(255,107,122,.08);border:1px solid rgba(255,107,122,.4);color:#ffd5da;display:none}
+    .ok{background:rgba(79,224,173,.08);border:1px solid rgba(79,224,173,.4);color:#c9ffe9;display:none}
+    .notice{background:rgba(53,208,246,.06);border:1px solid rgba(53,208,246,.28);color:#c9f4ff}
+    .notice.wait{background:rgba(255,211,78,.06);border-color:rgba(255,211,78,.32);color:#fff0ae}
     .shell{display:none}
     .topbar{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
     .userbox{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .badge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:950;border:1px solid #31516b;background:#0b2131;color:#cde9f7}
     .badge.pro{color:#fff0ad;border-color:rgba(255,211,78,.45);background:rgba(255,211,78,.08)}
     .badge.admin{color:#c7ffe7;border-color:rgba(79,224,173,.45);background:rgba(79,224,173,.08)}
-    .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
-    .module{background:#071522;border:1px solid #24445d;border-radius:15px;padding:15px}
+    .nav{display:flex;gap:7px;overflow:auto;scrollbar-width:none;padding:9px 0 2px}
+    .nav::-webkit-scrollbar{display:none}
+    .nav button{flex:0 0 auto;border:1px solid #31516b;background:#0a1c2b;color:#d9e8f2;border-radius:999px;padding:9px 12px;font-size:12px;font-weight:850}
+    .nav button.on{background:var(--cyan);border-color:var(--cyan);color:#03111b}
+    .grid{display:grid;grid-template-columns:1fr;gap:11px;margin-top:12px}
+    .module{background:#071522;border:1px solid #24445d;border-radius:15px;padding:15px;text-align:left;color:inherit;min-width:0}
+    button.module{width:100%}
     .module h3{margin:0 0 5px;font-size:17px}
     .module p{margin:0;color:var(--muted);font-size:11px;line-height:1.45}
     .module .tag{display:inline-block;margin-top:10px;font-size:9px;font-weight:950;letter-spacing:.6px;color:var(--cyan)}
     .locked{opacity:.48;position:relative}
     .locked::after{content:"PRO";position:absolute;right:12px;top:12px;font-size:9px;font-weight:950;padding:4px 6px;border-radius:999px;background:rgba(255,211,78,.08);border:1px solid rgba(255,211,78,.4);color:#ffe9a0}
-    .sectionTitle{margin:22px 0 5px;font-size:20px}
+    .sectionTitle{margin:20px 0 5px;font-size:20px}
+    .sectionHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+    .sectionHead h2{margin:2px 0 0;font-size:23px}
+    .controls{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
+    .candidate{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px 0;border-top:1px solid #20384c}
+    .candidate:first-child{border-top:0}
+    .photo{width:56px;height:56px;border-radius:50%;overflow:hidden;border:1px solid #31516b;background:#10263a}
+    .photo img{width:100%;height:100%;object-fit:cover;display:block}
+    .candName{font-size:17px;font-weight:950;line-height:1.05}
+    .candMeta{font-size:10px;color:var(--muted);font-weight:800;margin-top:3px}
+    .candVotes{text-align:right;font-size:12px;color:#dceaf4;font-weight:800}
+    .candPct{font-size:24px;font-weight:950}
+    .bar{height:8px;background:#10263a;border-radius:99px;overflow:hidden;margin-top:7px}
+    .fill{height:100%;border-radius:99px}
+    .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:12px}
+    .stat{background:#071522;border:1px solid #203e55;border-radius:11px;padding:9px 10px;min-width:0}
+    .stat b{display:block;font-size:18px;line-height:1.05;overflow-wrap:anywhere}
+    .stat span{display:block;font-size:8.5px;color:var(--muted);font-weight:800;margin-top:3px}
+    .progress{height:6px;background:#10263a;border-radius:99px;overflow:hidden;margin-top:10px}
+    .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green))}
+    .mapBox{margin-top:12px;background:#06131f;border:1px solid #24445d;border-radius:14px;padding:10px}
+    #brMap{width:100%;height:auto;display:block;min-height:280px}
+    .mapState{stroke:#071522;stroke-width:.7;cursor:pointer;transition:opacity .15s}
+    .mapState:hover{opacity:.82}
+    .mapLegend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--muted);font-weight:800;margin:8px 4px 2px}
+    .legendDot{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:-1px}
+    .stateGrid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
+    .stateCard{border:1px solid #24445d;background:#071522;border-radius:13px;padding:12px;text-align:left;color:inherit}
+    .stateCard strong{font-size:15px}
+    .stateCard span{display:block;margin-top:4px;color:var(--muted);font-size:10px}
+    .stateCard .pair{margin-top:7px;color:#eaf7ff;font-size:11px;font-weight:850}
+    .loading{padding:18px 4px;color:#b8ccda;font-size:12px}
+    .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yellow);margin-right:7px}
     .foot{margin-top:18px;color:#71879a;font-size:10px;line-height:1.45}
-    @media(min-width:700px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .back{margin-bottom:8px}
+    @media(min-width:700px){
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .controls{grid-template-columns:1fr 1fr 1.4fr auto}
+      .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .stateGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
   </style>
 </head>
 <body>
@@ -55,7 +106,7 @@
     <div>
       <div class="eyebrow">CENTRAL DE APURAÇÃO</div>
       <h1>Plataforma protegida</h1>
-      <div class="muted">Base da nova estrutura para 2º turno, 2028 e transmissão.</div>
+      <div class="muted">Segundo turno 2026 · estrutura preparada para 2028 e transmissão.</div>
     </div>
   </div>
 
@@ -63,17 +114,13 @@
     <div class="eyebrow">ACESSO RESTRITO</div>
     <h2 style="margin:4px 0 0;font-size:23px">Entrar</h2>
     <div class="muted" style="margin-top:6px">Somente usuários autorizados. Não há cadastro público.</div>
-
     <form id="loginForm">
       <label for="email">E-mail</label>
       <input id="email" type="email" autocomplete="username" required placeholder="seu@email.com">
-
       <label for="password">Senha</label>
       <input id="password" type="password" autocomplete="current-password" required minlength="6" placeholder="Sua senha">
-
-      <button id="loginBtn" class="btn" type="submit">Entrar</button>
+      <button id="loginBtn" class="btn block" type="submit">Entrar</button>
     </form>
-
     <div id="loginError" class="error"></div>
     <div id="loginOk" class="ok"></div>
   </section>
@@ -83,159 +130,444 @@
       <div class="topbar">
         <div>
           <div class="eyebrow">ÁREA AUTENTICADA</div>
-          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7</h2>
+          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.1</h2>
           <div id="userEmail" class="muted"></div>
         </div>
         <div class="userbox">
           <span id="planBadge" class="badge">FREE</span>
-          <button id="logoutBtn" class="btn secondary" type="button" style="width:auto;margin:0;padding:9px 12px">Sair</button>
+          <button id="logoutBtn" class="btn secondary" type="button">Sair</button>
         </div>
       </div>
-    </div>
-
-    <h2 class="sectionTitle">Segundo turno</h2>
-    <div class="grid">
-      <div class="module">
-        <h3>Presidente · Brasil, estado e cidade</h3>
-        <p>Estrutura reservada para apuração do 2º turno, com mapa, busca por município e estatísticas eleitorais.</p>
-        <span class="tag">FREE</span>
-      </div>
-      <div class="module">
-        <h3>Governadores · estados com 2º turno</h3>
-        <p>Painel nacional para abrir cada disputa estadual e, depois, detalhar por município.</p>
-        <span class="tag">FREE</span>
+      <div class="nav">
+        <button type="button" data-view="home" class="on">Início</button>
+        <button type="button" data-view="pres">Presidente · 2º turno</button>
+        <button type="button" data-view="gov">Governadores · 2º turno</button>
+        <button type="button" data-view="broadcast">Transmissão</button>
       </div>
     </div>
 
-    <h2 class="sectionTitle">Transmissão</h2>
-    <div class="grid">
-      <div class="module">
-        <h3>Template básico horizontal</h3>
-        <p>Saída 16:9 com placar principal e atualização automática para uso no OBS.</p>
-        <span class="tag">FREE</span>
-      </div>
-      <div class="module">
-        <h3>Template básico vertical</h3>
-        <p>Saída 9:16 para lives e redes sociais, com dados essenciais da apuração.</p>
-        <span class="tag">FREE</span>
-      </div>
-      <div class="module proOnly locked">
-        <h3>Painel de controle de máscaras</h3>
-        <p>Combinação de placar, mapa, ticker, cidade, estatísticas e outras camadas em tempo real.</p>
-        <span class="tag">PRO</span>
-      </div>
-      <div class="module proOnly locked">
-        <h3>Personalização de marca</h3>
-        <p>Cores, logotipo, identificação da cobertura e layouts avançados horizontal e vertical.</p>
-        <span class="tag">PRO</span>
-      </div>
-    </div>
-
-    <div class="foot">Esta é a base protegida da V7. Os módulos eleitorais e de transmissão serão ligados a esta estrutura de acesso nas próximas etapas.</div>
+    <main id="content"></main>
+    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.1 consulta os arquivos do 2º turno quando estiverem disponíveis e mantém o 1º turno apenas como referência para identificar as candidaturas classificadas.</div>
   </section>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script>
-const SUPABASE_URL = 'https://jtysotwfuejjqdturoos.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ssWHaqZKXeozdzJ82_ufAQ_pdnVHORV';
+const SUPABASE_URL = "https://jtysotwfuejjqdturoos.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ssWHaqZKXeozdzJ82_ufAQ_pdnVHORV";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-const loginView = document.getElementById('loginView');
-const appView = document.getElementById('appView');
-const loginForm = document.getElementById('loginForm');
-const loginBtn = document.getElementById('loginBtn');
-const loginError = document.getElementById('loginError');
-const loginOk = document.getElementById('loginOk');
-const userEmail = document.getElementById('userEmail');
-const planBadge = document.getElementById('planBadge');
-const logoutBtn = document.getElementById('logoutBtn');
+const TSE_BASE='https://resultados.tse.jus.br/oficial/ele2026';
+const ELE={pres1:'6257',pres2:'6258',state1:'6259',state2:'6260'};
+const POLL=30000;
+const GEO_URL='https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson';
 
-function showError(msg){
-  loginOk.style.display='none';
-  loginError.textContent=msg;
-  loginError.style.display='block';
+const UF_NAMES={
+  ac:'Acre',al:'Alagoas',ap:'Amapá',am:'Amazonas',ba:'Bahia',ce:'Ceará',df:'Distrito Federal',
+  es:'Espírito Santo',go:'Goiás',ma:'Maranhão',mt:'Mato Grosso',ms:'Mato Grosso do Sul',
+  mg:'Minas Gerais',pa:'Pará',pb:'Paraíba',pr:'Paraná',pe:'Pernambuco',pi:'Piauí',
+  rj:'Rio de Janeiro',rn:'Rio Grande do Norte',rs:'Rio Grande do Sul',ro:'Rondônia',
+  rr:'Roraima',sc:'Santa Catarina',sp:'São Paulo',se:'Sergipe',to:'Tocantins'
+};
+const NAME_TO_UF=Object.fromEntries(Object.entries(UF_NAMES).map(([k,v])=>[norm(v),k]));
+const UFS=Object.keys(UF_NAMES);
+
+const S={
+  view:'home', plan:'free', user:null,
+  pres:{uf:'br',mun:'',data:null,reference:null,error:'',last:null,mapData:{},mapLoading:false},
+  municipalities:null,
+  gov:{loading:false,states:[],selected:'',live:null,error:'',last:null},
+  timers:[]
+};
+
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const nf=n=>new Intl.NumberFormat('pt-BR').format(Number(n||0));
+const num=v=>{if(typeof v==='number')return v;if(v==null||v==='')return 0;return Number(String(v).replace(/\./g,'').replace(',','.'))||0};
+const pct=v=>num(v);
+const ptxt=v=>pct(v).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+'%';
+const pad=(v,n)=>String(v).padStart(n,'0');
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
+
+async function getJSON(url){
+  const r=await fetch(url,{cache:'no-store'});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
 }
-function showOk(msg){
-  loginError.style.display='none';
-  loginOk.textContent=msg;
-  loginOk.style.display='block';
+function resultUrl(ele,uf,cargo,mun=''){
+  const scope=mun?uf+pad(mun,5):uf;
+  return `${TSE_BASE}/${ele}/dados/${uf}/${scope}-c${pad(cargo,4)}-e${pad(ele,6)}-u.json`;
 }
-function setPlanUI(plan){
-  const normalized = ['free','pro','admin'].includes(plan) ? plan : 'free';
-  planBadge.textContent = normalized.toUpperCase();
-  planBadge.className = 'badge' + (normalized==='pro'?' pro':normalized==='admin'?' admin':'');
-  const canPro = normalized === 'pro' || normalized === 'admin';
-  document.querySelectorAll('.proOnly').forEach(el=>{
-    el.classList.toggle('locked', !canPro);
+function munUrl(){return `${TSE_BASE}/${ELE.pres1}/config/mun-e${pad(ELE.pres1,6)}-cm.json`}
+function cargo(data){return data?.carg?.[0]||null}
+function totalPct(data){return pct(data?.s?.pst ?? data?.s?.psa ?? 0)}
+function flatten(data){
+  const c=cargo(data);if(!c)return[];
+  const out=[];
+  (c.agr||[]).forEach(a=>(a.par||[]).forEach(p=>(p.cand||[]).forEach(x=>out.push({...x,party:p.sg||'',partyName:p.nm||''}))));
+  return out;
+}
+function uniqueCandidates(data){
+  const m=new Map();
+  flatten(data).forEach(x=>{
+    const key=String(x.n||'')+'|'+String(x.nmu||x.nm||'');
+    const old=m.get(key);
+    if(!old||num(x.vap)>num(old.vap))m.set(key,x);
   });
+  return [...m.values()];
+}
+function round2Candidates(data){
+  const all=uniqueCandidates(data);
+  const marked=all.filter(c=>/2º\s*turno|2o\s*turno|segundo\s*turno/i.test(String(c.st||'')));
+  if(marked.length>=2)return marked.sort((a,b)=>num(b.vap)-num(a.vap));
+  return all.filter(c=>['13','22'].includes(String(c.n))).sort((a,b)=>num(b.vap)-num(a.vap));
+}
+function electionStats(data){
+  const e=data?.e||{},v=data?.v||{};
+  return{
+    apt:num(e.te), comp:num(e.c), abs:num(e.a),
+    valid:num(v.vv), blank:num(v.vb), nulls:num(v.tvn),
+    pcomp:pct(e.pc), pabs:pct(e.pa), pblank:pct(v.pvb), pnull:pct(v.ptvn)
+  };
+}
+function statsHTML(data){
+  if(!data)return'';
+  const x=electionStats(data);
+  if(!(x.apt||x.comp||x.abs||x.valid||x.blank||x.nulls))return'';
+  const item=(label,val,sub='')=>`<div class="stat"><b>${nf(val)}</b><span>${esc(label)}${sub?' · '+esc(sub):''}</span></div>`;
+  return `<div class="stats">`+
+    item('eleitores aptos',x.apt)+item('comparecimento',x.comp,x.pcomp?ptxt(x.pcomp):'')+
+    item('abstenção',x.abs,x.pabs?ptxt(x.pabs):'')+item('votos válidos',x.valid)+
+    item('brancos',x.blank,x.pblank?ptxt(x.pblank):'')+item('nulos',x.nulls,x.pnull?ptxt(x.pnull):'')+
+  `</div>`;
+}
+function candidatePhoto(c,office,uf='br'){
+  if(!c?.sqcand)return'';
+  const ele=office==='pres'?ELE.pres1:ELE.state1;
+  const folder=office==='pres'?'br':uf;
+  return `${TSE_BASE}/${ele}/fotos/${folder}/${c.sqcand}.jpeg`;
+}
+function presColor(c){
+  const n=String(c?.n||'');
+  if(n==='13')return getComputedStyle(document.documentElement).getPropertyValue('--red').trim()||'#d71920';
+  if(n==='22')return getComputedStyle(document.documentElement).getPropertyValue('--blue').trim()||'#2374e1';
+  return '#597286';
+}
+function candidatesHTML(data,office='pres',uf='br',reference=false){
+  const arr=uniqueCandidates(data).sort((a,b)=>num(b.vap)-num(a.vap));
+  if(!arr.length)return `<div class="loading">Nenhuma candidatura disponível neste arquivo.</div>`;
+  return `<div>${arr.map(c=>{
+    const photo=candidatePhoto(c,office,uf);
+    const color=office==='pres'?presColor(c):'#35d0f6';
+    return `<div class="candidate">
+      <div class="photo">${photo?`<img src="${photo}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}</div>
+      <div>
+        <div class="candName">${esc(c.nmu||c.nm)}</div>
+        <div class="candMeta">${esc(c.party)} · ${esc(c.n)}${c.st?' · '+esc(c.st):''}${reference?' · 1º turno':''}</div>
+        <div class="bar"><div class="fill" style="width:${Math.max(0,Math.min(100,pct(c.pvap)))}%;background:${color}"></div></div>
+      </div>
+      <div class="candVotes"><div class="candPct">${ptxt(c.pvap)}</div>${nf(c.vap)} votos</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+function qualifyingHTML(data,office='pres',uf='br'){
+  const arr=round2Candidates(data);
+  if(!arr.length)return `<div class="loading">Aguardando identificação das candidaturas classificadas.</div>`;
+  const pseudo={...data,carg:[{...(cargo(data)||{}),agr:[{par:[{sg:'',cand:arr}]}]}]};
+  return candidatesHTML(pseudo,office,uf,true);
+}
+
+const loginView=$('#loginView'),appView=$('#appView'),loginForm=$('#loginForm'),
+  loginBtn=$('#loginBtn'),loginError=$('#loginError'),loginOk=$('#loginOk'),
+  userEmail=$('#userEmail'),planBadge=$('#planBadge'),logoutBtn=$('#logoutBtn'),content=$('#content');
+
+function showError(msg){loginOk.style.display='none';loginError.textContent=msg;loginError.style.display='block'}
+function showOk(msg){loginError.style.display='none';loginOk.textContent=msg;loginOk.style.display='block'}
+function setPlanUI(plan){
+  const p=['free','pro','admin'].includes(plan)?plan:'free';S.plan=p;
+  planBadge.textContent=p.toUpperCase();
+  planBadge.className='badge'+(p==='pro'?' pro':p==='admin'?' admin':'');
 }
 async function loadProfile(user){
-  const { data, error } = await sb
-    .from('profiles')
-    .select('plan,active')
-    .eq('id', user.id)
-    .single();
-
-  if(error) throw error;
-  if(!data || data.active !== true){
-    await sb.auth.signOut();
-    throw new Error('Acesso desativado. Fale com o administrador.');
-  }
-
-  userEmail.textContent = user.email || '';
-  setPlanUI(data.plan || 'free');
-  loginView.style.display='none';
-  appView.style.display='block';
+  const {data,error}=await sb.from('profiles').select('plan,active').eq('id',user.id).single();
+  if(error)throw error;
+  if(!data||data.active!==true){await sb.auth.signOut();throw new Error('Acesso desativado. Fale com o administrador.')}
+  S.user=user;userEmail.textContent=user.email||'';setPlanUI(data.plan||'free');
+  loginView.style.display='none';appView.style.display='block';render();
 }
 async function applySession(){
-  const { data: { session } } = await sb.auth.getSession();
-  if(!session){
-    appView.style.display='none';
-    loginView.style.display='block';
-    return;
-  }
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){appView.style.display='none';loginView.style.display='block';return}
+  try{await loadProfile(session.user)}
+  catch(e){showError(e.message||'Não foi possível validar seu acesso.');appView.style.display='none';loginView.style.display='block'}
+}
+
+loginForm.addEventListener('submit',async e=>{
+  e.preventDefault();loginError.style.display='none';loginOk.style.display='none';loginBtn.disabled=true;loginBtn.textContent='Entrando…';
+  const email=$('#email').value.trim(),password=$('#password').value;
   try{
-    await loadProfile(session.user);
+    const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;await loadProfile(data.user);
+  }catch(e){showError(e.message==='Invalid login credentials'?'E-mail ou senha inválidos.':(e.message||'Não foi possível entrar.'))}
+  finally{loginBtn.disabled=false;loginBtn.textContent='Entrar'}
+});
+logoutBtn.addEventListener('click',async()=>{clearTimers();await sb.auth.signOut();appView.style.display='none';loginView.style.display='block';showOk('Sessão encerrada.')});
+sb.auth.onAuthStateChange((_event,session)=>{if(!session){appView.style.display='none';loginView.style.display='block'}});
+
+function clearTimers(){S.timers.forEach(t=>clearInterval(t));S.timers=[]}
+function startTimer(fn,ms=POLL){const id=setInterval(()=>{if(!document.hidden)fn()},ms);S.timers.push(id)}
+function setView(v){clearTimers();S.view=v;$$('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v));render()}
+
+$$('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+
+function render(){
+  if(S.view==='home')renderHome();
+  else if(S.view==='pres')renderPresident();
+  else if(S.view==='gov')renderGovernors();
+  else renderBroadcast();
+}
+function renderHome(){
+  content.innerHTML=`
+    <h2 class="sectionTitle">Segundo turno</h2>
+    <div class="grid">
+      <button class="module" type="button" data-open="pres"><h3>Presidente · Brasil, estado e cidade</h3><p>Apuração do 2º turno com dados oficiais, busca municipal e mapa do Brasil por liderança.</p><span class="tag">FREE</span></button>
+      <button class="module" type="button" data-open="gov"><h3>Governadores · estados com 2º turno</h3><p>Descoberta automática das UFs que chegaram ao 2º turno e abertura da disputa estadual.</p><span class="tag">FREE</span></button>
+    </div>
+    <h2 class="sectionTitle">Transmissão</h2>
+    <div class="grid">
+      <button class="module" type="button" data-open="broadcast"><h3>Template básico horizontal</h3><p>Saída 16:9 para OBS com placar e atualização automática.</p><span class="tag">FREE</span></button>
+      <button class="module" type="button" data-open="broadcast"><h3>Template básico vertical</h3><p>Saída 9:16 para redes sociais e live vertical.</p><span class="tag">FREE</span></button>
+      <div class="module ${S.plan==='free'?'locked':''}"><h3>Painel de controle de máscaras</h3><p>Combinação de placar, mapa, ticker, cidade e estatísticas em tempo real.</p><span class="tag">PRO</span></div>
+      <div class="module ${S.plan==='free'?'locked':''}"><h3>Personalização de marca</h3><p>Cores, logotipo, identificação da cobertura e layouts avançados.</p><span class="tag">PRO</span></div>
+    </div>`;
+  $$('[data-open]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.open)));
+}
+
+async function loadMunicipalities(){
+  if(S.municipalities)return S.municipalities;
+  const j=await getJSON(munUrl());
+  const out={};
+  (j.abr||[]).forEach(a=>{
+    const uf=String(a.cd||'').toLowerCase();
+    if(UF_NAMES[uf])out[uf]=(a.mu||[]).map(m=>({cd:pad(m.cd,5),nm:m.nm,cdi:m.cdi})).sort((x,y)=>x.nm.localeCompare(y.nm,'pt-BR'));
+  });
+  S.municipalities=out;return out;
+}
+async function loadPresReference(){
+  try{S.pres.reference=await getJSON(resultUrl(ELE.pres1,'br',1))}
+  catch(e){S.pres.reference=null}
+}
+async function loadPresidentLive(){
+  S.pres.error='';const uf=S.pres.uf,mun=S.pres.mun;
+  try{
+    S.pres.data=await getJSON(resultUrl(ELE.pres2,uf,1,mun));
+    S.pres.last=new Date();
   }catch(e){
-    showError(e.message || 'Não foi possível validar seu acesso.');
-    appView.style.display='none';
-    loginView.style.display='block';
+    S.pres.data=null;S.pres.error=e.message||'Arquivo ainda indisponível';
+    if(!S.pres.reference)await loadPresReference();
+  }
+  if(S.view==='pres')renderPresidentBody();
+}
+async function loadPresMap(){
+  if(S.pres.mapLoading)return;S.pres.mapLoading=true;
+  const result={};
+  await Promise.all(UFS.map(async uf=>{
+    try{
+      const d=await getJSON(resultUrl(ELE.pres2,uf,1));
+      const arr=uniqueCandidates(d).sort((a,b)=>num(b.vap)-num(a.vap));
+      result[uf]={data:d,leader:arr[0]||null};
+    }catch(e){result[uf]={data:null,leader:null}}
+  }));
+  S.pres.mapData=result;S.pres.mapLoading=false;
+  if(S.view==='pres')drawBrazilMap();
+}
+function presLocationLabel(){
+  if(S.pres.uf==='br')return'Brasil';
+  if(S.pres.mun){
+    const arr=S.municipalities?.[S.pres.uf]||[];
+    const m=arr.find(x=>String(x.cd)===String(S.pres.mun));
+    return `${m?.nm||'Município'} · ${S.pres.uf.toUpperCase()}`;
+  }
+  return `${UF_NAMES[S.pres.uf]} · ${S.pres.uf.toUpperCase()}`;
+}
+function renderPresident(){
+  content.innerHTML=`
+    <section class="card">
+      <div class="sectionHead"><div><div class="eyebrow">2º TURNO · PRESIDENTE</div><h2>Apuração presidencial</h2><div class="muted">Brasil, estado ou município · atualização automática a cada 30 segundos.</div></div><button id="presRefresh" class="btn secondary" type="button">Atualizar agora</button></div>
+      <div class="controls">
+        <select id="presLevel"><option value="br">Brasil</option><option value="uf">Estado</option><option value="mun">Município</option></select>
+        <select id="presUF"><option value="br">Brasil</option>${UFS.map(uf=>`<option value="${uf}">${UF_NAMES[uf]}</option>`).join('')}</select>
+        <select id="presMun" disabled><option value="">Escolha primeiro o estado</option></select>
+        <button id="presGo" class="btn" type="button">Abrir</button>
+      </div>
+      <div id="presBody"></div>
+    </section>
+    <section class="card">
+      <div class="sectionHead"><div><div class="eyebrow">MAPA DO BRASIL</div><h2>Liderança por estado</h2><div class="muted">Vermelho = Lula · azul = Flávio Bolsonaro · cinza = sem dados do 2º turno.</div></div><button id="mapRefresh" class="btn secondary" type="button">Atualizar mapa</button></div>
+      <div class="mapBox"><svg id="brMap" viewBox="0 0 720 620" role="img" aria-label="Mapa do Brasil por liderança presidencial"></svg>
+        <div class="mapLegend"><span><i class="legendDot" style="background:var(--red)"></i>Lula</span><span><i class="legendDot" style="background:var(--blue)"></i>Flávio Bolsonaro</span><span><i class="legendDot" style="background:#33495b"></i>Sem dados</span></div>
+      </div>
+    </section>`;
+  const level=$('#presLevel'),uf=$('#presUF'),mun=$('#presMun');
+  level.value=S.pres.mun?'mun':S.pres.uf==='br'?'br':'uf';
+  uf.value=S.pres.uf;
+  function syncControls(){
+    const lv=level.value;
+    uf.disabled=lv==='br';
+    mun.disabled=lv!=='mun'||uf.value==='br';
+    if(lv==='br'){uf.value='br';mun.innerHTML='<option value="">Não se aplica</option>'}
+    if(lv==='uf'&&uf.value==='br')uf.value='mg';
+    if(lv==='mun'&&uf.value==='br')uf.value='mg';
+    if(lv==='mun')fillMunicipalities(uf.value,mun);
+  }
+  level.addEventListener('change',syncControls);
+  uf.addEventListener('change',()=>{if(level.value==='mun')fillMunicipalities(uf.value,mun)});
+  $('#presGo').addEventListener('click',async()=>{
+    if(level.value==='br'){S.pres.uf='br';S.pres.mun=''}
+    else if(level.value==='uf'){S.pres.uf=uf.value;S.pres.mun=''}
+    else{S.pres.uf=uf.value;S.pres.mun=mun.value}
+    renderPresidentBody();await loadPresidentLive();
+  });
+  $('#presRefresh').addEventListener('click',loadPresidentLive);
+  $('#mapRefresh').addEventListener('click',loadPresMap);
+  syncControls();renderPresidentBody();
+  loadMunicipalities().then(()=>{if(level.value==='mun')fillMunicipalities(uf.value,mun)}).catch(()=>{});
+  loadPresidentLive();loadPresMap();drawBrazilMap();
+  startTimer(loadPresidentLive,POLL);startTimer(loadPresMap,60000);
+}
+function fillMunicipalities(uf,select){
+  loadMunicipalities().then(all=>{
+    const arr=all[uf]||[];
+    select.innerHTML='<option value="">Selecione o município</option>'+arr.map(m=>`<option value="${m.cd}" ${String(S.pres.mun)===String(m.cd)?'selected':''}>${esc(m.nm)}</option>`).join('');
+    select.disabled=false;
+  }).catch(()=>{select.innerHTML='<option value="">Não foi possível carregar</option>'});
+}
+function renderPresidentBody(){
+  const box=$('#presBody');if(!box)return;
+  const live=S.pres.data;
+  if(live){
+    box.innerHTML=`<div class="notice"><span class="dot" style="background:var(--green)"></span><strong>${esc(presLocationLabel())}</strong> · arquivo oficial do 2º turno disponível · ${ptxt(totalPct(live))} das seções totalizadas${S.pres.last?' · leitura '+S.pres.last.toLocaleTimeString('pt-BR'):''}</div>
+      <div class="progress"><i style="width:${Math.min(100,totalPct(live))}%"></i></div>${statsHTML(live)}${candidatesHTML(live,'pres',S.pres.uf)}`;
+  }else{
+    const ref=S.pres.reference;
+    box.innerHTML=`<div class="notice wait"><span class="dot"></span><strong>${esc(presLocationLabel())}</strong> · aguardando o arquivo oficial de resultados do 2º turno no TSE. A tela já está preparada para assumir os dados automaticamente quando o arquivo estiver disponível.</div>
+      ${S.pres.error?`<div class="muted" style="margin-top:8px">Retorno atual: ${esc(S.pres.error)}</div>`:''}
+      ${ref?`<div class="sectionTitle" style="font-size:16px">Candidaturas classificadas · referência do 1º turno</div>${qualifyingHTML(ref,'pres','br')}`:''}`;
+  }
+}
+async function drawBrazilMap(){
+  const svg=d3.select('#brMap');if(svg.empty())return;
+  svg.selectAll('*').remove();
+  svg.append('text').attr('x',18).attr('y',28).attr('fill','#9db1c1').attr('font-size',12).text(S.pres.mapLoading?'Consultando os estados…':'');
+  try{
+    const geo=await d3.json(GEO_URL);
+    svg.selectAll('*').remove();
+    const projection=d3.geoMercator().fitExtent([[18,18],[702,600]],geo);
+    const path=d3.geoPath(projection);
+    svg.selectAll('path').data(geo.features).enter().append('path')
+      .attr('class','mapState')
+      .attr('d',path)
+      .attr('fill',d=>{
+        const name=d.properties?.name||d.properties?.NAME_1||'';
+        const uf=NAME_TO_UF[norm(name)];
+        const leader=S.pres.mapData?.[uf]?.leader;
+        return leader?presColor(leader):'#33495b';
+      })
+      .on('click',(_event,d)=>{
+        const name=d.properties?.name||d.properties?.NAME_1||'';
+        const uf=NAME_TO_UF[norm(name)];
+        if(!uf)return;
+        S.pres.uf=uf;S.pres.mun='';renderPresident();window.scrollTo({top:0,behavior:'smooth'});
+      })
+      .append('title').text(d=>{
+        const name=d.properties?.name||d.properties?.NAME_1||'';
+        const uf=NAME_TO_UF[norm(name)];
+        const item=S.pres.mapData?.[uf];
+        return item?.leader?`${name}: ${item.leader.nmu||item.leader.nm} · ${ptxt(item.leader.pvap)}`:`${name}: aguardando dados`;
+      });
+  }catch(e){
+    svg.selectAll('*').remove();
+    svg.append('text').attr('x',18).attr('y',30).attr('fill','#ffd0d5').attr('font-size',12).text('Não foi possível carregar a malha do mapa agora.');
   }
 }
 
-loginForm.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  loginError.style.display='none';
-  loginOk.style.display='none';
-  loginBtn.disabled=true;
-  loginBtn.textContent='Entrando…';
-
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-
-  try{
-    const { data, error } = await sb.auth.signInWithPassword({email,password});
-    if(error) throw error;
-    await loadProfile(data.user);
-  }catch(e){
-    showError(e.message === 'Invalid login credentials'
-      ? 'E-mail ou senha inválidos.'
-      : (e.message || 'Não foi possível entrar.'));
-  }finally{
-    loginBtn.disabled=false;
-    loginBtn.textContent='Entrar';
+async function discoverGovernorRunoffs(){
+  if(S.gov.loading)return;S.gov.loading=true;S.gov.states=[];renderGovernorBody();
+  const found=[];
+  let done=0;
+  const queue=[...UFS];
+  async function worker(){
+    while(queue.length){
+      const uf=queue.shift();
+      try{
+        const d=await getJSON(resultUrl(ELE.state1,uf,3));
+        const q=uniqueCandidates(d).filter(c=>/2º\s*turno|2o\s*turno|segundo\s*turno/i.test(String(c.st||''))).sort((a,b)=>num(b.vap)-num(a.vap));
+        if(q.length>=2)found.push({uf,data:d,candidates:q});
+      }catch(e){}
+      done++;S.gov.states=[...found].sort((a,b)=>UF_NAMES[a.uf].localeCompare(UF_NAMES[b.uf],'pt-BR'));
+      const p=$('#govProgress');if(p)p.textContent=`Consultando UFs: ${done} de ${UFS.length}`;
+    }
   }
-});
+  await Promise.all(Array.from({length:4},()=>worker()));
+  S.gov.loading=false;S.gov.states=[...found].sort((a,b)=>UF_NAMES[a.uf].localeCompare(UF_NAMES[b.uf],'pt-BR'));
+  if(S.view==='gov')renderGovernorBody();
+}
+async function loadGovernorLive(uf){
+  S.gov.selected=uf;S.gov.error='';S.gov.live=null;renderGovernorBody();
+  try{S.gov.live=await getJSON(resultUrl(ELE.state2,uf,3));S.gov.last=new Date()}
+  catch(e){S.gov.error=e.message||'Arquivo ainda indisponível'}
+  if(S.view==='gov')renderGovernorBody();
+}
+function renderGovernors(){
+  content.innerHTML=`<section class="card">
+    <div class="sectionHead"><div><div class="eyebrow">2º TURNO · GOVERNADORES</div><h2>Disputas estaduais</h2><div class="muted">O painel identifica automaticamente, nos arquivos do 1º turno, as candidaturas marcadas pelo TSE para o 2º turno.</div></div><button id="govReload" class="btn secondary" type="button">Verificar novamente</button></div>
+    <div id="govBody"></div>
+  </section>`;
+  $('#govReload').addEventListener('click',discoverGovernorRunoffs);
+  renderGovernorBody();
+  if(!S.gov.states.length&&!S.gov.loading)discoverGovernorRunoffs();
+  startTimer(()=>{if(S.gov.selected)loadGovernorLive(S.gov.selected)},POLL);
+}
+function renderGovernorBody(){
+  const box=$('#govBody');if(!box)return;
+  if(S.gov.loading&&!S.gov.states.length){box.innerHTML=`<div class="loading"><span class="dot"></span><span id="govProgress">Consultando as unidades da Federação…</span></div>`;return}
+  if(S.gov.selected){
+    const st=S.gov.states.find(x=>x.uf===S.gov.selected);
+    const live=S.gov.live;
+    box.innerHTML=`<button id="govBack" class="btn ghost back" type="button">← Voltar aos estados</button>
+      <div class="sectionHead"><div><div class="eyebrow">${esc(S.gov.selected.toUpperCase())}</div><h2>${esc(UF_NAMES[S.gov.selected])}</h2></div><button id="govNow" class="btn secondary" type="button">Atualizar</button></div>
+      ${live?`<div class="notice"><span class="dot" style="background:var(--green)"></span>Arquivo oficial do 2º turno disponível · ${ptxt(totalPct(live))} das seções totalizadas${S.gov.last?' · leitura '+S.gov.last.toLocaleTimeString('pt-BR'):''}</div>
+      <div class="progress"><i style="width:${Math.min(100,totalPct(live))}%"></i></div>${statsHTML(live)}${candidatesHTML(live,'gov',S.gov.selected)}`
+      :`<div class="notice wait"><span class="dot"></span>Aguardando o arquivo oficial de resultados do 2º turno para ${esc(UF_NAMES[S.gov.selected])}.${S.gov.error?' Retorno atual: '+esc(S.gov.error):''}</div>
+      ${st?`<div class="sectionTitle" style="font-size:16px">Classificados · referência do 1º turno</div>${qualifyingHTML(st.data,'gov',S.gov.selected)}`:''}`}`;
+    $('#govBack').addEventListener('click',()=>{S.gov.selected='';S.gov.live=null;renderGovernorBody()});
+    $('#govNow').addEventListener('click',()=>loadGovernorLive(S.gov.selected));
+    return;
+  }
+  if(!S.gov.states.length){box.innerHTML='<div class="loading">Nenhuma disputa estadual identificada ainda nos arquivos carregados.</div>';return}
+  box.innerHTML=`<div class="notice"><strong>${S.gov.states.length}</strong> unidades da Federação identificadas com candidaturas marcadas para o 2º turno.</div>
+    <div class="stateGrid">${S.gov.states.map(st=>{
+      const pair=st.candidates.slice(0,2).map(c=>`${esc(c.nmu||c.nm)} (${esc(c.party)})`).join(' × ');
+      return `<button class="stateCard" type="button" data-gov="${st.uf}"><strong>${esc(UF_NAMES[st.uf])} · ${st.uf.toUpperCase()}</strong><span>Toque para abrir a apuração do 2º turno</span><div class="pair">${pair}</div></button>`;
+    }).join('')}</div>`;
+  $$('[data-gov]').forEach(b=>b.addEventListener('click',()=>loadGovernorLive(b.dataset.gov)));
+}
 
-logoutBtn.addEventListener('click', async ()=>{
-  await sb.auth.signOut();
-  appView.style.display='none';
-  loginView.style.display='block';
-  showOk('Sessão encerrada.');
-});
+function renderBroadcast(){
+  const pro=S.plan==='pro'||S.plan==='admin';
+  content.innerHTML=`
+    <section class="card"><div class="eyebrow">TRANSMISSÃO</div><h2 style="margin:4px 0 5px">Saídas horizontal e vertical</h2><div class="muted">Esta etapa será ligada ao mesmo motor de resultados do 2º turno. Os dois templates básicos permanecerão no FREE.</div>
+      <div class="grid">
+        <div class="module"><h3>Horizontal · 16:9</h3><p>Placar principal, percentual de apuração e espaço para mapa ou câmera. Preparado para OBS.</p><span class="tag">FREE · PRÓXIMA ETAPA</span></div>
+        <div class="module"><h3>Vertical · 9:16</h3><p>Placar central, fotos dos candidatos e dados essenciais para live vertical.</p><span class="tag">FREE · PRÓXIMA ETAPA</span></div>
+        <div class="module ${pro?'':'locked'}"><h3>Painel de máscaras</h3><p>Controle simultâneo de placar, mapa, ticker, cidade e estatísticas.</p><span class="tag">PRO</span></div>
+        <div class="module ${pro?'':'locked'}"><h3>Identidade personalizada</h3><p>Marca, cores e composições avançadas.</p><span class="tag">PRO</span></div>
+      </div>
+    </section>`;
+}
 
-sb.auth.onAuthStateChange(()=>applySession());
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user){if(S.view==='pres')loadPresidentLive();if(S.view==='gov'&&S.gov.selected)loadGovernorLive(S.gov.selected)}});
 applySession();
 </script>
 </body>
