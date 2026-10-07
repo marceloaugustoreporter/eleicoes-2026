@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#06101a">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>Central de Apuração · V7.1</title>
+  <title>Central de Apuração · V7.2</title>
   <style>
     :root{
       --bg:#06101a;--panel:#0b1928;--panel2:#0e2234;--line:#27455e;
@@ -80,6 +80,19 @@
     #brMap{width:100%;height:auto;display:block;min-height:280px}
     .mapState{stroke:#071522;stroke-width:.7;cursor:pointer;transition:opacity .15s}
     .mapState:hover{opacity:.82}
+    .mapState.dimmed{opacity:.34}
+    .mapState.selectedState{stroke:var(--cyan);stroke-width:3.2;opacity:1;filter:drop-shadow(0 0 4px rgba(53,208,246,.55))}
+    .cityMarker{fill:#fff;stroke:#06101a;stroke-width:2.5}
+    .cityMarkerRing{fill:none;stroke:var(--cyan);stroke-width:3;opacity:.95}
+    .cityLabel{fill:#fff;font-size:12px;font-weight:950;paint-order:stroke;stroke:#06101a;stroke-width:4px;stroke-linejoin:round}
+    .cityLabelSub{fill:#b9cfdd;font-size:9px;font-weight:850;paint-order:stroke;stroke:#06101a;stroke-width:3px}
+    .insetBox{margin-top:12px;border-top:1px solid #24445d;padding-top:12px}
+    .insetHead{display:flex;justify-content:space-between;gap:8px;align-items:end;flex-wrap:wrap;margin-bottom:7px}
+    .insetHead strong{font-size:14px}
+    .insetHead span{font-size:9px;color:var(--muted);font-weight:800}
+    #stateInset{width:100%;height:auto;display:block;max-height:360px}
+    .insetMun{fill:#1a3346;stroke:#071522;stroke-width:.45}
+    .insetMun.selected{fill:rgba(53,208,246,.48);stroke:#fff;stroke-width:1.5}
     .mapLegend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--muted);font-weight:800;margin:8px 4px 2px}
     .legendDot{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:-1px}
     .stateGrid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
@@ -130,7 +143,7 @@
       <div class="topbar">
         <div>
           <div class="eyebrow">ÁREA AUTENTICADA</div>
-          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.1</h2>
+          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.2</h2>
           <div id="userEmail" class="muted"></div>
         </div>
         <div class="userbox">
@@ -147,7 +160,7 @@
     </div>
 
     <main id="content"></main>
-    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.1 consulta os arquivos do 2º turno quando estiverem disponíveis e mantém o 1º turno apenas como referência para identificar as candidaturas classificadas.</div>
+    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.2 consulta os arquivos do 2º turno quando estiverem disponíveis e mantém o 1º turno apenas como referência para identificar as candidaturas classificadas.</div>
   </section>
 </div>
 
@@ -162,6 +175,7 @@ const TSE_BASE='https://resultados.tse.jus.br/oficial/ele2026';
 const ELE={pres1:'6257',pres2:'6258',state1:'6259',state2:'6260'};
 const POLL=30000;
 const GEO_URL='https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson';
+const MUN_GEO_BASE='https://cdn.jsdelivr.net/gh/henriquemalvar/br-geojson@main/dist/municipios';
 
 const UF_NAMES={
   ac:'Acre',al:'Alagoas',ap:'Amapá',am:'Amazonas',ba:'Bahia',ce:'Ceará',df:'Distrito Federal',
@@ -261,11 +275,14 @@ function candidatesHTML(data,office='pres',uf='br',reference=false){
   return `<div>${arr.map(c=>{
     const photo=candidatePhoto(c,office,uf);
     const color=office==='pres'?presColor(c):'#35d0f6';
+    const classified=reference&&/2º\s*turno|2o\s*turno|segundo\s*turno/i.test(String(c.st||''));
+    const status=reference?(classified?' · classificado ao 2º turno':''):(c.st?' · '+esc(c.st):'');
     return `<div class="candidate">
       <div class="photo">${photo?`<img src="${photo}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}</div>
       <div>
         <div class="candName">${esc(c.nmu||c.nm)}</div>
-        <div class="candMeta">${esc(c.party)} · ${esc(c.n)}${c.st?' · '+esc(c.st):''}${reference?' · 1º turno':''}</div>
+        <div class="candMeta">${esc(c.party)} · ${esc(c.n)}${status}</div>
+        ${reference?'<div class="candMeta">Resultado exibido: 1º turno</div>':''}
         <div class="bar"><div class="fill" style="width:${Math.max(0,Math.min(100,pct(c.pvap)))}%;background:${color}"></div></div>
       </div>
       <div class="candVotes"><div class="candPct">${ptxt(c.pvap)}</div>${nf(c.vap)} votos</div>
@@ -382,11 +399,15 @@ async function loadPresMap(){
   S.pres.mapData=result;S.pres.mapLoading=false;
   if(S.view==='pres')drawBrazilMap();
 }
+function selectedMunicipality(){
+  if(!S.pres.mun||S.pres.uf==='br')return null;
+  const arr=S.municipalities?.[S.pres.uf]||[];
+  return arr.find(x=>String(x.cd)===String(S.pres.mun))||null;
+}
 function presLocationLabel(){
   if(S.pres.uf==='br')return'Brasil';
   if(S.pres.mun){
-    const arr=S.municipalities?.[S.pres.uf]||[];
-    const m=arr.find(x=>String(x.cd)===String(S.pres.mun));
+    const m=selectedMunicipality();
     return `${m?.nm||'Município'} · ${S.pres.uf.toUpperCase()}`;
   }
   return `${UF_NAMES[S.pres.uf]} · ${S.pres.uf.toUpperCase()}`;
@@ -406,7 +427,8 @@ function renderPresident(){
     <section class="card">
       <div class="sectionHead"><div><div class="eyebrow">MAPA DO BRASIL</div><h2>Liderança por estado</h2><div class="muted">Vermelho = Lula · azul = Flávio Bolsonaro · cinza = sem dados do 2º turno.</div></div><button id="mapRefresh" class="btn secondary" type="button">Atualizar mapa</button></div>
       <div class="mapBox"><svg id="brMap" viewBox="0 0 720 620" role="img" aria-label="Mapa do Brasil por liderança presidencial"></svg>
-        <div class="mapLegend"><span><i class="legendDot" style="background:var(--red)"></i>Lula</span><span><i class="legendDot" style="background:var(--blue)"></i>Flávio Bolsonaro</span><span><i class="legendDot" style="background:#33495b"></i>Sem dados</span></div>
+        <div class="mapLegend"><span><i class="legendDot" style="background:var(--red)"></i>Lula</span><span><i class="legendDot" style="background:var(--blue)"></i>Flávio Bolsonaro</span><span><i class="legendDot" style="background:#33495b"></i>Sem dados</span><span><i class="legendDot" style="background:var(--cyan)"></i>Local pesquisado</span></div>
+        ${S.pres.mun?`<div class="insetBox"><div class="insetHead"><strong>Recorte de ${esc(UF_NAMES[S.pres.uf])}</strong><span id="insetLabel">Localizando ${esc(presLocationLabel())}…</span></div><svg id="stateInset" viewBox="0 0 720 420" role="img" aria-label="Recorte do estado com município pesquisado"></svg></div>`:''}
       </div>
     </section>`;
   const level=$('#presLevel'),uf=$('#presUF'),mun=$('#presMun');
@@ -423,11 +445,11 @@ function renderPresident(){
   }
   level.addEventListener('change',syncControls);
   uf.addEventListener('change',()=>{if(level.value==='mun')fillMunicipalities(uf.value,mun)});
-  $('#presGo').addEventListener('click',async()=>{
+  $('#presGo').addEventListener('click',()=>{
     if(level.value==='br'){S.pres.uf='br';S.pres.mun=''}
     else if(level.value==='uf'){S.pres.uf=uf.value;S.pres.mun=''}
     else{S.pres.uf=uf.value;S.pres.mun=mun.value}
-    renderPresidentBody();await loadPresidentLive();
+    clearTimers();renderPresident();window.scrollTo({top:0,behavior:'smooth'});
   });
   $('#presRefresh').addEventListener('click',loadPresidentLive);
   $('#mapRefresh').addEventListener('click',loadPresMap);
@@ -465,8 +487,16 @@ async function drawBrazilMap(){
     svg.selectAll('*').remove();
     const projection=d3.geoMercator().fitExtent([[18,18],[702,600]],geo);
     const path=d3.geoPath(projection);
+    const selectedUF=S.pres.uf!=='br'?S.pres.uf:'';
     svg.selectAll('path').data(geo.features).enter().append('path')
-      .attr('class','mapState')
+      .attr('class',d=>{
+        const name=d.properties?.name||d.properties?.NAME_1||'';
+        const uf=NAME_TO_UF[norm(name)];
+        let cls='mapState';
+        if(selectedUF&&uf!==selectedUF)cls+=' dimmed';
+        if(selectedUF&&uf===selectedUF)cls+=' selectedState';
+        return cls;
+      })
       .attr('d',path)
       .attr('fill',d=>{
         const name=d.properties?.name||d.properties?.NAME_1||'';
@@ -478,7 +508,7 @@ async function drawBrazilMap(){
         const name=d.properties?.name||d.properties?.NAME_1||'';
         const uf=NAME_TO_UF[norm(name)];
         if(!uf)return;
-        S.pres.uf=uf;S.pres.mun='';renderPresident();window.scrollTo({top:0,behavior:'smooth'});
+        S.pres.uf=uf;S.pres.mun='';clearTimers();renderPresident();window.scrollTo({top:0,behavior:'smooth'});
       })
       .append('title').text(d=>{
         const name=d.properties?.name||d.properties?.NAME_1||'';
@@ -486,10 +516,58 @@ async function drawBrazilMap(){
         const item=S.pres.mapData?.[uf];
         return item?.leader?`${name}: ${item.leader.nmu||item.leader.nm} · ${ptxt(item.leader.pvap)}`:`${name}: aguardando dados`;
       });
+
+    const m=selectedMunicipality();
+    if(m&&selectedUF){
+      try{
+        const munGeo=await d3.json(`${MUN_GEO_BASE}/${selectedUF.toUpperCase()}.geojson`);
+        const wantedId=String(m.cdi||'').replace(/\D/g,'');
+        const feature=(munGeo.features||[]).find(f=>String(f.properties?.cd_geocmu||'').replace(/\D/g,'')===wantedId)
+          ||(munGeo.features||[]).find(f=>norm(f.properties?.nome||f.properties?.name||'')===norm(m.nm));
+        if(feature){
+          const centroid=d3.geoCentroid(feature),pt=projection(centroid);
+          if(pt){
+            const [x,y]=pt;
+            svg.append('circle').attr('class','cityMarkerRing').attr('cx',x).attr('cy',y).attr('r',10);
+            svg.append('circle').attr('class','cityMarker').attr('cx',x).attr('cy',y).attr('r',4.8);
+            const anchor=x>560?'end':'start',dx=x>560?-14:14;
+            svg.append('text').attr('class','cityLabel').attr('x',x+dx).attr('y',y-4).attr('text-anchor',anchor).text(m.nm);
+            svg.append('text').attr('class','cityLabelSub').attr('x',x+dx).attr('y',y+10).attr('text-anchor',anchor).text(selectedUF.toUpperCase());
+            drawStateInset(munGeo,feature,m,selectedUF);
+          }
+        }else{
+          const lab=$('#insetLabel');if(lab)lab.textContent='Município não localizado na malha geográfica.';
+        }
+      }catch(e){
+        const lab=$('#insetLabel');if(lab)lab.textContent='Não foi possível carregar o recorte do estado agora.';
+      }
+    }
   }catch(e){
     svg.selectAll('*').remove();
     svg.append('text').attr('x',18).attr('y',30).attr('fill','#ffd0d5').attr('font-size',12).text('Não foi possível carregar a malha do mapa agora.');
   }
+}
+function drawStateInset(munGeo,selectedFeature,m,uf){
+  const inset=d3.select('#stateInset');if(inset.empty())return;
+  inset.selectAll('*').remove();
+  const projection=d3.geoMercator().fitExtent([[14,14],[706,406]],munGeo);
+  const path=d3.geoPath(projection);
+  const wantedId=String(m.cdi||'').replace(/\D/g,'');
+  inset.selectAll('path').data(munGeo.features||[]).enter().append('path')
+    .attr('class',f=>{
+      const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,'');
+      const byName=norm(f.properties?.nome||f.properties?.name||'')===norm(m.nm);
+      return 'insetMun '+((wantedId&&id===wantedId)||byName?'selected':'');
+    })
+    .attr('d',path);
+  const p=projection(d3.geoCentroid(selectedFeature));
+  if(p){
+    inset.append('circle').attr('class','cityMarkerRing').attr('cx',p[0]).attr('cy',p[1]).attr('r',10);
+    inset.append('circle').attr('class','cityMarker').attr('cx',p[0]).attr('cy',p[1]).attr('r',4.8);
+    inset.append('text').attr('class','cityLabel').attr('x',p[0]+14).attr('y',p[1]-3).text(m.nm);
+    inset.append('text').attr('class','cityLabelSub').attr('x',p[0]+14).attr('y',p[1]+11).text(uf.toUpperCase());
+  }
+  const lab=$('#insetLabel');if(lab)lab.textContent=`${m.nm}/${uf.toUpperCase()} destacado na malha municipal · base geográfica derivada do IBGE`;
 }
 
 async function discoverGovernorRunoffs(){
