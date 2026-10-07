@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#06101a">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>Central de Apuração · V7.2</title>
+  <title>Central de Apuração · V7.3</title>
   <style>
     :root{
       --bg:#06101a;--panel:#0b1928;--panel2:#0e2234;--line:#27455e;
@@ -106,7 +106,7 @@
     .back{margin-bottom:8px}
     @media(min-width:700px){
       .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .controls{grid-template-columns:1fr 1fr 1.4fr auto}
+      .controls{grid-template-columns:1fr 1.5fr auto}
       .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
       .stateGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
@@ -143,7 +143,7 @@
       <div class="topbar">
         <div>
           <div class="eyebrow">ÁREA AUTENTICADA</div>
-          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.2</h2>
+          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.3</h2>
           <div id="userEmail" class="muted"></div>
         </div>
         <div class="userbox">
@@ -160,7 +160,7 @@
     </div>
 
     <main id="content"></main>
-    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.2 consulta os arquivos do 2º turno quando estiverem disponíveis e mantém o 1º turno apenas como referência para identificar as candidaturas classificadas.</div>
+    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.3 consulta os arquivos do 2º turno quando estiverem disponíveis e mantém o 1º turno apenas como referência para identificar as candidaturas classificadas.</div>
   </section>
 </div>
 
@@ -417,10 +417,9 @@ function renderPresident(){
     <section class="card">
       <div class="sectionHead"><div><div class="eyebrow">2º TURNO · PRESIDENTE</div><h2>Apuração presidencial</h2><div class="muted">Brasil, estado ou município · atualização automática a cada 30 segundos.</div></div><button id="presRefresh" class="btn secondary" type="button">Atualizar agora</button></div>
       <div class="controls">
-        <select id="presLevel"><option value="br">Brasil</option><option value="uf">Estado</option><option value="mun">Município</option></select>
         <select id="presUF"><option value="br">Brasil</option>${UFS.map(uf=>`<option value="${uf}">${UF_NAMES[uf]}</option>`).join('')}</select>
         <select id="presMun" disabled><option value="">Escolha primeiro o estado</option></select>
-        <button id="presGo" class="btn" type="button">Abrir</button>
+        <button id="presGo" class="btn" type="button">Abrir resultado</button>
       </div>
       <div id="presBody"></div>
     </section>
@@ -431,37 +430,42 @@ function renderPresident(){
         ${S.pres.mun?`<div class="insetBox"><div class="insetHead"><strong>Recorte de ${esc(UF_NAMES[S.pres.uf])}</strong><span id="insetLabel">Localizando ${esc(presLocationLabel())}…</span></div><svg id="stateInset" viewBox="0 0 720 420" role="img" aria-label="Recorte do estado com município pesquisado"></svg></div>`:''}
       </div>
     </section>`;
-  const level=$('#presLevel'),uf=$('#presUF'),mun=$('#presMun');
-  level.value=S.pres.mun?'mun':S.pres.uf==='br'?'br':'uf';
+  const uf=$('#presUF'),mun=$('#presMun');
   uf.value=S.pres.uf;
   function syncControls(){
-    const lv=level.value;
-    uf.disabled=lv==='br';
-    mun.disabled=lv!=='mun'||uf.value==='br';
-    if(lv==='br'){uf.value='br';mun.innerHTML='<option value="">Não se aplica</option>'}
-    if(lv==='uf'&&uf.value==='br')uf.value='mg';
-    if(lv==='mun'&&uf.value==='br')uf.value='mg';
-    if(lv==='mun')fillMunicipalities(uf.value,mun);
+    if(uf.value==='br'){
+      mun.disabled=true;
+      mun.innerHTML='<option value="">Brasil inteiro</option>';
+      return;
+    }
+    mun.disabled=false;
+    fillMunicipalities(uf.value,mun);
   }
-  level.addEventListener('change',syncControls);
-  uf.addEventListener('change',()=>{if(level.value==='mun')fillMunicipalities(uf.value,mun)});
+  uf.addEventListener('change',()=>{
+    S.pres.mun='';
+    syncControls();
+  });
   $('#presGo').addEventListener('click',()=>{
-    if(level.value==='br'){S.pres.uf='br';S.pres.mun=''}
-    else if(level.value==='uf'){S.pres.uf=uf.value;S.pres.mun=''}
-    else{S.pres.uf=uf.value;S.pres.mun=mun.value}
+    if(uf.value==='br'){
+      S.pres.uf='br';
+      S.pres.mun='';
+    }else{
+      S.pres.uf=uf.value;
+      S.pres.mun=mun.value||'';
+    }
     clearTimers();renderPresident();window.scrollTo({top:0,behavior:'smooth'});
   });
   $('#presRefresh').addEventListener('click',loadPresidentLive);
   $('#mapRefresh').addEventListener('click',loadPresMap);
   syncControls();renderPresidentBody();
-  loadMunicipalities().then(()=>{if(level.value==='mun')fillMunicipalities(uf.value,mun)}).catch(()=>{});
+  loadMunicipalities().then(()=>{if(uf.value!=='br')fillMunicipalities(uf.value,mun)}).catch(()=>{});
   loadPresidentLive();loadPresMap();drawBrazilMap();
   startTimer(loadPresidentLive,POLL);startTimer(loadPresMap,60000);
 }
 function fillMunicipalities(uf,select){
   loadMunicipalities().then(all=>{
     const arr=all[uf]||[];
-    select.innerHTML='<option value="">Selecione o município</option>'+arr.map(m=>`<option value="${m.cd}" ${String(S.pres.mun)===String(m.cd)?'selected':''}>${esc(m.nm)}</option>`).join('');
+    select.innerHTML='<option value="">Estado inteiro</option>'+arr.map(m=>`<option value="${m.cd}" ${String(S.pres.mun)===String(m.cd)?'selected':''}>${esc(m.nm)}</option>`).join('');
     select.disabled=false;
   }).catch(()=>{select.innerHTML='<option value="">Não foi possível carregar</option>'});
 }
