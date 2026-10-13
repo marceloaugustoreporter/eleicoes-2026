@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#06101a">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>Central de Apuração · V7.10</title>
+  <title>Central de Apuração · V7.11</title>
   <style>
     :root{
       --bg:#06101a;--panel:#0b1928;--panel2:#0e2234;--line:#27455e;
@@ -164,7 +164,7 @@
       <div class="topbar">
         <div>
           <div class="eyebrow">ÁREA AUTENTICADA</div>
-          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.10</h2>
+          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.11</h2>
           <div id="userEmail" class="muted"></div>
         </div>
         <div class="userbox">
@@ -181,7 +181,7 @@
     </div>
 
     <main id="content"></main>
-    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.10 separa o Cadastro Eleitoral 2026 dos dados operacionais de totalização, usa cache compartilhado e mantém o 1º turno apenas como referência quando necessário.</div>
+    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.11 separa Cadastro Eleitoral 2026, totalização e mapas; o cadastro municipal oficial é usado quando disponível na base local e a origem operacional é identificada quando houver fallback.</div>
   </section>
 </div>
 
@@ -229,6 +229,7 @@ const S={
   },
   municipalities:null,
   officialElectorate:null, officialElectorateLoading:false,
+  officialMunicipalElectorate:{},
   gov:{loading:false,states:[],selected:'',live:null,error:'',last:null},
   timers:[]
 };
@@ -326,7 +327,7 @@ function electorateDisplayInfo(live){
       sub:'cadastro eleitoral 2026 · TSE',
       note:'',
       operationalNote:started&&operational&&operational!==num(official.voters)
-        ?`Comparecimento e abstenção seguem a abrangência do arquivo de totalização do TSE (${nf(operational)} eleitores); o cartão de eleitorado mostra o cadastro oficial de 2026.`
+        ?`Comparecimento e abstenção seguem a abrangência operacional da totalização do TSE (${nf(operational)} eleitores); o cartão de eleitorado mostra o Cadastro Eleitoral 2026 (${nf(official.voters)}).`
         :''
     };
   }
@@ -336,7 +337,9 @@ function electorateDisplayInfo(live){
       apt:num(ref.e.te),
       label:'eleitorado na totalização',
       sub:'referência final do 1º turno',
-      note:'No recorte municipal, enquanto o 2º turno estiver zerado, o painel usa como referência a totalização final do 1º turno.'
+      note:S.pres.mun
+        ?'O cadastro oficial deste município ainda não está carregado na base local. Até lá, o painel identifica claramente o eleitorado operacional da totalização final do 1º turno.'
+        :'O arquivo do 2º turno ainda está sem totalização; o painel usa temporariamente a totalização final do 1º turno.'
     };
   }
   return{apt:num(live?.e?.te),label:'eleitorado na totalização',sub:'',note:'',operationalNote:''};
@@ -433,10 +436,10 @@ function renderHome(){
   content.innerHTML=`
     <h2 class="sectionTitle">Segundo turno</h2>
     <div class="grid">
-      <button class="module" type="button" data-open="pres"><h3>Presidente · Brasil, estado e cidade</h3><p>Apuração do 2º turno com dados oficiais, busca municipal, mapa do Brasil e mapa municipal inteligente por estado.</p><span class="tag">FREE</span></button>
+      <button class="module" type="button" data-open="pres"><h3>Presidente · Brasil, estado e cidade</h3><p>Apuração do 2º turno com dados oficiais, eleitorado cadastral separado da totalização, busca municipal e mapas inteligentes.</p><span class="tag">FREE</span></button>
       <button class="module" type="button" data-open="gov"><h3>Governadores · estados com 2º turno</h3><p>Descoberta automática das UFs que chegaram ao 2º turno e abertura da disputa estadual.</p><span class="tag">FREE</span></button>
     </div>
-    <div class="notice" style="margin-top:12px"><span class="dot" style="background:var(--green)"></span><strong>Central de Dados V7.10 ativa</strong> · resultados compartilhados por cache, com fallback para o último dado confirmado.</div>
+    <div class="notice" style="margin-top:12px"><span class="dot" style="background:var(--green)"></span><strong>Central de Dados V7.11 ativa</strong> · resultados compartilhados por cache, com fallback para o último dado confirmado.</div>
     <h2 class="sectionTitle">Transmissão</h2>
     <div class="grid">
       <button class="module" type="button" data-open="broadcast"><h3>Template básico horizontal</h3><p>Saída 16:9 para OBS com placar e atualização automática.</p><span class="tag">FREE</span></button>
@@ -472,8 +475,27 @@ async function loadOfficialElectorate(){
     S.officialElectorateLoading=false;
   }
 }
+async function loadOfficialMunicipalElectorate(uf,mun){
+  if(!uf||uf==='br'||!mun)return null;
+  const key=`${uf}:${mun}`;
+  if(Object.prototype.hasOwnProperty.call(S.officialMunicipalElectorate,key)){
+    return S.officialMunicipalElectorate[key]||null;
+  }
+  try{
+    const packet=await centralData({mode:'official-electorate',uf,mun});
+    const row=packet.data?.row||null;
+    S.officialMunicipalElectorate[key]=row||false;
+    if(S.view==='pres'&&S.pres.uf===uf&&String(S.pres.mun)===String(mun))renderPresidentBody();
+    return row;
+  }catch(e){
+    S.officialMunicipalElectorate[key]=false;
+    return null;
+  }
+}
 function officialElectorateForCurrentScope(){
-  if(S.pres.mun)return null;
+  if(S.pres.mun){
+    return S.officialMunicipalElectorate[`${S.pres.uf}:${S.pres.mun}`]||null;
+  }
   const code=S.pres.uf==='br'?'br':S.pres.uf;
   return S.officialElectorate?.[code]||null;
 }
@@ -507,13 +529,16 @@ async function loadPresidentLive(){
   try{
     const params={mode:'result',election:ELE.pres2,cargo:'1',uf};
     if(mun)params.mun=mun;
-    const [packet]=await Promise.all([centralData(params),loadScopeReference()]);
+    const tasks=[centralData(params),loadScopeReference()];
+    if(mun)tasks.push(loadOfficialMunicipalElectorate(uf,mun));
+    const [packet]=await Promise.all(tasks);
     S.pres.data=packet.data;
     S.pres.cacheMeta=packet.meta||null;
     S.pres.last=new Date();
   }catch(e){
     S.pres.data=null;S.pres.cacheMeta=null;S.pres.error=e.message||'Arquivo ainda indisponível';
     await loadScopeReference();
+    if(mun)await loadOfficialMunicipalElectorate(uf,mun);
     if(!S.pres.reference)await loadPresReference();
   }
   if(S.view==='pres')renderPresidentBody();
@@ -762,7 +787,7 @@ function renderPresidentBody(){
       ${ei.note?`<div class="notice wait"><span class="dot"></span>${esc(ei.note)}</div>`:''}
       <div class="progress"><i style="width:${Math.min(100,totalPct(live))}%"></i></div>
       ${statsHTML(live,{aptOverride:ei.apt,aptLabel:ei.label,aptSub:ei.sub})}
-      ${official?`<div class="dataSourceNote">Eleitorado oficial: Cadastro Eleitoral 2026 · Tribunal Superior Eleitoral. Fonte carregada pela Central de Dados.</div>`:''}
+      ${official?`<div class="dataSourceNote">Eleitorado oficial: Cadastro Eleitoral 2026 · Tribunal Superior Eleitoral. Consulta servida pela Central de Dados.</div>`:''}
       ${ei.operationalNote?`<div class="dataSourceNote">${esc(ei.operationalNote)}</div>`:''}
       ${candidatesHTML(live,'pres',S.pres.uf)}`;
   }else{
