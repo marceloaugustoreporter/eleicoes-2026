@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#06101a">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>Central de Apuração · V7.13</title>
+  <title>Central de Apuração · V7.14</title>
   <style>
     :root{
       --bg:#06101a;--panel:#0b1928;--panel2:#0e2234;--line:#27455e;
@@ -184,7 +184,7 @@
       <div class="topbar">
         <div>
           <div class="eyebrow">ÁREA AUTENTICADA</div>
-          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.13</h2>
+          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.14</h2>
           <div id="userEmail" class="muted"></div>
         </div>
         <div class="userbox">
@@ -202,7 +202,7 @@
     </div>
 
     <main id="content"></main>
-    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.13 mantém Cadastro Eleitoral 2026, totalização e mapas separados e amplia o Radar Municipal para consultas em qualquer município do Brasil, com comparação automática entre município, estado e país.</div>
+    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.14 mantém Cadastro Eleitoral 2026, totalização e mapas separados, amplia o Radar Municipal para todo o Brasil e carrega a base cadastral oficial dos estados quando necessário.</div>
   </section>
 </div>
 
@@ -213,6 +213,7 @@ const SUPABASE_URL = "https://jtysotwfuejjqdturoos.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ssWHaqZKXeozdzJ82_ufAQ_pdnVHORV";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const ELECTION_DATA_URL = SUPABASE_URL + '/functions/v1/election-data';
+const ELECTORATE_IMPORT_URL = SUPABASE_URL + '/functions/v1/tse-electorate-importer-v2';
 
 const TSE_BASE='https://resultados.tse.jus.br/oficial/ele2026';
 const ELE={pres1:'6257',pres2:'6258',state1:'6259',state2:'6260'};
@@ -251,6 +252,7 @@ const S={
   municipalities:null,
   officialElectorate:null, officialElectorateLoading:false,
   officialMunicipalElectorate:{},
+  electorateImports:{},
   radar:{
     uf:'mg',cityName:'Passos',mun:'',loading:false,error:'',last:null,requestSeq:0,selectionKey:'',
     official:null,
@@ -271,6 +273,14 @@ const ptxt=v=>pct(v).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFrac
 const pad=(v,n)=>String(v).padStart(n,'0');
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
+function displayCityName(value){
+  const minor=new Set(['da','das','de','do','dos','e']);
+  return String(value||'').trim().toLocaleLowerCase('pt-BR').split(/\s+/).map((word,i)=>{
+    if(i>0&&minor.has(word))return word;
+    if(/^d'/.test(word))return "d'"+word.slice(2).replace(/(^|[-'])\p{L}/gu,m=>m.toLocaleUpperCase('pt-BR'));
+    return word.replace(/(^|[-'])\p{L}/gu,m=>m.toLocaleUpperCase('pt-BR'));
+  }).join(' ');
+}
 
 async function getJSON(url){
   const r=await fetch(url,{cache:'no-store'});
@@ -466,10 +476,10 @@ function renderHome(){
     <h2 class="sectionTitle">Segundo turno</h2>
     <div class="grid">
       <button class="module" type="button" data-open="pres"><h3>Presidente · Brasil, estado e cidade</h3><p>Apuração do 2º turno com dados oficiais, eleitorado cadastral separado da totalização, busca municipal e mapas inteligentes.</p><span class="tag">FREE</span></button>
-      <button class="module" type="button" data-open="radar"><h3>Radar Municipal · Brasil</h3><p>Escolha qualquer estado e município para comparar o resultado local com a respectiva UF e o Brasil. Passos permanece como consulta inicial.</p><span class="tag">NOVO · V7.13</span></button>
+      <button class="module" type="button" data-open="radar"><h3>Radar Municipal · Brasil</h3><p>Escolha qualquer estado e município para comparar o resultado local com a respectiva UF e o Brasil. Passos permanece como consulta inicial.</p><span class="tag">NOVO · V7.14</span></button>
       <button class="module" type="button" data-open="gov"><h3>Governadores · estados com 2º turno</h3><p>Descoberta automática das UFs que chegaram ao 2º turno e abertura da disputa estadual.</p><span class="tag">FREE</span></button>
     </div>
-    <div class="notice" style="margin-top:12px"><span class="dot" style="background:var(--green)"></span><strong>Central de Dados V7.13 ativa</strong> · resultados compartilhados por cache, com fallback para o último dado confirmado.</div>
+    <div class="notice" style="margin-top:12px"><span class="dot" style="background:var(--green)"></span><strong>Central de Dados V7.14 ativa</strong> · resultados compartilhados por cache, com fallback para o último dado confirmado.</div>
     <h2 class="sectionTitle">Transmissão</h2>
     <div class="grid">
       <button class="module" type="button" data-open="broadcast"><h3>Template básico horizontal</h3><p>Saída 16:9 para OBS com placar e atualização automática.</p><span class="tag">FREE</span></button>
@@ -505,10 +515,10 @@ async function loadOfficialElectorate(){
     S.officialElectorateLoading=false;
   }
 }
-async function loadOfficialMunicipalElectorate(uf,mun){
+async function loadOfficialMunicipalElectorate(uf,mun,force=false){
   if(!uf||uf==='br'||!mun)return null;
   const key=`${uf}:${mun}`;
-  if(Object.prototype.hasOwnProperty.call(S.officialMunicipalElectorate,key)){
+  if(!force&&Object.prototype.hasOwnProperty.call(S.officialMunicipalElectorate,key)){
     return S.officialMunicipalElectorate[key]||null;
   }
   try{
@@ -1138,6 +1148,41 @@ function radarInsightText(local,state,br,cityName,stateName){
   }
   return out;
 }
+async function importOfficialElectorateState(uf){
+  if(S.plan!=='admin')throw new Error('A carga do cadastro estadual exige perfil administrador.');
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session?.access_token)throw new Error('Sessão expirada');
+  const r=await fetch(ELECTORATE_IMPORT_URL+'?uf='+encodeURIComponent(String(uf||'').toUpperCase()),{
+    cache:'no-store',
+    headers:{'Authorization':'Bearer '+session.access_token,'apikey':SUPABASE_PUBLISHABLE_KEY}
+  });
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j?.detail||j?.error||'Falha ao carregar o Cadastro Eleitoral 2026.');
+  return j;
+}
+async function maybeImportRadarElectorate(force=false){
+  const uf=S.radar.uf,mun=S.radar.mun;
+  if(S.plan!=='admin'||!uf||!mun||S.radar.official)return;
+  const key=`${uf}:${mun}`;
+  const st=S.electorateImports[uf];
+  if(st?.status==='loading')return;
+  if(!force&&(st?.status==='done'||st?.status==='error'))return;
+  S.electorateImports[uf]={status:'loading',error:'',startedAt:new Date()};
+  if(S.view==='radar'&&S.radar.selectionKey===key)renderRadarBody();
+  try{
+    const result=await importOfficialElectorateState(uf);
+    S.electorateImports[uf]={status:'done',error:'',result,finishedAt:new Date()};
+    Object.keys(S.officialMunicipalElectorate).filter(k=>k.startsWith(uf+':')).forEach(k=>delete S.officialMunicipalElectorate[k]);
+    const row=await loadOfficialMunicipalElectorate(uf,mun,true);
+    if(S.radar.selectionKey===key){
+      S.radar.official=row;
+      if(S.view==='radar')renderRadarBody();
+    }
+  }catch(e){
+    S.electorateImports[uf]={status:'error',error:e.message||'Falha na carga cadastral.',finishedAt:new Date()};
+    if(S.view==='radar'&&S.radar.selectionKey===key)renderRadarBody();
+  }
+}
 function resetRadarData(){
   S.radar.error='';S.radar.last=null;S.radar.official=null;S.radar.selectionKey='';
   S.radar.live={local:null,state:null,br:null};
@@ -1214,10 +1259,11 @@ function openRadarInPresident(){
 }
 function renderRadar(){
   const stateName=UF_NAMES[S.radar.uf]||S.radar.uf.toUpperCase();
+  const cityDisplay=displayCityName(S.radar.cityName||'Município');
   content.innerHTML=`
     <section class="card">
       <div class="sectionHead">
-        <div><div class="eyebrow">RADAR MUNICIPAL · V7.13</div><h2>${esc(S.radar.cityName||'Município')} · ${esc(S.radar.uf.toUpperCase())}</h2><div class="muted">Escolha qualquer município do Brasil. O Radar compara o resultado local com o respectivo estado e o país e muda automaticamente da referência do 1º turno para a totalização do 2º turno quando houver votos.</div></div>
+        <div><div class="eyebrow">RADAR MUNICIPAL · V7.14</div><h2>${esc(cityDisplay)} · ${esc(S.radar.uf.toUpperCase())}</h2><div class="muted">Escolha qualquer município do Brasil. O Radar compara o resultado local com o respectivo estado e o país e muda automaticamente da referência do 1º turno para a totalização do 2º turno quando houver votos.</div></div>
         <button id="radarRefresh" class="btn secondary" type="button">Atualizar Radar</button>
       </div>
       <div class="controls">
@@ -1260,7 +1306,7 @@ function renderRadar(){
 }
 function renderRadarBody(){
   const box=$('#radarBody');if(!box)return;
-  const cityName=S.radar.cityName||'Município';
+  const cityName=displayCityName(S.radar.cityName||'Município');
   const stateName=UF_NAMES[S.radar.uf]||S.radar.uf.toUpperCase();
   const hasAny=S.radar.reference.local||S.radar.live.local;
   if(S.radar.loading&&!hasAny){
@@ -1280,11 +1326,18 @@ function renderRadarBody(){
   const updated=S.radar.last?' · leitura '+S.radar.last.toLocaleTimeString('pt-BR'):'';
   const cache=radarCacheText(S.radar.cache.local);
   const insights=radarInsightText(local,state,br,cityName,stateName);
+  const importState=S.electorateImports[S.radar.uf]||null;
+  const importNotice=!official&&S.plan==='admin'&&importState?.status==='loading'
+    ?`<div class="notice"><span class="dot"></span><strong>Cadastro Eleitoral 2026:</strong> carregando a base oficial de ${esc(stateName)}. Enquanto isso, o Radar mantém o eleitorado da totalização claramente identificado.</div>`
+    :!official&&S.plan==='admin'&&importState?.status==='error'
+      ?`<div class="notice wait"><span class="dot"></span><strong>Cadastro Eleitoral 2026:</strong> a carga de ${esc(stateName)} não foi concluída. <button id="radarRetryElectorate" class="btn ghost" type="button" style="margin-left:8px;padding:6px 9px">Tentar novamente</button></div>`
+      :'';
   box.innerHTML=`
     <div class="notice ${sourceLive?'':'wait'}"><span class="dot" style="background:${sourceLive?'var(--green)':'var(--yellow)'}"></span><strong>${sourceLive?'2º turno em acompanhamento':'Referência antes do 2º turno'}</strong> · ${sourceLive?'dados atuais da totalização':'percentuais exibidos a partir do resultado final do 1º turno'}${updated}${cache}</div>
+    ${importNotice}
     ${S.radar.error?`<div class="dataSourceNote">Última atualização parcial: ${esc(S.radar.error)}</div>`:''}
     <div class="radarHero">
-      <div class="radarKpi"><strong>${official?nf(official.voters):nf(local.stats.apt)}</strong><span>${official?'eleitores aptos · Cadastro Eleitoral 2026':'eleitorado da totalização exibida'}</span></div>
+      <div class="radarKpi"><strong>${official?nf(official.voters):nf(local.stats.apt)}</strong><span>${official?'eleitores aptos · Cadastro Eleitoral 2026':(importState?.status==='loading'?'valor temporário · totalização enquanto o cadastro é carregado':'eleitorado da totalização exibida')}</span></div>
       <div class="radarKpi"><strong>${winner?esc(winner.nmu||winner.nm):'—'}</strong><span>mais votado em ${esc(cityName)} · ${esc(local.round)}</span></div>
       <div class="radarKpi"><strong>${radarPP(local.margin)}</strong><span>diferença entre Lula e Flávio Bolsonaro</span></div>
       <div class="radarKpi"><strong>${sourceLive?ptxt(totalPct(local.data)):'1º turno encerrado'}</strong><span>${sourceLive?'seções totalizadas':'base de referência antes do 2º turno'}</span></div>
@@ -1301,6 +1354,8 @@ function renderRadarBody(){
     <div class="radarActions"><button id="radarOpenMunicipality" class="btn" type="button">Abrir apuração completa de ${esc(cityName)}</button></div>
     <div class="dataSourceNote">Fonte: Tribunal Superior Eleitoral. O Radar não mistura rodadas: cada linha identifica se está usando o 2º turno ou a referência final do 1º turno.</div>`;
   $('#radarOpenMunicipality')?.addEventListener('click',openRadarInPresident);
+  $('#radarRetryElectorate')?.addEventListener('click',()=>maybeImportRadarElectorate(true));
+  if(!official&&S.plan==='admin'&&!importState)maybeImportRadarElectorate(false);
 }
 
 async function discoverGovernorRunoffs(){
