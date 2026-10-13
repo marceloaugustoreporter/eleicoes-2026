@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#06101a">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>Central de Apuração · V7.9</title>
+  <title>Central de Apuração · V7.10</title>
   <style>
     :root{
       --bg:#06101a;--panel:#0b1928;--panel2:#0e2234;--line:#27455e;
@@ -97,6 +97,9 @@
     .modeGroup{display:flex;gap:6px;flex-wrap:wrap}
     .modeBtn{border:1px solid #31536d;background:#081827;color:#cde0ec;border-radius:10px;padding:8px 11px;font-size:10px;font-weight:900;cursor:pointer}
     .modeBtn.on{background:var(--cyan);border-color:var(--cyan);color:#04131e}
+    .modeBtn:disabled{opacity:.45;cursor:not-allowed}
+    .mapModeWaiting{font-size:10px;color:var(--muted);font-weight:800;padding:7px 2px}
+    .dataSourceNote{margin-top:7px;color:#8fa6b7;font-size:9px;line-height:1.45}
     .stateMapStatus{margin:10px 0 6px}
     #stateMap{width:100%;height:auto;display:block;min-height:300px;max-height:620px}
     .munShape{stroke:#4a6679;stroke-width:.70;vector-effect:non-scaling-stroke;cursor:pointer;transition:fill .15s,opacity .15s,stroke-width .15s}
@@ -161,7 +164,7 @@
       <div class="topbar">
         <div>
           <div class="eyebrow">ÁREA AUTENTICADA</div>
-          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.9</h2>
+          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.10</h2>
           <div id="userEmail" class="muted"></div>
         </div>
         <div class="userbox">
@@ -178,7 +181,7 @@
     </div>
 
     <main id="content"></main>
-    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.9 usa uma Central de Dados com cache compartilhado para consultar os arquivos do 2º turno quando estiverem disponíveis e mantém o 1º turno apenas como referência para identificar as candidaturas classificadas.</div>
+    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.10 separa o Cadastro Eleitoral 2026 dos dados operacionais de totalização, usa cache compartilhado e mantém o 1º turno apenas como referência quando necessário.</div>
   </section>
 </div>
 
@@ -225,6 +228,7 @@ const S={
     stateDrawSeq:0,stateGeoCount:0
   },
   municipalities:null,
+  officialElectorate:null, officialElectorateLoading:false,
   gov:{loading:false,states:[],selected:'',live:null,error:'',last:null},
   timers:[]
 };
@@ -312,16 +316,30 @@ function secondRoundStarted(data){
   return !!data&&(String(data.and||'').toLowerCase()!=='n'||totalPct(data)>0||num(data?.v?.tv)>0);
 }
 function electorateDisplayInfo(live){
+  const official=officialElectorateForCurrentScope();
+  if(official){
+    const operational=num(live?.e?.te);
+    const started=secondRoundStarted(live);
+    return{
+      apt:num(official.voters),
+      label:'eleitores aptos',
+      sub:'cadastro eleitoral 2026 · TSE',
+      note:'',
+      operationalNote:started&&operational&&operational!==num(official.voters)
+        ?`Comparecimento e abstenção seguem a abrangência do arquivo de totalização do TSE (${nf(operational)} eleitores); o cartão de eleitorado mostra o cadastro oficial de 2026.`
+        :''
+    };
+  }
   const ref=S.pres.scopeReference;
   if(live&&!secondRoundStarted(live)&&ref?.e?.te){
     return{
       apt:num(ref.e.te),
       label:'eleitorado na totalização',
       sub:'referência final do 1º turno',
-      note:'O arquivo do 2º turno ainda está sem totalização. Para evitar números preliminares incompletos, o painel usa temporariamente o eleitorado da totalização final do 1º turno nesta mesma abrangência.'
+      note:'No recorte municipal, enquanto o 2º turno estiver zerado, o painel usa como referência a totalização final do 1º turno.'
     };
   }
-  return{apt:num(live?.e?.te),label:'eleitorado na totalização',sub:'',note:''};
+  return{apt:num(live?.e?.te),label:'eleitorado na totalização',sub:'',note:'',operationalNote:''};
 }
 function candidatePhoto(c,office,uf='br'){
   if(!c?.sqcand)return'';
@@ -379,6 +397,7 @@ async function loadProfile(user){
   if(!data||data.active!==true){await sb.auth.signOut();throw new Error('Acesso desativado. Fale com o administrador.')}
   S.user=user;userEmail.textContent=user.email||'';setPlanUI(data.plan||'free');
   loginView.style.display='none';appView.style.display='block';render();
+  loadOfficialElectorate().catch(()=>{});
 }
 async function applySession(){
   const {data:{session}}=await sb.auth.getSession();
@@ -417,7 +436,7 @@ function renderHome(){
       <button class="module" type="button" data-open="pres"><h3>Presidente · Brasil, estado e cidade</h3><p>Apuração do 2º turno com dados oficiais, busca municipal, mapa do Brasil e mapa municipal inteligente por estado.</p><span class="tag">FREE</span></button>
       <button class="module" type="button" data-open="gov"><h3>Governadores · estados com 2º turno</h3><p>Descoberta automática das UFs que chegaram ao 2º turno e abertura da disputa estadual.</p><span class="tag">FREE</span></button>
     </div>
-    <div class="notice" style="margin-top:12px"><span class="dot" style="background:var(--green)"></span><strong>Central de Dados V7.9 ativa</strong> · resultados compartilhados por cache, com fallback para o último dado confirmado.</div>
+    <div class="notice" style="margin-top:12px"><span class="dot" style="background:var(--green)"></span><strong>Central de Dados V7.10 ativa</strong> · resultados compartilhados por cache, com fallback para o último dado confirmado.</div>
     <h2 class="sectionTitle">Transmissão</h2>
     <div class="grid">
       <button class="module" type="button" data-open="broadcast"><h3>Template básico horizontal</h3><p>Saída 16:9 para OBS com placar e atualização automática.</p><span class="tag">FREE</span></button>
@@ -438,6 +457,25 @@ async function loadMunicipalities(){
     if(UF_NAMES[uf])out[uf]=(a.mu||[]).map(m=>({cd:pad(m.cd,5),nm:m.nm,cdi:m.cdi})).sort((x,y)=>x.nm.localeCompare(y.nm,'pt-BR'));
   });
   S.municipalities=out;return out;
+}
+async function loadOfficialElectorate(){
+  if(S.officialElectorate||S.officialElectorateLoading)return S.officialElectorate;
+  S.officialElectorateLoading=true;
+  try{
+    const packet=await centralData({mode:'official-electorate'});
+    S.officialElectorate=packet.data?.byScope||{};
+    if(S.view==='pres')renderPresidentBody();
+    return S.officialElectorate;
+  }catch(e){
+    return null;
+  }finally{
+    S.officialElectorateLoading=false;
+  }
+}
+function officialElectorateForCurrentScope(){
+  if(S.pres.mun)return null;
+  const code=S.pres.uf==='br'?'br':S.pres.uf;
+  return S.officialElectorate?.[code]||null;
 }
 async function loadPresReference(){
   try{
@@ -563,11 +601,13 @@ function stateMapCardHTML(){
       <button id="stateMapRefresh" class="btn secondary" type="button">Atualizar mapa municipal</button>
     </div>
     <div class="stateMapTools">
-      <div class="modeGroup">
-        <button class="modeBtn ${S.pres.mapMode==='race'?'on':''}" data-map-mode="race" type="button">Disputa</button>
-        <button class="modeBtn ${S.pres.mapMode==='lula'?'on':''}" data-map-mode="lula" type="button">Lula</button>
-        <button class="modeBtn ${S.pres.mapMode==='flavio'?'on':''}" data-map-mode="flavio" type="button">Flávio</button>
-      </div>
+      ${secondRoundStarted(S.pres.data)
+        ?`<div class="modeGroup">
+            <button class="modeBtn ${S.pres.mapMode==='race'?'on':''}" data-map-mode="race" type="button">Disputa</button>
+            <button class="modeBtn ${S.pres.mapMode==='lula'?'on':''}" data-map-mode="lula" type="button">Lula</button>
+            <button class="modeBtn ${S.pres.mapMode==='flavio'?'on':''}" data-map-mode="flavio" type="button">Flávio</button>
+          </div>`
+        :'<div class="mapModeWaiting">Escala Disputa / Lula / Flávio será ativada quando começar a totalização.</div>'}
       ${focus?'<button id="showWholeState" class="btn ghost" type="button">Ver todo o estado</button>':''}
     </div>
     <div id="stateMapStatus" class="stateMapStatus"></div>
@@ -600,8 +640,10 @@ function renderPresident(){
     <section class="card">
       <div class="sectionHead"><div><div class="eyebrow">MAPA DO BRASIL</div><h2>Liderança por estado</h2><div class="muted">Vermelho = Lula · azul = Flávio Bolsonaro · intensidade = tamanho da vantagem · cinza = sem votos.</div></div><button id="mapRefresh" class="btn secondary" type="button">Atualizar mapa</button></div>
       <div class="mapBox"><svg id="brMap" viewBox="0 0 720 620" role="img" aria-label="Mapa do Brasil por liderança presidencial"></svg>
-        <div class="mapScale"></div>
-        <div class="scaleLabels"><span>Lula · vantagem maior</span><span>Equilíbrio</span><span>Flávio · vantagem maior</span></div>
+        <div id="brMapScale" style="display:none">
+          <div class="mapScale"></div>
+          <div class="scaleLabels"><span>Lula · vantagem maior</span><span>Equilíbrio</span><span>Flávio · vantagem maior</span></div>
+        </div>
         <div class="mapLegend"><span><i class="legendDot" style="background:#33495b"></i>Sem votos</span><span><i class="legendDot" style="background:var(--cyan)"></i>Estado pesquisado</span></div>
       </div>
     </section>`;
@@ -715,14 +757,23 @@ function renderPresidentBody(){
   const live=S.pres.data;
   if(live){
     const ei=electorateDisplayInfo(live);
+    const official=officialElectorateForCurrentScope();
     box.innerHTML=`<div class="notice"><span class="dot" style="background:var(--green)"></span><strong>${esc(presLocationLabel())}</strong> · arquivo oficial do 2º turno disponível · ${ptxt(totalPct(live))} das seções totalizadas${S.pres.last?' · leitura '+S.pres.last.toLocaleTimeString('pt-BR'):''}${S.pres.cacheMeta?.cache?' · cache '+esc(S.pres.cacheMeta.cache):''}</div>
       ${ei.note?`<div class="notice wait"><span class="dot"></span>${esc(ei.note)}</div>`:''}
-      <div class="progress"><i style="width:${Math.min(100,totalPct(live))}%"></i></div>${statsHTML(live,{aptOverride:ei.apt,aptLabel:ei.label,aptSub:ei.sub})}${candidatesHTML(live,'pres',S.pres.uf)}`;
+      <div class="progress"><i style="width:${Math.min(100,totalPct(live))}%"></i></div>
+      ${statsHTML(live,{aptOverride:ei.apt,aptLabel:ei.label,aptSub:ei.sub})}
+      ${official?`<div class="dataSourceNote">Eleitorado oficial: Cadastro Eleitoral 2026 · Tribunal Superior Eleitoral. Fonte carregada pela Central de Dados.</div>`:''}
+      ${ei.operationalNote?`<div class="dataSourceNote">${esc(ei.operationalNote)}</div>`:''}
+      ${candidatesHTML(live,'pres',S.pres.uf)}`;
   }else{
     const ref=S.pres.reference;
+    const official=officialElectorateForCurrentScope();
     box.innerHTML=`<div class="notice wait"><span class="dot"></span><strong>${esc(presLocationLabel())}</strong> · aguardando o arquivo oficial de resultados do 2º turno no TSE. A tela já está preparada para assumir os dados automaticamente quando o arquivo estiver disponível.</div>
       ${S.pres.error?`<div class="muted" style="margin-top:8px">Retorno atual: ${esc(S.pres.error)}</div>`:''}
-      ${S.pres.scopeReference?statsHTML(S.pres.scopeReference,{aptLabel:'eleitorado na totalização',aptSub:'referência final do 1º turno'}):''}
+      ${official
+        ?statsHTML({e:{},v:{}},{aptOverride:official.voters,aptLabel:'eleitores aptos',aptSub:'cadastro eleitoral 2026 · TSE'})
+        :(S.pres.scopeReference?statsHTML(S.pres.scopeReference,{aptLabel:'eleitorado na totalização',aptSub:'referência final do 1º turno'}):'')}
+      ${official?`<div class="dataSourceNote">Eleitorado oficial: Cadastro Eleitoral 2026 · Tribunal Superior Eleitoral.</div>`:''}
       ${ref?`<div class="sectionTitle" style="font-size:16px">Candidaturas classificadas · referência do 1º turno</div>${qualifyingHTML(ref,'pres','br')}`:''}`;
   }
 }
@@ -736,6 +787,8 @@ async function drawBrazilMap(){
     const projection=d3.geoMercator().fitExtent([[18,18],[702,600]],geo);
     const path=d3.geoPath(projection);
     const selectedUF=S.pres.uf!=='br'?S.pres.uf:'';
+    const hasNationalVotes=Object.values(S.pres.mapData||{}).some(x=>x?.hasVotes);
+    const scaleBox=$('#brMapScale');if(scaleBox)scaleBox.style.display=hasNationalVotes?'block':'none';
     svg.selectAll('path').data(geo.features).enter().append('path')
       .attr('class',d=>{
         const name=d.properties?.name||d.properties?.NAME_1||'';
@@ -840,8 +893,6 @@ function renderStateMapSummary(){
   if(!rows.length){
     if(S.pres.mun){
       box.innerHTML=`<div class="notice wait"><span class="dot"></span>${esc(S.pres.cityName||'Município')} está destacado na malha. Aguardando votos do 2º turno para aplicar a cor da disputa.</div>`;
-    }else if(S.pres.stateGeoCount){
-      box.innerHTML=`<div class="notice wait"><span class="dot"></span>${nf(S.pres.stateGeoCount)} municípios desenhados · aguardando a totalização para formar a escala de cores.</div>`;
     }else box.innerHTML='';
     return;
   }
@@ -878,6 +929,7 @@ function renderStateMapSummary(){
 }
 function renderStateMapScale(){
   const box=$('#stateMapScale');if(!box)return;
+  if(!secondRoundStarted(S.pres.data)){box.innerHTML='';return}
   if(S.pres.mapMode==='lula'){
     box.innerHTML='<div class="mapScale lula"></div><div class="scaleLabels"><span>menor votação Lula</span><span>maior votação Lula</span></div>';
   }else if(S.pres.mapMode==='flavio'){
