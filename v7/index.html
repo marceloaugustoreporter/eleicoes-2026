@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#06101a">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>Central de Apuração · V7.7</title>
+  <title>Central de Apuração · V7.8</title>
   <style>
     :root{
       --bg:#06101a;--panel:#0b1928;--panel2:#0e2234;--line:#27455e;
@@ -82,9 +82,6 @@
     .mapState:hover{opacity:.82}
     .mapState.dimmed{opacity:.34}
     .mapState.selectedState{stroke:var(--cyan);stroke-width:3.2;opacity:1;filter:drop-shadow(0 0 4px rgba(53,208,246,.55))}
-    .nationalMun{stroke:#071522;stroke-width:.34;vector-effect:non-scaling-stroke;cursor:pointer}
-    .nationalMun:hover{stroke:#fff;stroke-width:.9}
-    .nationalMun.focused{stroke:#fff;stroke-width:1.5;filter:drop-shadow(0 0 3px rgba(53,208,246,.8))}
     .cityMarker{fill:#fff;stroke:#06101a;stroke-width:2.8}
     .cityMarkerRing{fill:none;stroke:var(--cyan);stroke-width:4;opacity:1;filter:drop-shadow(0 0 5px rgba(53,208,246,.8))}
     .cityLabel{fill:#fff;font-size:12px;font-weight:950;paint-order:stroke;stroke:#06101a;stroke-width:4px;stroke-linejoin:round}
@@ -164,7 +161,7 @@
       <div class="topbar">
         <div>
           <div class="eyebrow">ÁREA AUTENTICADA</div>
-          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.7</h2>
+          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.8</h2>
           <div id="userEmail" class="muted"></div>
         </div>
         <div class="userbox">
@@ -181,7 +178,7 @@
     </div>
 
     <main id="content"></main>
-    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.7 usa uma Central de Dados com cache compartilhado para consultar os arquivos do 2º turno quando estiverem disponíveis e mantém o 1º turno apenas como referência para identificar as candidaturas classificadas.</div>
+    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.8 usa uma Central de Dados com cache compartilhado para consultar os arquivos do 2º turno quando estiverem disponíveis e mantém o 1º turno apenas como referência para identificar as candidaturas classificadas.</div>
   </section>
 </div>
 
@@ -196,8 +193,8 @@ const ELECTION_DATA_URL = SUPABASE_URL + '/functions/v1/election-data';
 const TSE_BASE='https://resultados.tse.jus.br/oficial/ele2026';
 const ELE={pres1:'6257',pres2:'6258',state1:'6259',state2:'6260'};
 const POLL=30000;
-const GEO_URL='https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson';
-const MUN_GEO_BASE='https://raw.githubusercontent.com/henriquemalvar/br-geojson/main/dist/municipios';
+const GEO_URL='https://cdn.jsdelivr.net/gh/codeforamerica/click_that_hood@master/public/data/brazil-states.geojson';
+const MUN_GEO_BASE='https://cdn.jsdelivr.net/gh/henriquemalvar/br-geojson@main/dist/municipios';
 
 const UF_NAMES={
   ac:'Acre',al:'Alagoas',ap:'Amapá',am:'Amazonas',ba:'Bahia',ce:'Ceará',df:'Distrito Federal',
@@ -209,13 +206,23 @@ const UF_NAMES={
 const NAME_TO_UF=Object.fromEntries(Object.entries(UF_NAMES).map(([k,v])=>[norm(v),k]));
 const UFS=Object.keys(UF_NAMES);
 
+const GEO_CACHE=new Map();
+async function loadGeo(url){
+  if(GEO_CACHE.has(url))return GEO_CACHE.get(url);
+  const promise=d3.json(url);
+  GEO_CACHE.set(url,promise);
+  try{return await promise}
+  catch(e){GEO_CACHE.delete(url);throw e}
+}
+
 const S={
   view:'home', plan:'free', user:null,
   pres:{
     uf:'br',mun:'',cityName:'',data:null,reference:null,error:'',last:null,
     scopeReference:null,scopeReferenceKey:'',scopeReferenceError:'',
-    mapData:{},mapLoading:false,mapCacheMeta:null,
-    stateMapUF:'',stateMapRows:[],stateMapLoading:false,stateMapError:'',stateMapMeta:null,mapMode:'race'
+    mapData:{},mapLoading:false,mapCacheMeta:null,brDrawSeq:0,
+    stateMapUF:'',stateMapRows:[],stateMapLoading:false,stateMapError:'',stateMapMeta:null,mapMode:'race',
+    stateDrawSeq:0,stateGeoCount:0
   },
   municipalities:null,
   gov:{loading:false,states:[],selected:'',live:null,error:'',last:null},
@@ -410,7 +417,7 @@ function renderHome(){
       <button class="module" type="button" data-open="pres"><h3>Presidente · Brasil, estado e cidade</h3><p>Apuração do 2º turno com dados oficiais, busca municipal, mapa do Brasil e mapa municipal inteligente por estado.</p><span class="tag">FREE</span></button>
       <button class="module" type="button" data-open="gov"><h3>Governadores · estados com 2º turno</h3><p>Descoberta automática das UFs que chegaram ao 2º turno e abertura da disputa estadual.</p><span class="tag">FREE</span></button>
     </div>
-    <div class="notice" style="margin-top:12px"><span class="dot" style="background:var(--green)"></span><strong>Central de Dados V7.7 ativa</strong> · resultados compartilhados por cache, com fallback para o último dado confirmado.</div>
+    <div class="notice" style="margin-top:12px"><span class="dot" style="background:var(--green)"></span><strong>Central de Dados V7.8 ativa</strong> · resultados compartilhados por cache, com fallback para o último dado confirmado.</div>
     <h2 class="sectionTitle">Transmissão</h2>
     <div class="grid">
       <button class="module" type="button" data-open="broadcast"><h3>Template básico horizontal</h3><p>Saída 16:9 para OBS com placar e atualização automática.</p><span class="tag">FREE</span></button>
@@ -549,7 +556,7 @@ function stateMapCardHTML(){
   const title=focus?`Foco municipal · ${esc(S.pres.cityName||'Município')}`:`Mapa municipal · ${esc(stateName)}`;
   const subtitle=focus
     ?`Os demais municípios ficam escurecidos para destacar ${esc(S.pres.cityName||'o município selecionado')}.`
-    :'Cada município é colorido pela disputa. Quanto mais intensa a cor, maior a vantagem.';
+    :'A malha municipal aparece imediatamente. As cores da disputa entram quando a totalização começar.';
   return `<section class="card">
     <div class="sectionHead">
       <div><div class="eyebrow">MAPA MUNICIPAL · ${esc(S.pres.uf.toUpperCase())}</div><h2>${title}</h2><div class="muted">${subtitle}</div></div>
@@ -589,15 +596,15 @@ function renderPresident(){
       </div>
       <div id="presBody"></div>
     </section>
+    ${stateMapCardHTML()}
     <section class="card">
-      <div class="sectionHead"><div><div class="eyebrow">MAPA DO BRASIL</div><h2>Liderança por estado</h2><div class="muted">Vermelho = Lula · azul = Flávio Bolsonaro · intensidade = tamanho da vantagem · cinza = sem votos. Ao selecionar um estado, a malha municipal aparece dentro dele.</div></div><button id="mapRefresh" class="btn secondary" type="button">Atualizar mapa</button></div>
+      <div class="sectionHead"><div><div class="eyebrow">MAPA DO BRASIL</div><h2>Liderança por estado</h2><div class="muted">Vermelho = Lula · azul = Flávio Bolsonaro · intensidade = tamanho da vantagem · cinza = sem votos.</div></div><button id="mapRefresh" class="btn secondary" type="button">Atualizar mapa</button></div>
       <div class="mapBox"><svg id="brMap" viewBox="0 0 720 620" role="img" aria-label="Mapa do Brasil por liderança presidencial"></svg>
         <div class="mapScale"></div>
         <div class="scaleLabels"><span>Lula · vantagem maior</span><span>Equilíbrio</span><span>Flávio · vantagem maior</span></div>
         <div class="mapLegend"><span><i class="legendDot" style="background:#33495b"></i>Sem votos</span><span><i class="legendDot" style="background:var(--cyan)"></i>Estado pesquisado</span></div>
       </div>
-    </section>
-    ${stateMapCardHTML()}`;
+    </section>`;
   const uf=$('#presUF'),cityInput=$('#presCityInput'),cityList=$('#presCityList');
   uf.value=S.pres.uf;
   cityInput.value=S.pres.cityName||'';
@@ -663,9 +670,14 @@ function renderPresident(){
   $('#mapRefresh').addEventListener('click',loadPresMap);
 
   if(S.pres.uf!=='br'){
-    $('#stateMapRefresh')?.addEventListener('click',()=>loadStateMunicipalMap(true));
+    $('#stateMapRefresh')?.addEventListener('click',()=>{
+      drawStateMunicipalMap();
+      if(secondRoundStarted(S.pres.data))loadStateMunicipalMap(true);
+      else renderStateMapStatus();
+    });
     $('#showWholeState')?.addEventListener('click',()=>{
-      S.pres.mun='';S.pres.cityName='';clearTimers();renderPresident();window.scrollTo({top:0,behavior:'smooth'});
+      S.pres.mun='';S.pres.cityName='';S.pres.scopeReference=null;S.pres.scopeReferenceKey='';
+      clearTimers();renderPresident();window.scrollTo({top:0,behavior:'smooth'});
     });
     $$('[data-map-mode]').forEach(b=>b.addEventListener('click',()=>{
       S.pres.mapMode=b.dataset.mapMode;
@@ -676,14 +688,18 @@ function renderPresident(){
   }
 
   syncControls();renderPresidentBody();
-  loadPresidentLive();loadPresMap();drawBrazilMap();
-  if(S.pres.uf!=='br'){
-    drawStateMunicipalMap();
-    loadStateMunicipalMap();
-  }
+  loadPresidentLive().then(()=>{
+    if(S.pres.uf!=='br'&&secondRoundStarted(S.pres.data))loadStateMunicipalMap();
+    else if(S.pres.uf!=='br')renderStateMapStatus();
+  });
+  loadPresMap();drawBrazilMap();
+  if(S.pres.uf!=='br')drawStateMunicipalMap();
   startTimer(loadPresidentLive,POLL);
   startTimer(loadPresMap,60000);
-  if(S.pres.uf!=='br')startTimer(()=>loadStateMunicipalMap(true),90000);
+  if(S.pres.uf!=='br')startTimer(()=>{
+    if(secondRoundStarted(S.pres.data))loadStateMunicipalMap(true);
+    else renderStateMapStatus();
+  },120000);
 }
 async function fillCitySuggestions(uf,list){
   try{
@@ -712,15 +728,15 @@ function renderPresidentBody(){
 }
 async function drawBrazilMap(){
   const svg=d3.select('#brMap');if(svg.empty())return;
-  svg.selectAll('*').remove();
-  svg.append('text').attr('x',18).attr('y',28).attr('fill','#9db1c1').attr('font-size',12).text(S.pres.mapLoading?'Consultando os estados…':'');
+  const seq=++S.pres.brDrawSeq;
   try{
-    const geo=await d3.json(GEO_URL);
+    const geo=await loadGeo(GEO_URL);
+    if(seq!==S.pres.brDrawSeq||svg.empty())return;
     svg.selectAll('*').remove();
     const projection=d3.geoMercator().fitExtent([[18,18],[702,600]],geo);
     const path=d3.geoPath(projection);
     const selectedUF=S.pres.uf!=='br'?S.pres.uf:'';
-    svg.selectAll('path.mapState').data(geo.features).enter().append('path')
+    svg.selectAll('path').data(geo.features).enter().append('path')
       .attr('class',d=>{
         const name=d.properties?.name||d.properties?.NAME_1||'';
         const uf=NAME_TO_UF[norm(name)];
@@ -751,84 +767,23 @@ async function drawBrazilMap(){
         const lead=item.margin>0?'Lula':item.margin<0?'Flávio Bolsonaro':'Empate';
         return `${name}\nLula: ${ptxt(item.p13)}\nFlávio Bolsonaro: ${ptxt(item.p22)}\nLiderança: ${lead}`;
       });
-
-    if(selectedUF){
-      try{
-        const munGeo=await d3.json(`${MUN_GEO_BASE}/${selectedUF.toUpperCase()}.geojson`);
-        const rows=S.pres.stateMapRows||[];
-        const byId=new Map(rows.map(r=>[String(r.cdi||'').replace(/\D/g,''),r]));
-        const byName=new Map(rows.map(r=>[norm(r.nm),r]));
-        const selected=selectedMunicipality();
-        const selectedId=String(selected?.cdi||'').replace(/\D/g,'');
-        const focus=!!S.pres.mun;
-
-        svg.append('g').attr('aria-label','Municípios do estado selecionado')
-          .selectAll('path').data(munGeo.features||[]).enter().append('path')
-          .attr('class',f=>{
-            const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,'');
-            const name=f.properties?.nome||f.properties?.name||'';
-            const isSelected=focus&&((selectedId&&id===selectedId)||norm(name)===norm(S.pres.cityName));
-            return 'nationalMun'+(isSelected?' focused':'');
-          })
-          .attr('d',path)
-          .attr('fill',f=>{
-            const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,'');
-            const name=f.properties?.nome||f.properties?.name||'';
-            const row=byId.get(id)||byName.get(norm(name));
-            const isSelected=focus&&((selectedId&&id===selectedId)||norm(name)===norm(S.pres.cityName));
-            if(focus&&!isSelected)return'#132837';
-            if(isSelected&&!stateRowHasVotes(row))return'#35d0f6';
-            if(!rows.length||!stateRowHasVotes(row))return'#1a3346';
-            return stateRowColor(row);
-          })
-          .attr('opacity',f=>{
-            if(!focus)return .98;
-            const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,'');
-            const name=f.properties?.nome||f.properties?.name||'';
-            return ((selectedId&&id===selectedId)||norm(name)===norm(S.pres.cityName))?1:.72;
-          })
-          .on('click',async(event,f)=>{
-            event.stopPropagation();
-            const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,'');
-            const name=f.properties?.nome||f.properties?.name||'';
-            const all=await loadMunicipalities();
-            const arr=all[selectedUF]||[];
-            const m=arr.find(x=>String(x.cdi||'').replace(/\D/g,'')===id)||arr.find(x=>norm(x.nm)===norm(name));
-            if(!m)return;
-            S.pres.mun=m.cd;S.pres.cityName=m.nm;S.pres.scopeReference=null;S.pres.scopeReferenceKey='';
-            clearTimers();renderPresident();window.scrollTo({top:0,behavior:'smooth'});
-          })
-          .append('title').text(f=>{
-            const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,'');
-            const name=f.properties?.nome||f.properties?.name||'Município';
-            return stateRowTooltip(byId.get(id)||byName.get(norm(name)),name);
-          });
-
-        if(focus){
-          const feature=(munGeo.features||[]).find(f=>{
-            const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,'');
-            const name=f.properties?.nome||f.properties?.name||'';
-            return (selectedId&&id===selectedId)||norm(name)===norm(S.pres.cityName);
-          });
-          if(feature){
-            const p=projection(d3.geoCentroid(feature));
-            if(p){
-              const anchor=p[0]>560?'end':'start',dx=p[0]>560?-12:12;
-              svg.append('text').attr('class','cityLabel').attr('x',p[0]+dx).attr('y',p[1]-3).attr('text-anchor',anchor).text(S.pres.cityName);
-              svg.append('text').attr('class','cityLabelSub').attr('x',p[0]+dx).attr('y',p[1]+11).attr('text-anchor',anchor).text(selectedUF.toUpperCase());
-            }
-          }
-        }
-      }catch(e){}
-    }
   }catch(e){
-    svg.selectAll('*').remove();
-    svg.append('text').attr('x',18).attr('y',30).attr('fill','#ffd0d5').attr('font-size',12).text('Não foi possível carregar a malha do mapa agora.');
+    if(seq!==S.pres.brDrawSeq||svg.empty())return;
+    if(svg.selectAll('*').empty()){
+      svg.append('text').attr('x',18).attr('y',30).attr('fill','#ffd0d5').attr('font-size',12).text('Não foi possível carregar a malha do mapa agora.');
+    }
   }
 }
 async function loadStateMunicipalMap(force=false){
   const uf=S.pres.uf;
   if(uf==='br'||S.pres.stateMapLoading)return;
+  if(!secondRoundStarted(S.pres.data)){
+    S.pres.stateMapLoading=false;
+    S.pres.stateMapError='';
+    renderStateMapStatus();
+    drawStateMunicipalMap();
+    return;
+  }
   if(!force&&S.pres.stateMapUF===uf&&S.pres.stateMapRows.length){
     renderStateMapStatus();drawStateMunicipalMap();return;
   }
@@ -837,38 +792,59 @@ async function loadStateMunicipalMap(force=false){
     const packet=await centralData({mode:'state-municipal-map',election:ELE.pres2,cargo:'1',uf});
     S.pres.stateMapUF=uf;
     S.pres.stateMapRows=packet.data?.municipalities||[];
-    S.pres.stateMapMeta={...(packet.meta||{}),totalMunicipalities:packet.data?.totalMunicipalities||0,okMunicipalities:packet.data?.okMunicipalities||0};
+    S.pres.stateMapMeta={
+      ...(packet.meta||{}),
+      totalMunicipalities:packet.data?.totalMunicipalities||0,
+      okMunicipalities:packet.data?.okMunicipalities||0,
+      building:!!packet.data?.building
+    };
   }catch(e){
-    S.pres.stateMapError=e.message||'Não foi possível carregar o mapa municipal.';
-    if(String(S.pres.stateMapError).includes('STATE_MAP_BUILDING')){
-      setTimeout(()=>{if(S.view==='pres'&&S.pres.uf===uf)loadStateMunicipalMap(true)},5000);
-    }
+    S.pres.stateMapError=e.message||'Não foi possível carregar os dados municipais.';
   }finally{
     S.pres.stateMapLoading=false;
-    if(S.view==='pres'){renderStateMapStatus();renderStateMapSummary();drawStateMunicipalMap();drawBrazilMap()}
+    if(S.view==='pres'){renderStateMapStatus();renderStateMapSummary();drawStateMunicipalMap()}
   }
 }
 function renderStateMapStatus(){
   const box=$('#stateMapStatus');if(!box)return;
+  if(!secondRoundStarted(S.pres.data)){
+    const qtd=S.pres.stateGeoCount?nf(S.pres.stateGeoCount)+' municípios · ':'';
+    box.innerHTML=`<div class="notice"><span class="dot" style="background:var(--green)"></span>${qtd}malha municipal pronta. A coloração eleitoral será ativada quando começar a totalização.</div>`;
+    return;
+  }
   if(S.pres.stateMapLoading){
-    box.innerHTML='<div class="loading"><span class="dot"></span>Montando o mapa municipal com dados da Central de Dados… Na primeira leitura do estado isso pode levar alguns segundos.</div>';
+    box.innerHTML='<div class="loading"><span class="dot"></span>Buscando a última leitura municipal disponível…</div>';
     return;
   }
   if(S.pres.stateMapError){
-    box.innerHTML=`<div class="notice wait"><span class="dot"></span>${esc(S.pres.stateMapError)}</div>`;
+    box.innerHTML=`<div class="notice wait"><span class="dot"></span>${esc(S.pres.stateMapError)} A malha geográfica continua disponível.</div>`;
     return;
   }
   const meta=S.pres.stateMapMeta;
+  if(meta?.building&&!S.pres.stateMapRows.length){
+    box.innerHTML='<div class="notice wait"><span class="dot"></span>A primeira leitura das cores está sendo montada em segundo plano. O mapa continua navegável.</div>';
+    return;
+  }
   if(meta&&S.pres.stateMapRows.length){
     const when=meta.fetchedAt?new Date(meta.fetchedAt).toLocaleTimeString('pt-BR'):'';
-    box.innerHTML=`<div class="notice"><span class="dot" style="background:var(--green)"></span>${nf(meta.okMunicipalities||S.pres.stateMapRows.length)} municípios carregados${when?' · leitura '+when:''}${meta.cache?' · cache '+esc(meta.cache):''}</div>`;
-  }else box.innerHTML='';
+    box.innerHTML=`<div class="notice"><span class="dot" style="background:var(--green)"></span>${nf(meta.okMunicipalities||S.pres.stateMapRows.length)} municípios com dados${when?' · leitura '+when:''}${meta.cache?' · cache '+esc(meta.cache):''}</div>`;
+  }else{
+    const qtd=S.pres.stateGeoCount?nf(S.pres.stateGeoCount)+' municípios · ':'';
+    box.innerHTML=`<div class="notice"><span class="dot" style="background:var(--green)"></span>${qtd}malha municipal carregada.</div>`;
+  }
 }
 function renderStateMapSummary(){
   const box=$('#stateMapSummary');if(!box)return;
   const rows=S.pres.stateMapRows||[];
   const voted=rows.filter(stateRowHasVotes);
-  if(!rows.length){box.innerHTML='';return}
+  if(!rows.length){
+    if(S.pres.mun){
+      box.innerHTML=`<div class="notice wait"><span class="dot"></span>${esc(S.pres.cityName||'Município')} está destacado na malha. Aguardando votos do 2º turno para aplicar a cor da disputa.</div>`;
+    }else if(S.pres.stateGeoCount){
+      box.innerHTML=`<div class="notice wait"><span class="dot"></span>${nf(S.pres.stateGeoCount)} municípios desenhados · aguardando a totalização para formar a escala de cores.</div>`;
+    }else box.innerHTML='';
+    return;
+  }
   if(S.pres.mun){
     const m=selectedMunicipality();
     const row=rows.find(r=>String(r.cdi)===String(m?.cdi))||rows.find(r=>norm(r.nm)===norm(S.pres.cityName));
@@ -886,7 +862,7 @@ function renderStateMapSummary(){
     return;
   }
   if(!voted.length){
-    box.innerHTML=`<div class="notice wait"><span class="dot"></span>${nf(rows.length)} municípios na malha · aguardando o início da totalização para formar a escala de cores.</div>`;
+    box.innerHTML=`<div class="notice wait"><span class="dot"></span>${nf(S.pres.stateGeoCount||rows.length)} municípios na malha · aguardando o início da totalização para formar a escala de cores.</div>`;
     return;
   }
   const lula=voted.filter(r=>r.leader==='13').length;
@@ -912,10 +888,14 @@ function renderStateMapScale(){
 }
 async function drawStateMunicipalMap(){
   const svg=d3.select('#stateMap');if(svg.empty()||S.pres.uf==='br')return;
-  svg.selectAll('*').remove();
   const uf=S.pres.uf;
+  const seq=++S.pres.stateDrawSeq;
   try{
-    const geo=await d3.json(`${MUN_GEO_BASE}/${uf.toUpperCase()}.geojson`);
+    const geo=await loadGeo(`${MUN_GEO_BASE}/${uf.toUpperCase()}.geojson`);
+    if(seq!==S.pres.stateDrawSeq||svg.empty()||S.pres.uf!==uf)return;
+    S.pres.stateGeoCount=(geo.features||[]).length;
+    svg.selectAll('*').remove();
+
     const projection=d3.geoMercator().fitExtent([[14,14],[706,546]],geo);
     const path=d3.geoPath(projection);
     const rows=S.pres.stateMapRows||[];
@@ -940,13 +920,14 @@ async function drawStateMunicipalMap(){
         const isSelected=focus&&((selectedId&&id===selectedId)||norm(name)===norm(S.pres.cityName));
         if(focus&&!isSelected)return'#102432';
         if(isSelected&&!stateRowHasVotes(row))return'#35d0f6';
+        if(!rows.length||!stateRowHasVotes(row))return'#1a3346';
         return stateRowColor(row);
       })
       .attr('opacity',f=>{
         if(!focus)return 1;
         const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,'');
         const name=f.properties?.nome||f.properties?.name||'';
-        return ((selectedId&&id===selectedId)||norm(name)===norm(S.pres.cityName))?1:.64;
+        return ((selectedId&&id===selectedId)||norm(name)===norm(S.pres.cityName))?1:.66;
       })
       .on('click',async(_event,f)=>{
         const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,'');
@@ -956,6 +937,7 @@ async function drawStateMunicipalMap(){
         const m=arr.find(x=>String(x.cdi||'').replace(/\D/g,'')===id)||arr.find(x=>norm(x.nm)===norm(name));
         if(!m)return;
         S.pres.mun=m.cd;S.pres.cityName=m.nm;
+        S.pres.scopeReference=null;S.pres.scopeReferenceKey='';
         clearTimers();renderPresident();window.scrollTo({top:0,behavior:'smooth'});
       })
       .append('title').text(f=>{
@@ -981,8 +963,11 @@ async function drawStateMunicipalMap(){
     }
     renderStateMapStatus();renderStateMapSummary();renderStateMapScale();
   }catch(e){
-    svg.selectAll('*').remove();
-    svg.append('text').attr('x',18).attr('y',30).attr('fill','#ffd0d5').attr('font-size',12).text('Não foi possível carregar a malha municipal agora.');
+    if(seq!==S.pres.stateDrawSeq||svg.empty())return;
+    if(svg.selectAll('*').empty()){
+      svg.append('text').attr('x',18).attr('y',30).attr('fill','#ffd0d5').attr('font-size',12).text('Não foi possível carregar a malha municipal agora.');
+    }
+    renderStateMapStatus();
   }
 }
 
