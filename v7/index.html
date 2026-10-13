@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#06101a">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>Central de Apuração · V7.3</title>
+  <title>Central de Apuração · V7.5</title>
   <style>
     :root{
       --bg:#06101a;--panel:#0b1928;--panel2:#0e2234;--line:#27455e;
@@ -82,8 +82,8 @@
     .mapState:hover{opacity:.82}
     .mapState.dimmed{opacity:.34}
     .mapState.selectedState{stroke:var(--cyan);stroke-width:3.2;opacity:1;filter:drop-shadow(0 0 4px rgba(53,208,246,.55))}
-    .cityMarker{fill:#fff;stroke:#06101a;stroke-width:2.5}
-    .cityMarkerRing{fill:none;stroke:var(--cyan);stroke-width:3;opacity:.95}
+    .cityMarker{fill:#fff;stroke:#06101a;stroke-width:2.8}
+    .cityMarkerRing{fill:none;stroke:var(--cyan);stroke-width:4;opacity:1;filter:drop-shadow(0 0 5px rgba(53,208,246,.8))}
     .cityLabel{fill:#fff;font-size:12px;font-weight:950;paint-order:stroke;stroke:#06101a;stroke-width:4px;stroke-linejoin:round}
     .cityLabelSub{fill:#b9cfdd;font-size:9px;font-weight:850;paint-order:stroke;stroke:#06101a;stroke-width:3px}
     .insetBox{margin-top:12px;border-top:1px solid #24445d;padding-top:12px}
@@ -143,7 +143,7 @@
       <div class="topbar">
         <div>
           <div class="eyebrow">ÁREA AUTENTICADA</div>
-          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.3</h2>
+          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.5</h2>
           <div id="userEmail" class="muted"></div>
         </div>
         <div class="userbox">
@@ -160,7 +160,7 @@
     </div>
 
     <main id="content"></main>
-    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.3 consulta os arquivos do 2º turno quando estiverem disponíveis e mantém o 1º turno apenas como referência para identificar as candidaturas classificadas.</div>
+    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.5 usa uma Central de Dados com cache compartilhado para consultar os arquivos do 2º turno quando estiverem disponíveis e mantém o 1º turno apenas como referência para identificar as candidaturas classificadas.</div>
   </section>
 </div>
 
@@ -170,12 +170,13 @@
 const SUPABASE_URL = "https://jtysotwfuejjqdturoos.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ssWHaqZKXeozdzJ82_ufAQ_pdnVHORV";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const ELECTION_DATA_URL = SUPABASE_URL + '/functions/v1/election-data';
 
 const TSE_BASE='https://resultados.tse.jus.br/oficial/ele2026';
 const ELE={pres1:'6257',pres2:'6258',state1:'6259',state2:'6260'};
 const POLL=30000;
 const GEO_URL='https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson';
-const MUN_GEO_BASE='https://cdn.jsdelivr.net/gh/henriquemalvar/br-geojson@main/dist/municipios';
+const MUN_GEO_BASE='https://raw.githubusercontent.com/henriquemalvar/br-geojson/main/dist/municipios';
 
 const UF_NAMES={
   ac:'Acre',al:'Alagoas',ap:'Amapá',am:'Amazonas',ba:'Bahia',ce:'Ceará',df:'Distrito Federal',
@@ -189,7 +190,7 @@ const UFS=Object.keys(UF_NAMES);
 
 const S={
   view:'home', plan:'free', user:null,
-  pres:{uf:'br',mun:'',data:null,reference:null,error:'',last:null,mapData:{},mapLoading:false},
+  pres:{uf:'br',mun:'',cityName:'',data:null,reference:null,error:'',last:null,mapData:{},mapLoading:false},
   municipalities:null,
   gov:{loading:false,states:[],selected:'',live:null,error:'',last:null},
   timers:[]
@@ -209,6 +210,21 @@ async function getJSON(url){
   const r=await fetch(url,{cache:'no-store'});
   if(!r.ok)throw new Error('HTTP '+r.status);
   return r.json();
+}
+async function centralData(params){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session?.access_token)throw new Error('Sessão expirada');
+  const qs=new URLSearchParams(params);
+  const r=await fetch(ELECTION_DATA_URL+'?'+qs.toString(),{
+    cache:'no-store',
+    headers:{
+      'Authorization':'Bearer '+session.access_token,
+      'apikey':SUPABASE_PUBLISHABLE_KEY
+    }
+  });
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j?.upstreamStatus?'HTTP '+j.upstreamStatus:(j?.error||'Falha na Central de Dados'));
+  return j;
 }
 function resultUrl(ele,uf,cargo,mun=''){
   const scope=mun?uf+pad(mun,5):uf;
@@ -351,6 +367,7 @@ function renderHome(){
       <button class="module" type="button" data-open="pres"><h3>Presidente · Brasil, estado e cidade</h3><p>Apuração do 2º turno com dados oficiais, busca municipal e mapa do Brasil por liderança.</p><span class="tag">FREE</span></button>
       <button class="module" type="button" data-open="gov"><h3>Governadores · estados com 2º turno</h3><p>Descoberta automática das UFs que chegaram ao 2º turno e abertura da disputa estadual.</p><span class="tag">FREE</span></button>
     </div>
+    <div class="notice" style="margin-top:12px"><span class="dot" style="background:var(--green)"></span><strong>Central de Dados V7.5 ativa</strong> · resultados compartilhados por cache, com fallback para o último dado confirmado.</div>
     <h2 class="sectionTitle">Transmissão</h2>
     <div class="grid">
       <button class="module" type="button" data-open="broadcast"><h3>Template básico horizontal</h3><p>Saída 16:9 para OBS com placar e atualização automática.</p><span class="tag">FREE</span></button>
@@ -363,7 +380,8 @@ function renderHome(){
 
 async function loadMunicipalities(){
   if(S.municipalities)return S.municipalities;
-  const j=await getJSON(munUrl());
+  const packet=await centralData({mode:'municipalities'});
+  const j=packet.data;
   const out={};
   (j.abr||[]).forEach(a=>{
     const uf=String(a.cd||'').toLowerCase();
@@ -372,16 +390,22 @@ async function loadMunicipalities(){
   S.municipalities=out;return out;
 }
 async function loadPresReference(){
-  try{S.pres.reference=await getJSON(resultUrl(ELE.pres1,'br',1))}
-  catch(e){S.pres.reference=null}
+  try{
+    const packet=await centralData({mode:'result',election:ELE.pres1,cargo:'1',uf:'br'});
+    S.pres.reference=packet.data;
+  }catch(e){S.pres.reference=null}
 }
 async function loadPresidentLive(){
   S.pres.error='';const uf=S.pres.uf,mun=S.pres.mun;
   try{
-    S.pres.data=await getJSON(resultUrl(ELE.pres2,uf,1,mun));
+    const params={mode:'result',election:ELE.pres2,cargo:'1',uf};
+    if(mun)params.mun=mun;
+    const packet=await centralData(params);
+    S.pres.data=packet.data;
+    S.pres.cacheMeta=packet.meta||null;
     S.pres.last=new Date();
   }catch(e){
-    S.pres.data=null;S.pres.error=e.message||'Arquivo ainda indisponível';
+    S.pres.data=null;S.pres.cacheMeta=null;S.pres.error=e.message||'Arquivo ainda indisponível';
     if(!S.pres.reference)await loadPresReference();
   }
   if(S.view==='pres')renderPresidentBody();
@@ -389,26 +413,33 @@ async function loadPresidentLive(){
 async function loadPresMap(){
   if(S.pres.mapLoading)return;S.pres.mapLoading=true;
   const result={};
-  await Promise.all(UFS.map(async uf=>{
-    try{
-      const d=await getJSON(resultUrl(ELE.pres2,uf,1));
-      const arr=uniqueCandidates(d).sort((a,b)=>num(b.vap)-num(a.vap));
-      result[uf]={data:d,leader:arr[0]||null};
-    }catch(e){result[uf]={data:null,leader:null}}
-  }));
+  try{
+    const packet=await centralData({mode:'president-map'});
+    (packet.data?.states||[]).forEach(item=>{
+      const d=item?.payload||null;
+      const arr=d?uniqueCandidates(d).sort((a,b)=>num(b.vap)-num(a.vap)):[];
+      result[item.uf]={data:d,leader:arr[0]||null};
+    });
+    S.pres.mapCacheMeta=packet.meta||null;
+  }catch(e){
+    UFS.forEach(uf=>result[uf]={data:null,leader:null});
+    S.pres.mapCacheMeta=null;
+  }
   S.pres.mapData=result;S.pres.mapLoading=false;
   if(S.view==='pres')drawBrazilMap();
 }
 function selectedMunicipality(){
-  if(!S.pres.mun||S.pres.uf==='br')return null;
+  if(S.pres.uf==='br')return null;
   const arr=S.municipalities?.[S.pres.uf]||[];
-  return arr.find(x=>String(x.cd)===String(S.pres.mun))||null;
+  return arr.find(x=>String(x.cd)===String(S.pres.mun))
+    ||arr.find(x=>norm(x.nm)===norm(S.pres.cityName))
+    ||null;
 }
 function presLocationLabel(){
   if(S.pres.uf==='br')return'Brasil';
   if(S.pres.mun){
     const m=selectedMunicipality();
-    return `${m?.nm||'Município'} · ${S.pres.uf.toUpperCase()}`;
+    return `${m?.nm||S.pres.cityName||'Município'} · ${S.pres.uf.toUpperCase()}`;
   }
   return `${UF_NAMES[S.pres.uf]} · ${S.pres.uf.toUpperCase()}`;
 }
@@ -418,7 +449,10 @@ function renderPresident(){
       <div class="sectionHead"><div><div class="eyebrow">2º TURNO · PRESIDENTE</div><h2>Apuração presidencial</h2><div class="muted">Brasil, estado ou município · atualização automática a cada 30 segundos.</div></div><button id="presRefresh" class="btn secondary" type="button">Atualizar agora</button></div>
       <div class="controls">
         <select id="presUF"><option value="br">Brasil</option>${UFS.map(uf=>`<option value="${uf}">${UF_NAMES[uf]}</option>`).join('')}</select>
-        <select id="presMun" disabled><option value="">Escolha primeiro o estado</option></select>
+        <div>
+          <input id="presCityInput" list="presCityList" placeholder="Digite a cidade (ex.: Passos)" autocomplete="off" disabled>
+          <datalist id="presCityList"></datalist>
+        </div>
         <button id="presGo" class="btn" type="button">Abrir resultado</button>
       </div>
       <div id="presBody"></div>
@@ -430,44 +464,77 @@ function renderPresident(){
         ${S.pres.mun?`<div class="insetBox"><div class="insetHead"><strong>Recorte de ${esc(UF_NAMES[S.pres.uf])}</strong><span id="insetLabel">Localizando ${esc(presLocationLabel())}…</span></div><svg id="stateInset" viewBox="0 0 720 420" role="img" aria-label="Recorte do estado com município pesquisado"></svg></div>`:''}
       </div>
     </section>`;
-  const uf=$('#presUF'),mun=$('#presMun');
+  const uf=$('#presUF'),cityInput=$('#presCityInput'),cityList=$('#presCityList');
   uf.value=S.pres.uf;
-  function syncControls(){
+  cityInput.value=S.pres.cityName||'';
+
+  async function syncControls(){
     if(uf.value==='br'){
-      mun.disabled=true;
-      mun.innerHTML='<option value="">Brasil inteiro</option>';
+      cityInput.disabled=true;
+      cityInput.value='';
+      cityList.innerHTML='';
+      cityInput.placeholder='Brasil inteiro';
       return;
     }
-    mun.disabled=false;
-    fillMunicipalities(uf.value,mun);
+    cityInput.disabled=false;
+    cityInput.placeholder='Digite a cidade (ex.: Passos)';
+    await fillCitySuggestions(uf.value,cityList);
   }
+
   uf.addEventListener('change',()=>{
     S.pres.mun='';
+    S.pres.cityName='';
+    cityInput.value='';
     syncControls();
   });
-  $('#presGo').addEventListener('click',()=>{
+
+  const openResult=async()=>{
     if(uf.value==='br'){
       S.pres.uf='br';
       S.pres.mun='';
+      S.pres.cityName='';
     }else{
       S.pres.uf=uf.value;
-      S.pres.mun=mun.value||'';
+      const typed=cityInput.value.trim();
+      if(!typed){
+        S.pres.mun='';
+        S.pres.cityName='';
+      }else{
+        const all=await loadMunicipalities();
+        const arr=all[uf.value]||[];
+        const q=norm(typed);
+        const m=arr.find(x=>norm(x.nm)===q)
+          ||arr.find(x=>norm(x.nm).startsWith(q))
+          ||arr.find(x=>norm(x.nm).includes(q));
+        if(!m){
+          alert('Município não encontrado neste estado. Digite o nome e escolha uma sugestão da lista.');
+          cityInput.focus();
+          return;
+        }
+        S.pres.mun=m.cd;
+        S.pres.cityName=m.nm;
+      }
     }
     clearTimers();renderPresident();window.scrollTo({top:0,behavior:'smooth'});
-  });
+  };
+
+  $('#presGo').addEventListener('click',openResult);
+  cityInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();openResult()}});
   $('#presRefresh').addEventListener('click',loadPresidentLive);
   $('#mapRefresh').addEventListener('click',loadPresMap);
+
   syncControls();renderPresidentBody();
-  loadMunicipalities().then(()=>{if(uf.value!=='br')fillMunicipalities(uf.value,mun)}).catch(()=>{});
   loadPresidentLive();loadPresMap();drawBrazilMap();
   startTimer(loadPresidentLive,POLL);startTimer(loadPresMap,60000);
 }
-function fillMunicipalities(uf,select){
-  loadMunicipalities().then(all=>{
+async function fillCitySuggestions(uf,list){
+  try{
+    const all=await loadMunicipalities();
     const arr=all[uf]||[];
-    select.innerHTML='<option value="">Estado inteiro</option>'+arr.map(m=>`<option value="${m.cd}" ${String(S.pres.mun)===String(m.cd)?'selected':''}>${esc(m.nm)}</option>`).join('');
-    select.disabled=false;
-  }).catch(()=>{select.innerHTML='<option value="">Não foi possível carregar</option>'});
+    list.innerHTML=arr.map(m=>`<option value="${esc(m.nm)}"></option>`).join('');
+  }catch(e){
+    list.innerHTML='';
+  }
 }
 function renderPresidentBody(){
   const box=$('#presBody');if(!box)return;
@@ -512,7 +579,7 @@ async function drawBrazilMap(){
         const name=d.properties?.name||d.properties?.NAME_1||'';
         const uf=NAME_TO_UF[norm(name)];
         if(!uf)return;
-        S.pres.uf=uf;S.pres.mun='';clearTimers();renderPresident();window.scrollTo({top:0,behavior:'smooth'});
+        S.pres.uf=uf;S.pres.mun='';S.pres.cityName='';clearTimers();renderPresident();window.scrollTo({top:0,behavior:'smooth'});
       })
       .append('title').text(d=>{
         const name=d.properties?.name||d.properties?.NAME_1||'';
@@ -583,7 +650,8 @@ async function discoverGovernorRunoffs(){
     while(queue.length){
       const uf=queue.shift();
       try{
-        const d=await getJSON(resultUrl(ELE.state1,uf,3));
+        const packet=await centralData({mode:'result',election:ELE.state1,cargo:'3',uf});
+        const d=packet.data;
         const q=uniqueCandidates(d).filter(c=>/2º\s*turno|2o\s*turno|segundo\s*turno/i.test(String(c.st||''))).sort((a,b)=>num(b.vap)-num(a.vap));
         if(q.length>=2)found.push({uf,data:d,candidates:q});
       }catch(e){}
@@ -597,8 +665,11 @@ async function discoverGovernorRunoffs(){
 }
 async function loadGovernorLive(uf){
   S.gov.selected=uf;S.gov.error='';S.gov.live=null;renderGovernorBody();
-  try{S.gov.live=await getJSON(resultUrl(ELE.state2,uf,3));S.gov.last=new Date()}
-  catch(e){S.gov.error=e.message||'Arquivo ainda indisponível'}
+  try{
+    const packet=await centralData({mode:'result',election:ELE.state2,cargo:'3',uf});
+    S.gov.live=packet.data;S.gov.cacheMeta=packet.meta||null;S.gov.last=new Date()
+  }
+  catch(e){S.gov.cacheMeta=null;S.gov.error=e.message||'Arquivo ainda indisponível'}
   if(S.view==='gov')renderGovernorBody();
 }
 function renderGovernors(){
