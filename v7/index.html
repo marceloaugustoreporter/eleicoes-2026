@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#06101a">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>Central de Apuração · V7.12</title>
+  <title>Central de Apuração · V7.13</title>
   <style>
     :root{
       --bg:#06101a;--panel:#0b1928;--panel2:#0e2234;--line:#27455e;
@@ -184,7 +184,7 @@
       <div class="topbar">
         <div>
           <div class="eyebrow">ÁREA AUTENTICADA</div>
-          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.12</h2>
+          <h2 style="margin:4px 0 4px;font-size:24px">Central de Apuração V7.13</h2>
           <div id="userEmail" class="muted"></div>
         </div>
         <div class="userbox">
@@ -195,14 +195,14 @@
       <div class="nav">
         <button type="button" data-view="home" class="on">Início</button>
         <button type="button" data-view="pres">Presidente · 2º turno</button>
-        <button type="button" data-view="radar">Radar · Passos</button>
+        <button type="button" data-view="radar">Radar Municipal</button>
         <button type="button" data-view="gov">Governadores · 2º turno</button>
         <button type="button" data-view="broadcast">Transmissão</button>
       </div>
     </div>
 
     <main id="content"></main>
-    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.12 mantém Cadastro Eleitoral 2026, totalização e mapas separados e acrescenta o Radar Municipal de Passos, com comparação automática entre município, Minas Gerais e Brasil.</div>
+    <div class="foot">Painel independente com dados oficiais do Tribunal Superior Eleitoral. A V7.13 mantém Cadastro Eleitoral 2026, totalização e mapas separados e amplia o Radar Municipal para consultas em qualquer município do Brasil, com comparação automática entre município, estado e país.</div>
   </section>
 </div>
 
@@ -252,7 +252,7 @@ const S={
   officialElectorate:null, officialElectorateLoading:false,
   officialMunicipalElectorate:{},
   radar:{
-    uf:'mg',cityName:'Passos',mun:'',loading:false,error:'',last:null,
+    uf:'mg',cityName:'Passos',mun:'',loading:false,error:'',last:null,requestSeq:0,selectionKey:'',
     official:null,
     live:{local:null,state:null,br:null},
     reference:{local:null,state:null,br:null},
@@ -466,10 +466,10 @@ function renderHome(){
     <h2 class="sectionTitle">Segundo turno</h2>
     <div class="grid">
       <button class="module" type="button" data-open="pres"><h3>Presidente · Brasil, estado e cidade</h3><p>Apuração do 2º turno com dados oficiais, eleitorado cadastral separado da totalização, busca municipal e mapas inteligentes.</p><span class="tag">FREE</span></button>
-      <button class="module" type="button" data-open="radar"><h3>Radar Municipal · Passos</h3><p>Leitura rápida de Passos com comparação direta a Minas Gerais e Brasil. Antes da apuração, usa a referência oficial do 1º turno.</p><span class="tag">NOVO · V7.12</span></button>
+      <button class="module" type="button" data-open="radar"><h3>Radar Municipal · Brasil</h3><p>Escolha qualquer estado e município para comparar o resultado local com a respectiva UF e o Brasil. Passos permanece como consulta inicial.</p><span class="tag">NOVO · V7.13</span></button>
       <button class="module" type="button" data-open="gov"><h3>Governadores · estados com 2º turno</h3><p>Descoberta automática das UFs que chegaram ao 2º turno e abertura da disputa estadual.</p><span class="tag">FREE</span></button>
     </div>
-    <div class="notice" style="margin-top:12px"><span class="dot" style="background:var(--green)"></span><strong>Central de Dados V7.12 ativa</strong> · resultados compartilhados por cache, com fallback para o último dado confirmado.</div>
+    <div class="notice" style="margin-top:12px"><span class="dot" style="background:var(--green)"></span><strong>Central de Dados V7.13 ativa</strong> · resultados compartilhados por cache, com fallback para o último dado confirmado.</div>
     <h2 class="sectionTitle">Transmissão</h2>
     <div class="grid">
       <button class="module" type="button" data-open="broadcast"><h3>Template básico horizontal</h3><p>Saída 16:9 para OBS com placar e atualização automática.</p><span class="tag">FREE</span></button>
@@ -1108,7 +1108,15 @@ function radarComparisonRow(x){
     <td><strong>${esc(x.leader)}</strong><span class="radarRound">diferença ${radarPP(x.margin)}</span></td>
   </tr>`;
 }
-function radarInsightText(local,state,br){
+function radarCacheText(meta){
+  const raw=String(meta?.cache||'').trim().toUpperCase();
+  if(!raw)return'';
+  if(raw.includes('MISS'))return' · dados consultados agora';
+  if(raw.includes('HIT'))return' · dados em cache compartilhado';
+  if(raw.includes('STALE')||raw.includes('FALLBACK'))return' · último dado confirmado';
+  return'';
+}
+function radarInsightText(local,state,br,cityName,stateName){
   if(!local?.data)return[];
   const out=[];
   if(state?.data){
@@ -1116,11 +1124,11 @@ function radarInsightText(local,state,br){
     const localPct=localLead==='Lula'?local.p13:local.p22;
     const statePct=localLead==='Lula'?state.p13:state.p22;
     const d=localPct-statePct;
-    out.push(`<b>${esc(localLead)} em Passos:</b> ${radarPP(d)} ${d>=0?'acima':'abaixo'} do percentual registrado em Minas Gerais.`);
+    out.push(`<b>${esc(localLead)} em ${esc(cityName)}:</b> ${radarPP(d)} ${d>=0?'acima':'abaixo'} do percentual registrado em ${esc(stateName)}.`);
   }
   if(br?.data){
     const d=local.margin-br.margin;
-    out.push(`<b>Distância entre os dois:</b> Passos tem margem ${radarPP(d)} ${d>=0?'maior':'menor'} que a diferença observada no Brasil.`);
+    out.push(`<b>Distância entre os dois:</b> ${esc(cityName)} tem margem ${radarPP(d)} ${d>=0?'maior':'menor'} que a diferença observada no Brasil.`);
   }
   const st=local.stats;
   if(st.comp||st.abs){
@@ -1130,23 +1138,45 @@ function radarInsightText(local,state,br){
   }
   return out;
 }
-async function loadRadarPassos(refreshOnly=false){
+function resetRadarData(){
+  S.radar.error='';S.radar.last=null;S.radar.official=null;S.radar.selectionKey='';
+  S.radar.live={local:null,state:null,br:null};
+  S.radar.reference={local:null,state:null,br:null};
+  S.radar.cache={local:null,state:null,br:null};
+}
+async function ensureRadarMunicipality(){
+  const all=await loadMunicipalities();
+  const arr=all[S.radar.uf]||[];
+  if(S.radar.mun){
+    const current=arr.find(x=>String(x.cd)===String(S.radar.mun));
+    if(current){S.radar.cityName=current.nm;return current}
+  }
+  const q=norm(S.radar.cityName||'');
+  const m=arr.find(x=>norm(x.nm)===q)||arr.find(x=>norm(x.nm).startsWith(q))||arr.find(x=>norm(x.nm).includes(q));
+  if(!m)throw new Error(`${S.radar.cityName||'Município'} não foi localizado na lista oficial do TSE para ${UF_NAMES[S.radar.uf]||S.radar.uf.toUpperCase()}.`);
+  S.radar.mun=m.cd;S.radar.cityName=m.nm;
+  return m;
+}
+async function loadRadar(refreshOnly=false){
   if(S.radar.loading)return;
+  const seq=++S.radar.requestSeq;
   S.radar.loading=true;S.radar.error='';
   if(S.view==='radar')renderRadarBody();
   try{
-    const all=await loadMunicipalities();
-    const m=(all.mg||[]).find(x=>norm(x.nm)==='passos');
-    if(!m)throw new Error('Passos não foi localizado na lista oficial de municípios do TSE.');
-    S.radar.mun=m.cd;S.radar.cityName=m.nm;
+    const m=await ensureRadarMunicipality();
+    const uf=S.radar.uf;
+    const key=`${uf}:${m.cd}`;
+    if(S.radar.selectionKey&&S.radar.selectionKey!==key)resetRadarData();
+    S.radar.selectionKey=key;
 
     if(!refreshOnly||!S.radar.reference.local||!S.radar.reference.state||!S.radar.reference.br){
       const refs=await Promise.allSettled([
-        centralData({mode:'result',election:ELE.pres1,cargo:'1',uf:'mg',mun:m.cd}),
-        centralData({mode:'result',election:ELE.pres1,cargo:'1',uf:'mg'}),
+        centralData({mode:'result',election:ELE.pres1,cargo:'1',uf,mun:m.cd}),
+        centralData({mode:'result',election:ELE.pres1,cargo:'1',uf}),
         centralData({mode:'result',election:ELE.pres1,cargo:'1',uf:'br'}),
-        loadOfficialMunicipalElectorate('mg',m.cd)
+        loadOfficialMunicipalElectorate(uf,m.cd)
       ]);
+      if(seq!==S.radar.requestSeq||S.radar.selectionKey!==key)return;
       if(refs[0].status==='fulfilled')S.radar.reference.local=refs[0].value.data;
       if(refs[1].status==='fulfilled')S.radar.reference.state=refs[1].value.data;
       if(refs[2].status==='fulfilled')S.radar.reference.br=refs[2].value.data;
@@ -1154,10 +1184,11 @@ async function loadRadarPassos(refreshOnly=false){
     }
 
     const live=await Promise.allSettled([
-      centralData({mode:'result',election:ELE.pres2,cargo:'1',uf:'mg',mun:m.cd}),
-      centralData({mode:'result',election:ELE.pres2,cargo:'1',uf:'mg'}),
+      centralData({mode:'result',election:ELE.pres2,cargo:'1',uf,mun:m.cd}),
+      centralData({mode:'result',election:ELE.pres2,cargo:'1',uf}),
       centralData({mode:'result',election:ELE.pres2,cargo:'1',uf:'br'})
     ]);
+    if(seq!==S.radar.requestSeq||S.radar.selectionKey!==key)return;
     const keys=['local','state','br'];
     live.forEach((r,i)=>{
       if(r.status==='fulfilled'){
@@ -1167,63 +1198,99 @@ async function loadRadarPassos(refreshOnly=false){
     });
     S.radar.last=new Date();
   }catch(e){
-    S.radar.error=e.message||'Não foi possível montar o Radar de Passos.';
+    if(seq===S.radar.requestSeq)S.radar.error=e.message||'Não foi possível montar o Radar Municipal.';
   }finally{
-    S.radar.loading=false;
-    if(S.view==='radar')renderRadarBody();
+    if(seq===S.radar.requestSeq){
+      S.radar.loading=false;
+      if(S.view==='radar')renderRadarBody();
+    }
   }
 }
-function openRadarPassosInPresident(){
+function openRadarInPresident(){
   if(!S.radar.mun)return;
-  S.pres.uf='mg';S.pres.mun=S.radar.mun;S.pres.cityName=S.radar.cityName||'Passos';
+  S.pres.uf=S.radar.uf;S.pres.mun=S.radar.mun;S.pres.cityName=S.radar.cityName||'Município';
   S.pres.stateMapUF='';S.pres.stateMapRows=[];S.pres.scopeReference=null;S.pres.scopeReferenceKey='';
   setView('pres');window.scrollTo({top:0,behavior:'smooth'});
 }
 function renderRadar(){
+  const stateName=UF_NAMES[S.radar.uf]||S.radar.uf.toUpperCase();
   content.innerHTML=`
     <section class="card">
       <div class="sectionHead">
-        <div><div class="eyebrow">RADAR MUNICIPAL · V7.12</div><h2>Passos · MG</h2><div class="muted">Leitura automática do município, comparada com Minas Gerais e Brasil. O Radar muda da referência do 1º turno para a totalização do 2º turno assim que houver votos.</div></div>
+        <div><div class="eyebrow">RADAR MUNICIPAL · V7.13</div><h2>${esc(S.radar.cityName||'Município')} · ${esc(S.radar.uf.toUpperCase())}</h2><div class="muted">Escolha qualquer município do Brasil. O Radar compara o resultado local com o respectivo estado e o país e muda automaticamente da referência do 1º turno para a totalização do 2º turno quando houver votos.</div></div>
         <button id="radarRefresh" class="btn secondary" type="button">Atualizar Radar</button>
+      </div>
+      <div class="controls">
+        <select id="radarUF">${UFS.map(uf=>`<option value="${uf}">${UF_NAMES[uf]} · ${uf.toUpperCase()}</option>`).join('')}</select>
+        <div><input id="radarCityInput" list="radarCityList" placeholder="Digite o município" autocomplete="off"><datalist id="radarCityList"></datalist></div>
+        <button id="radarGo" class="btn" type="button">Abrir Radar</button>
       </div>
       <div id="radarBody"></div>
     </section>`;
-  $('#radarRefresh').addEventListener('click',()=>loadRadarPassos(true));
-  renderRadarBody();
-  loadRadarPassos(false);
-  startTimer(()=>loadRadarPassos(true),POLL);
+
+  const uf=$('#radarUF'),cityInput=$('#radarCityInput'),cityList=$('#radarCityList');
+  uf.value=S.radar.uf;cityInput.value=S.radar.cityName||'';
+  const syncRadarCities=async()=>{
+    cityInput.value=uf.value===S.radar.uf?(S.radar.cityName||''):'';
+    cityInput.placeholder='Digite o município';
+    await fillCitySuggestions(uf.value,cityList);
+  };
+  uf.addEventListener('change',()=>{cityInput.value='';syncRadarCities()});
+  const openSelection=async()=>{
+    const targetUF=uf.value;
+    const typed=cityInput.value.trim();
+    if(!typed){alert('Digite o nome do município.');cityInput.focus();return}
+    const all=await loadMunicipalities();
+    const arr=all[targetUF]||[];
+    const q=norm(typed);
+    const m=arr.find(x=>norm(x.nm)===q)||arr.find(x=>norm(x.nm).startsWith(q))||arr.find(x=>norm(x.nm).includes(q));
+    if(!m){alert('Município não encontrado neste estado. Digite o nome e escolha uma sugestão da lista.');cityInput.focus();return}
+    S.radar.requestSeq++;
+    S.radar.loading=false;
+    S.radar.uf=targetUF;S.radar.mun=m.cd;S.radar.cityName=m.nm;
+    resetRadarData();
+    clearTimers();renderRadar();window.scrollTo({top:0,behavior:'smooth'});
+  };
+  $('#radarGo').addEventListener('click',openSelection);
+  cityInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();openSelection()}});
+  $('#radarRefresh').addEventListener('click',()=>loadRadar(true));
+  syncRadarCities();renderRadarBody();
+  loadRadar(false);
+  startTimer(()=>loadRadar(true),POLL);
 }
 function renderRadarBody(){
   const box=$('#radarBody');if(!box)return;
+  const cityName=S.radar.cityName||'Município';
+  const stateName=UF_NAMES[S.radar.uf]||S.radar.uf.toUpperCase();
   const hasAny=S.radar.reference.local||S.radar.live.local;
   if(S.radar.loading&&!hasAny){
-    box.innerHTML='<div class="loading"><span class="dot"></span>Montando o Radar de Passos com as bases oficiais…</div>';
+    box.innerHTML=`<div class="loading"><span class="dot"></span>Montando o Radar de ${esc(cityName)} com as bases oficiais…</div>`;
     return;
   }
-  const local=radarSnapshot(radarSource(S.radar.live.local,S.radar.reference.local),'Passos');
-  const state=radarSnapshot(radarSource(S.radar.live.state,S.radar.reference.state),'Minas Gerais');
+  const local=radarSnapshot(radarSource(S.radar.live.local,S.radar.reference.local),cityName);
+  const state=radarSnapshot(radarSource(S.radar.live.state,S.radar.reference.state),stateName);
   const br=radarSnapshot(radarSource(S.radar.live.br,S.radar.reference.br),'Brasil');
   if(!local.data){
-    box.innerHTML=`<div class="notice wait"><span class="dot"></span>O Radar ainda não conseguiu carregar a referência de Passos.${S.radar.error?' '+esc(S.radar.error):''}</div>`;
+    box.innerHTML=`<div class="notice wait"><span class="dot"></span>O Radar ainda não conseguiu carregar a referência de ${esc(cityName)}.${S.radar.error?' '+esc(S.radar.error):''}</div>`;
     return;
   }
   const sourceLive=radarSource(S.radar.live.local,S.radar.reference.local).live;
   const winner=local.winner;
   const official=S.radar.official;
   const updated=S.radar.last?' · leitura '+S.radar.last.toLocaleTimeString('pt-BR'):'';
-  const cache=S.radar.cache.local?.cache?' · cache '+esc(S.radar.cache.local.cache):'';
-  const insights=radarInsightText(local,state,br);
+  const cache=radarCacheText(S.radar.cache.local);
+  const insights=radarInsightText(local,state,br,cityName,stateName);
   box.innerHTML=`
-    <div class="notice ${sourceLive?'':'wait'}"><span class="dot" style="background:${sourceLive?'var(--green)':'var(--yellow)'}"></span><strong>${sourceLive?'2º turno em acompanhamento':'Pré-apuração do 2º turno'}</strong> · ${sourceLive?'dados atuais da totalização':'percentuais eleitorais exibidos a partir do resultado final do 1º turno'}${updated}${cache}</div>
+    <div class="notice ${sourceLive?'':'wait'}"><span class="dot" style="background:${sourceLive?'var(--green)':'var(--yellow)'}"></span><strong>${sourceLive?'2º turno em acompanhamento':'Referência antes do 2º turno'}</strong> · ${sourceLive?'dados atuais da totalização':'percentuais exibidos a partir do resultado final do 1º turno'}${updated}${cache}</div>
     ${S.radar.error?`<div class="dataSourceNote">Última atualização parcial: ${esc(S.radar.error)}</div>`:''}
     <div class="radarHero">
       <div class="radarKpi"><strong>${official?nf(official.voters):nf(local.stats.apt)}</strong><span>${official?'eleitores aptos · Cadastro Eleitoral 2026':'eleitorado da totalização exibida'}</span></div>
-      <div class="radarKpi"><strong>${winner?esc(winner.nmu||winner.nm):'—'}</strong><span>mais votado em Passos · ${esc(local.round)}</span></div>
+      <div class="radarKpi"><strong>${winner?esc(winner.nmu||winner.nm):'—'}</strong><span>mais votado em ${esc(cityName)} · ${esc(local.round)}</span></div>
       <div class="radarKpi"><strong>${radarPP(local.margin)}</strong><span>diferença entre Lula e Flávio Bolsonaro</span></div>
-      <div class="radarKpi"><strong>${sourceLive?ptxt(totalPct(local.data)):'100%'}</strong><span>${sourceLive?'seções totalizadas':'resultado final usado como referência'}</span></div>
+      <div class="radarKpi"><strong>${sourceLive?ptxt(totalPct(local.data)):'1º turno encerrado'}</strong><span>${sourceLive?'seções totalizadas':'base de referência antes do 2º turno'}</span></div>
     </div>
 
-    <div class="sectionTitle" style="font-size:16px">Passos × Minas Gerais × Brasil</div>
+    <div class="sectionTitle" style="font-size:16px">${esc(cityName)} × ${esc(stateName)} × Brasil</div>
     <div class="radarCompare"><table class="radarTable">
       <thead><tr><th>Recorte</th><th>Lula · 13</th><th>Flávio · 22</th><th>Liderança entre os dois</th></tr></thead>
       <tbody>${radarComparisonRow(local)}${radarComparisonRow(state)}${radarComparisonRow(br)}</tbody>
@@ -1231,9 +1298,9 @@ function renderRadarBody(){
 
     <div class="sectionTitle" style="font-size:16px">Leituras rápidas</div>
     <div class="radarInsights">${insights.map(x=>`<div class="radarInsight">${x}</div>`).join('')}</div>
-    <div class="radarActions"><button id="radarOpenPassos" class="btn" type="button">Abrir apuração completa de Passos</button></div>
+    <div class="radarActions"><button id="radarOpenMunicipality" class="btn" type="button">Abrir apuração completa de ${esc(cityName)}</button></div>
     <div class="dataSourceNote">Fonte: Tribunal Superior Eleitoral. O Radar não mistura rodadas: cada linha identifica se está usando o 2º turno ou a referência final do 1º turno.</div>`;
-  $('#radarOpenPassos')?.addEventListener('click',openRadarPassosInPresident);
+  $('#radarOpenMunicipality')?.addEventListener('click',openRadarInPresident);
 }
 
 async function discoverGovernorRunoffs(){
@@ -1315,7 +1382,7 @@ function renderBroadcast(){
     </section>`;
 }
 
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user){if(S.view==='pres')loadPresidentLive();if(S.view==='radar')loadRadarPassos(true);if(S.view==='gov'&&S.gov.selected)loadGovernorLive(S.gov.selected)}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.user){if(S.view==='pres')loadPresidentLive();if(S.view==='radar')loadRadar(true);if(S.view==='gov'&&S.gov.selected)loadGovernorLive(S.gov.selected)}});
 applySession();
 </script>
 </body>
