@@ -1,9 +1,11 @@
-/* Central de Apuração — V7.17
-   Análise regional oficial:
+/* Central de Apuração — V7.17 FINAL
+   Análise Regional + higienização visual de versão
    - Regiões Geográficas Intermediárias do IBGE
    - agregação automática dos resultados municipais do TSE
-   - destaques: Lula, Flávio, equilíbrio e panorama municipal
-   - destaque opcional da região no mapa
+   - destaque territorial no mapa
+   - cartão da região destacada
+   - panorama municipal legível no desktop
+   - versão visível centralizada em V7.17
 */
 (function(){
   'use strict';
@@ -11,13 +13,17 @@
   if (window.__CENTRAL_APURACAO_V717__) return;
   window.__CENTRAL_APURACAO_V717__ = true;
 
-  const V717_IBGE_BASE = 'https://servicodados.ibge.gov.br/api/v1/localidades/estados';
-  const V717_REGION_CACHE = new Map();
+  const APP_VERSION = 'V7.17';
+  window.CENTRAL_APURACAO_VERSION = APP_VERSION;
+
+  const IBGE_BASE = 'https://servicodados.ibge.gov.br/api/v1/localidades/estados';
+  const REGION_CACHE = new Map();
 
   if (!S.pres.regionFocus) S.pres.regionFocus = null;
+  if (!S.pres.regionAnalysis) S.pres.regionAnalysis = [];
 
   const style = document.createElement('style');
-  style.id = 'v717Styles';
+  style.id = 'v717FinalStyles';
   style.textContent = `
     .v717RegionCard{margin-top:12px}
     .v717Status{margin:10px 0}
@@ -48,6 +54,75 @@
       line-height:1.35;
       font-weight:850
     }
+
+    #v717MapFocus{
+      margin:10px 0 4px;
+      display:none
+    }
+    #v717MapFocus.on{display:block}
+    .v717FocusPanel{
+      display:grid;
+      grid-template-columns:minmax(0,1.5fr) repeat(3,minmax(105px,.65fr)) auto;
+      gap:8px;
+      align-items:stretch;
+      padding:10px;
+      background:#091b2a;
+      border:1px solid var(--cyan);
+      border-radius:12px;
+      box-shadow:0 0 0 1px rgba(53,208,246,.08)
+    }
+    .v717FocusTitle{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      min-width:0
+    }
+    .v717FocusTitle b{
+      display:block;
+      color:#fff;
+      font-size:15px;
+      line-height:1.15;
+      overflow-wrap:anywhere
+    }
+    .v717FocusTitle span{
+      display:block;
+      color:var(--muted);
+      font-size:8.5px;
+      font-weight:850;
+      margin-top:4px
+    }
+    .v717FocusStat{
+      background:#071522;
+      border:1px solid #24445d;
+      border-radius:10px;
+      padding:8px 9px;
+      min-width:0
+    }
+    .v717FocusStat b{
+      display:block;
+      font-size:14px;
+      line-height:1.1
+    }
+    .v717FocusStat span{
+      display:block;
+      color:var(--muted);
+      font-size:8px;
+      margin-top:3px;
+      font-weight:800
+    }
+    .v717RemoveBtn{
+      align-self:center;
+      border:1px solid #31536d;
+      background:#10283a;
+      color:#eaf7ff;
+      border-radius:9px;
+      padding:8px 10px;
+      font-size:9px;
+      font-weight:900;
+      cursor:pointer;
+      white-space:nowrap
+    }
+
     .v717TableWrap{
       overflow:auto;
       margin-top:12px;
@@ -56,7 +131,7 @@
     }
     .v717Table{
       width:100%;
-      min-width:800px;
+      min-width:860px;
       border-collapse:collapse;
       background:#071522
     }
@@ -76,6 +151,14 @@
       letter-spacing:.3px
     }
     .v717Table tr:last-child td{border-bottom:0}
+    .v717Table tr.v717RowFocus td{
+      background:rgba(53,208,246,.09);
+      border-top:1px solid rgba(53,208,246,.55);
+      border-bottom:1px solid rgba(53,208,246,.55)
+    }
+    .v717Table tr.v717RowFocus td:first-child{
+      box-shadow:inset 3px 0 0 var(--cyan)
+    }
     .v717RegionName{
       display:block;
       font-size:12px;
@@ -109,6 +192,8 @@
     .v717MunicipalMix .r{color:#ff7378}
     .v717MunicipalMix .b{color:#72afff}
     .v717MunicipalMix .n{color:#aeb7bf}
+    .v717MixShort{display:none}
+
     .v717FocusBtn{
       border:1px solid #31536d;
       background:#0a1b2a;
@@ -147,6 +232,16 @@
       font-size:8.5px;
       line-height:1.45
     }
+
+    @media(max-width:699px){
+      .v717MixFull{display:none}
+      .v717MixShort{display:inline}
+      .v717FocusPanel{
+        grid-template-columns:repeat(2,minmax(0,1fr))
+      }
+      .v717FocusTitle{grid-column:1/-1}
+      .v717RemoveBtn{grid-column:1/-1}
+    }
     @media(min-width:700px){
       .v717Summary{grid-template-columns:repeat(4,minmax(0,1fr))}
       .v717Insights{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -154,33 +249,87 @@
   `;
   document.head.appendChild(style);
 
-  function v717Chrome(){
-    document.title = 'Central de Apuração · V7.17';
+  /* ------------------------------------------------------------
+     Higienização visual da versão
+     ------------------------------------------------------------ */
+  function normalizeVisibleVersions(root=document){
+    const target = root || document;
+    const walker = document.createTreeWalker(
+      target,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node){
+          const p = node.parentElement;
+          if (!p) return NodeFilter.FILTER_REJECT;
+          if (['SCRIPT','STYLE'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
+          return /V7\.(14|15|16)\b/.test(node.nodeValue || '')
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_REJECT;
+        }
+      }
+    );
+
+    const nodes = [];
+    let n;
+    while ((n = walker.nextNode())) nodes.push(n);
+
+    nodes.forEach(node=>{
+      node.nodeValue = String(node.nodeValue).replace(/V7\.(14|15|16)\b/g,APP_VERSION);
+    });
+
+    document.title = `Central de Apuração · ${APP_VERSION}`;
 
     const top = document.querySelector('#appView .topbar h2');
-    if (top) top.textContent = 'Central de Apuração V7.17';
+    if (top) top.textContent = `Central de Apuração ${APP_VERSION}`;
+  }
+
+  let normalizeQueued = false;
+  const versionObserver = new MutationObserver(()=>{
+    if (normalizeQueued) return;
+    normalizeQueued = true;
+    requestAnimationFrame(()=>{
+      normalizeQueued = false;
+      normalizeVisibleVersions(document);
+    });
+  });
+
+  const versionTarget = document.querySelector('#appView') || document.body;
+  if (versionTarget){
+    versionObserver.observe(versionTarget,{
+      childList:true,
+      subtree:true,
+      characterData:true
+    });
+  }
+
+  function v717Chrome(){
+    normalizeVisibleVersions(document);
 
     const notice = [...document.querySelectorAll('#content .notice strong')]
-      .find(x => /Central de Dados V7\.\d+/i.test(x.textContent));
-    if (notice) notice.textContent = 'Central de Dados V7.17 ativa';
+      .find(x=>/Central de Dados V7\.\d+/i.test(x.textContent));
+    if (notice) notice.textContent = `Central de Dados ${APP_VERSION} ativa`;
 
     const foot = document.querySelector('#appView .foot');
-    if (foot) {
+    if (foot){
       foot.textContent =
         'Painel independente com dados oficiais do Tribunal Superior Eleitoral. ' +
-        'A V7.17 acrescenta análise por Regiões Geográficas Intermediárias do IBGE, calculada automaticamente a partir dos resultados municipais.';
+        'A V7.17 acrescenta análise por Regiões Geográficas Intermediárias do IBGE, ' +
+        'calculada automaticamente a partir dos resultados municipais.';
     }
   }
 
-  async function v717LoadIBGERegions(uf){
+  /* ------------------------------------------------------------
+     Regionalização IBGE
+     ------------------------------------------------------------ */
+  async function loadIBGERegions(uf){
     const key = String(uf || '').toUpperCase();
     if (!key || key === 'BR') return new Map();
 
-    if (V717_REGION_CACHE.has(key)) return V717_REGION_CACHE.get(key);
+    if (REGION_CACHE.has(key)) return await REGION_CACHE.get(key);
 
     const promise = (async()=>{
-      const url = `${V717_IBGE_BASE}/${encodeURIComponent(key)}/municipios?orderBy=nome`;
-      const r = await fetch(url, {cache:'force-cache'});
+      const url = `${IBGE_BASE}/${encodeURIComponent(key)}/municipios?orderBy=nome`;
+      const r = await fetch(url,{cache:'force-cache'});
       if (!r.ok) throw new Error('IBGE HTTP '+r.status);
 
       const data = await r.json();
@@ -212,23 +361,19 @@
       return out;
     })();
 
-    V717_REGION_CACHE.set(key,promise);
+    REGION_CACHE.set(key,promise);
 
     try{
       const result = await promise;
-      V717_REGION_CACHE.set(key,result);
+      REGION_CACHE.set(key,result);
       return result;
     }catch(e){
-      V717_REGION_CACHE.delete(key);
+      REGION_CACHE.delete(key);
       throw e;
     }
   }
 
-  function v717Pct(v,denom){
-    return denom > 0 ? (100 * v / denom) : 0;
-  }
-
-  function v717Regionalize(rows, regionMap){
+  function regionalize(rows,regionMap){
     const groups = new Map();
 
     (rows || []).filter(stateRowHasVotes).forEach(row=>{
@@ -238,6 +383,7 @@
 
       const key = region.intermediateId;
       let g = groups.get(key);
+
       if (!g){
         g = {
           id:key,
@@ -257,47 +403,170 @@
       const v13 = num(row.v13);
       const v22 = num(row.v22);
       const valid = num(row.valid);
-      const margin = num(row.p13) - num(row.p22);
+      const margin = num(row.p13)-num(row.p22);
 
-      g.municipalities += 1;
+      g.municipalities++;
       g.v13 += v13;
       g.v22 += v22;
       g.valid += valid;
-      g.pairVotes += v13 + v22;
+      g.pairVotes += v13+v22;
 
-      if (Math.abs(margin) <= 2) g.balancedMunicipal += 1;
-      else if (margin > 0) g.lulaMunicipal += 1;
-      else g.flavioMunicipal += 1;
+      if (Math.abs(margin)<=2) g.balancedMunicipal++;
+      else if (margin>0) g.lulaMunicipal++;
+      else g.flavioMunicipal++;
     });
 
     return [...groups.values()].map(g=>{
       const denom = g.valid || g.pairVotes;
-      g.p13 = v717Pct(g.v13,denom);
-      g.p22 = v717Pct(g.v22,denom);
-      g.margin = g.p13 - g.p22;
+      g.p13 = denom>0 ? 100*g.v13/denom : 0;
+      g.p22 = denom>0 ? 100*g.v22/denom : 0;
+      g.margin = g.p13-g.p22;
       g.absMargin = Math.abs(g.margin);
       g.leader =
-        Math.abs(g.margin) <= 2 ? 'Equilíbrio' :
-        g.margin > 0 ? 'Lula' : 'Flávio Bolsonaro';
+        g.absMargin<=2 ? 'Equilíbrio' :
+        g.margin>0 ? 'Lula' : 'Flávio Bolsonaro';
       return g;
     }).sort((a,b)=>b.margin-a.margin);
   }
 
-  function v717PP(v){
+  function pp(v){
     return Math.abs(num(v)).toLocaleString('pt-BR',{
       minimumFractionDigits:1,
       maximumFractionDigits:2
     })+' p.p.';
   }
 
-  function v717Color(region){
-    if (!region) return '#7d8791';
-    if (Math.abs(region.margin) <= 2) return '#7d8791';
-    return raceColorFromMargin(region.margin);
+  function regionColor(g){
+    if (!g || Math.abs(g.margin)<=2) return '#7d8791';
+    return raceColorFromMargin(g.margin);
   }
 
-  function v717EnsureCard(){
-    if (S.pres.uf === 'br') return null;
+  /* ------------------------------------------------------------
+     Cartão da região destacada sobre o mapa
+     ------------------------------------------------------------ */
+  function ensureMapFocusBox(){
+    const map = $('#stateMap');
+    const mapCard = map?.closest('.card');
+    if (!mapCard) return null;
+
+    let box = $('#v717MapFocus');
+    if (box) return box;
+
+    box = document.createElement('div');
+    box.id = 'v717MapFocus';
+
+    const mapBox = map.closest('.mapBox');
+    if (mapBox) mapBox.insertAdjacentElement('beforebegin',box);
+
+    return box;
+  }
+
+  function renderMapFocusBox(){
+    const box = ensureMapFocusBox();
+    if (!box) return;
+
+    const focus = S.pres.regionFocus;
+    if (!focus?.id){
+      box.className = '';
+      box.innerHTML = '';
+      return;
+    }
+
+    const g = (S.pres.regionAnalysis || []).find(x=>x.id===focus.id);
+    if (!g){
+      box.className = '';
+      box.innerHTML = '';
+      return;
+    }
+
+    box.className = 'on';
+    box.innerHTML = `
+      <div class="v717FocusPanel">
+        <div class="v717FocusTitle">
+          <b>Região Intermediária de ${esc(g.name)}</b>
+          <span>${nf(g.municipalities)} municípios · destaque territorial ativo</span>
+        </div>
+        <div class="v717FocusStat">
+          <b class="v717Red">${ptxt(g.p13)}</b>
+          <span>Lula · 13</span>
+        </div>
+        <div class="v717FocusStat">
+          <b class="v717Blue">${ptxt(g.p22)}</b>
+          <span>Flávio · 22</span>
+        </div>
+        <div class="v717FocusStat">
+          <b>${esc(g.leader)}</b>
+          <span>margem ${pp(g.margin)}</span>
+        </div>
+        <button id="v717RemoveFocus" class="v717RemoveBtn" type="button">Remover destaque</button>
+      </div>
+    `;
+
+    $('#v717RemoveFocus')?.addEventListener('click',async()=>{
+      S.pres.regionFocus = null;
+      await drawStateMunicipalMap();
+      await renderRegionAnalysis(false);
+    });
+  }
+
+  async function applyRegionFocus(){
+    const focus = S.pres.regionFocus;
+
+    if (S.pres.uf==='br' || S.pres.mun || !focus?.id){
+      renderMapFocusBox();
+      return;
+    }
+
+    try{
+      const regionMap = await loadIBGERegions(S.pres.uf);
+
+      document.querySelectorAll('#stateMap path').forEach(path=>{
+        const f = path.__data__;
+        const id = String(
+          f?.properties?.cd_geocmu ??
+          f?.properties?.id ??
+          ''
+        ).replace(/\D/g,'');
+
+        const region = regionMap.get(id);
+        const same = region?.intermediateId===focus.id;
+
+        path.style.opacity = same ? '1' : '.18';
+
+        if (same){
+          path.style.stroke = '#ffffff';
+          path.style.strokeWidth = '1.05';
+        }
+      });
+
+      renderMapFocusBox();
+    }catch(_){
+      renderMapFocusBox();
+    }
+  }
+
+  async function focusRegion(region){
+    if (S.pres.regionFocus?.id===region.id){
+      S.pres.regionFocus = null;
+    }else{
+      S.pres.regionFocus = {
+        id:region.id,
+        name:region.name,
+        uf:S.pres.uf
+      };
+    }
+
+    await drawStateMunicipalMap();
+    await renderRegionAnalysis(false);
+
+    $('#stateMap')?.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+
+  /* ------------------------------------------------------------
+     Painel regional
+     ------------------------------------------------------------ */
+  function ensureRegionCard(){
+    if (S.pres.uf==='br') return null;
 
     const map = $('#stateMap');
     const mapCard = map?.closest('.card');
@@ -312,11 +581,11 @@
     card.innerHTML = `
       <div class="sectionHead">
         <div>
-          <div class="eyebrow">ANÁLISE REGIONAL · IBGE · V7.17</div>
+          <div class="eyebrow">ANÁLISE REGIONAL · IBGE · ${APP_VERSION}</div>
           <h2>Leitura por regiões intermediárias</h2>
           <div class="muted">
-            Agrupamento oficial do IBGE. Os percentuais regionais são recalculados a partir
-            dos votos municipais já carregados no painel.
+            Agrupamento oficial do IBGE. Os percentuais regionais são recalculados
+            a partir dos votos municipais já carregados no painel.
           </div>
         </div>
         <button id="v717Refresh" class="btn secondary" type="button">Atualizar análise</button>
@@ -327,17 +596,18 @@
     mapCard.insertAdjacentElement('afterend',card);
 
     $('#v717Refresh')?.addEventListener('click',()=>{
-      V717_REGION_CACHE.delete(String(S.pres.uf || '').toUpperCase());
-      v717RenderRegionAnalysis(true);
+      REGION_CACHE.delete(String(S.pres.uf || '').toUpperCase());
+      renderRegionAnalysis(true);
     });
 
     return card;
   }
 
-  function v717RegionRow(g){
-    const focus = S.pres.regionFocus?.id === g.id;
+  function regionRow(g){
+    const focus = S.pres.regionFocus?.id===g.id;
+
     return `
-      <tr>
+      <tr class="${focus?'v717RowFocus':''}">
         <td>
           <span class="v717RegionName">${esc(g.name)}</span>
           <span class="v717RegionSub">Região Geográfica Intermediária · IBGE</span>
@@ -347,15 +617,22 @@
         <td class="v717Blue">${ptxt(g.p22)}</td>
         <td>
           <span class="v717Margin">
-            <i class="v717Swatch" style="background:${v717Color(g)}"></i>
-            <strong>${esc(g.leader)}</strong> · ${v717PP(g.margin)}
+            <i class="v717Swatch" style="background:${regionColor(g)}"></i>
+            <strong>${esc(g.leader)}</strong> · ${pp(g.margin)}
           </span>
         </td>
         <td>
           <span class="v717MunicipalMix">
-            <span class="r">${nf(g.lulaMunicipal)} L</span> ·
-            <span class="n">${nf(g.balancedMunicipal)} eq.</span> ·
-            <span class="b">${nf(g.flavioMunicipal)} F</span>
+            <span class="v717MixFull">
+              <span class="r">${nf(g.lulaMunicipal)} Lula</span> ·
+              <span class="n">${nf(g.balancedMunicipal)} equilibrados</span> ·
+              <span class="b">${nf(g.flavioMunicipal)} Flávio</span>
+            </span>
+            <span class="v717MixShort">
+              <span class="r">${nf(g.lulaMunicipal)} L</span> ·
+              <span class="n">${nf(g.balancedMunicipal)} eq.</span> ·
+              <span class="b">${nf(g.flavioMunicipal)} F</span>
+            </span>
           </span>
         </td>
         <td>
@@ -367,47 +644,10 @@
     `;
   }
 
-  async function v717ApplyRegionFocus(){
-    if (S.pres.uf === 'br' || S.pres.mun) return;
+  async function renderRegionAnalysis(force=false){
+    if (S.pres.uf==='br') return;
 
-    const focus = S.pres.regionFocus;
-    if (!focus?.id) return;
-
-    try{
-      const regionMap = await v717LoadIBGERegions(S.pres.uf);
-
-      document.querySelectorAll('#stateMap path').forEach(path=>{
-        const f = path.__data__;
-        const id = String(f?.properties?.cd_geocmu || '').replace(/\D/g,'');
-        const region = regionMap.get(id);
-        const same = region?.intermediateId === focus.id;
-
-        path.style.opacity = same ? '1' : '.18';
-        if (same){
-          path.style.stroke = '#ffffff';
-          path.style.strokeWidth = '1.05';
-        }
-      });
-    }catch(_){}
-  }
-
-  async function v717FocusRegion(id, name){
-    if (S.pres.regionFocus?.id === id){
-      S.pres.regionFocus = null;
-    }else{
-      S.pres.regionFocus = {id,name};
-    }
-
-    await drawStateMunicipalMap();
-    await v717RenderRegionAnalysis(false);
-
-    $('#stateMap')?.scrollIntoView({behavior:'smooth',block:'center'});
-  }
-
-  async function v717RenderRegionAnalysis(force=false){
-    if (S.pres.uf === 'br') return;
-
-    const card = v717EnsureCard();
+    const card = ensureRegionCard();
     const body = $('#v717RegionBody');
     if (!card || !body) return;
 
@@ -431,8 +671,13 @@
     }
 
     try{
-      const regionMap = await v717LoadIBGERegions(S.pres.uf);
-      const regions = v717Regionalize(rows,regionMap);
+      const regionMap = await loadIBGERegions(S.pres.uf);
+      const regions = regionalize(rows,regionMap);
+      S.pres.regionAnalysis = regions;
+
+      if (S.pres.regionFocus?.uf && S.pres.regionFocus.uf!==S.pres.uf){
+        S.pres.regionFocus = null;
+      }
 
       if (!regions.length){
         throw new Error('Não foi possível associar os municípios às regiões do IBGE.');
@@ -446,12 +691,14 @@
       const bestFlavio = [...regions].sort((a,b)=>a.margin-b.margin)[0] || null;
       const closest = [...regions].sort((a,b)=>a.absMargin-b.absMargin)[0] || null;
 
-      const summary = `
+      const totalMunicipalities = regions.reduce((s,x)=>s+x.municipalities,0);
+
+      body.innerHTML = `
         <div class="v717Status">
           <div class="notice">
             <span class="dot" style="background:var(--green)"></span>
             <strong>${nf(regions.length)} regiões intermediárias analisadas</strong> ·
-            ${nf(regions.reduce((s,x)=>s+x.municipalities,0))} municípios com dados ·
+            ${nf(totalMunicipalities)} municípios com dados ·
             ${esc(S.pres.stateMapMeta?.roundLabel || 'leitura eleitoral atual')}
           </div>
         </div>
@@ -474,9 +721,7 @@
             <span>região intermediária com menor diferença entre os dois</span>
           </div>
         </div>
-      `;
 
-      const table = `
         <div class="v717TableWrap">
           <table class="v717Table">
             <thead>
@@ -490,12 +735,10 @@
                 <th>Mapa</th>
               </tr>
             </thead>
-            <tbody>${regions.map(v717RegionRow).join('')}</tbody>
+            <tbody>${regions.map(regionRow).join('')}</tbody>
           </table>
         </div>
-      `;
 
-      const insights = `
         <div class="v717Insights">
           <div class="v717Insight">
             <b>Panorama regional:</b>
@@ -504,39 +747,35 @@
           </div>
           <div class="v717Insight">
             <b>Maior vantagem de Lula:</b>
-            ${bestLula ? `${esc(bestLula.name)} · ${v717PP(bestLula.margin)}` : '—'}.
+            ${bestLula ? `${esc(bestLula.name)} · ${pp(bestLula.margin)}` : '—'}.
           </div>
           <div class="v717Insight">
             <b>Maior vantagem de Flávio:</b>
-            ${bestFlavio ? `${esc(bestFlavio.name)} · ${v717PP(bestFlavio.margin)}` : '—'}.
+            ${bestFlavio ? `${esc(bestFlavio.name)} · ${pp(bestFlavio.margin)}` : '—'}.
           </div>
           <div class="v717Insight">
             <b>Região mais equilibrada:</b>
-            ${closest ? `${esc(closest.name)} · diferença de ${v717PP(closest.margin)}` : '—'}.
+            ${closest ? `${esc(closest.name)} · diferença de ${pp(closest.margin)}` : '—'}.
           </div>
         </div>
-      `;
 
-      const focusInfo = S.pres.regionFocus?.id
-        ? `<div class="v717Source"><b>Região destacada no mapa:</b> ${esc(S.pres.regionFocus.name)}. Clique novamente em “Destacada” para remover o foco.</div>`
-        : '';
-
-      body.innerHTML =
-        summary + table + insights + focusInfo +
-        `<div class="v717Source">
+        <div class="v717Source">
           Regionalização: Regiões Geográficas Intermediárias do Instituto Brasileiro de Geografia e Estatística (IBGE).
           Resultados eleitorais: Tribunal Superior Eleitoral. A classificação de equilíbrio usa diferença de até 2 p.p.
-        </div>`;
+        </div>
+      `;
 
       body.querySelectorAll('[data-v717-region]').forEach(btn=>{
         btn.addEventListener('click',()=>{
           const id = btn.dataset.v717Region;
           const region = regions.find(x=>x.id===id);
-          if (region) v717FocusRegion(region.id,region.name);
+          if (region) focusRegion(region);
         });
       });
 
-      await v717ApplyRegionFocus();
+      await applyRegionFocus();
+      renderMapFocusBox();
+      v717Chrome();
 
     }catch(e){
       body.innerHTML =
@@ -544,31 +783,40 @@
     }
   }
 
+  /* ------------------------------------------------------------
+     Integração com V7.16
+     ------------------------------------------------------------ */
   const drawStateMunicipalMapV716 = drawStateMunicipalMap;
   drawStateMunicipalMap = async function(){
     await drawStateMunicipalMapV716();
-    await v717ApplyRegionFocus();
+    await applyRegionFocus();
   };
 
   const loadStateMunicipalMapV716 = loadStateMunicipalMap;
   loadStateMunicipalMap = async function(force=false){
     await loadStateMunicipalMapV716(force);
-    if (S.view === 'pres' && S.pres.uf !== 'br'){
-      v717EnsureCard();
-      await v717RenderRegionAnalysis(false);
+
+    if (S.view==='pres' && S.pres.uf!=='br'){
+      ensureRegionCard();
+      ensureMapFocusBox();
+      await renderRegionAnalysis(false);
     }
   };
 
   const renderPresidentV716 = renderPresident;
   renderPresident = function(){
     if (S.pres.mun) S.pres.regionFocus = null;
+    if (S.pres.regionFocus?.uf && S.pres.regionFocus.uf!==S.pres.uf){
+      S.pres.regionFocus = null;
+    }
 
     renderPresidentV716();
     v717Chrome();
 
-    if (S.pres.uf !== 'br'){
-      v717EnsureCard();
-      v717RenderRegionAnalysis(false);
+    if (S.pres.uf!=='br'){
+      ensureMapFocusBox();
+      ensureRegionCard();
+      renderRegionAnalysis(false);
     }
   };
 
@@ -586,16 +834,18 @@
       module.innerHTML = `
         <h3>Análise Regional · IBGE</h3>
         <p>Compare a força territorial de Lula e Flávio nas regiões intermediárias oficiais do IBGE.</p>
-        <span class="tag">NOVO · V7.17</span>
+        <span class="tag">NOVO · ${APP_VERSION}</span>
       `;
       module.addEventListener('click',()=>{
-        S.pres.uf = S.pres.uf === 'br' ? 'mg' : S.pres.uf;
+        S.pres.uf = S.pres.uf==='br' ? 'mg' : S.pres.uf;
         S.pres.mun = '';
         S.pres.cityName = '';
         setView('pres');
       });
       firstGrid.appendChild(module);
     }
+
+    normalizeVisibleVersions(document);
   };
 
   v717Chrome();
