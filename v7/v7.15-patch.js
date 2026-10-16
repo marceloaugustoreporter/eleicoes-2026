@@ -184,6 +184,49 @@
       .compareSwap{justify-self:center;transform:rotate(90deg)}
       .comparePickerGrid{grid-template-columns:1fr}
     }
+
+    /* Acabamento visual V7.15 */
+    .comparePickers{gap:12px}
+    .comparePicker{padding:14px}
+    .comparePickerGrid{
+      grid-template-columns:minmax(160px,.9fr) minmax(190px,1.3fr);
+      gap:10px
+    }
+    #compareUfA,#compareUfB,#compareCityA,#compareCityB{min-width:0}
+    #compareUfA,#compareUfB{font-size:15px}
+    .compareHero{gap:10px}
+    .compareKpi{
+      min-height:90px;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start
+    }
+    .compareKpi strong{font-size:21px}
+    .compareKpi span{
+      margin-top:auto;
+      padding-top:7px
+    }
+    .compareTable th,.compareTable td{vertical-align:middle}
+    .compareTable th:first-child,.compareTable td:first-child{min-width:150px}
+    .compareInsights{
+      grid-auto-rows:1fr;
+      gap:10px
+    }
+    .compareInsight{
+      height:100%;
+      min-height:58px
+    }
+    .compareActions{margin-top:14px}
+    @media(min-width:700px) and (max-width:820px){
+      .comparePickers{grid-template-columns:1fr}
+      .compareSwap{
+        justify-self:center;
+        transform:rotate(90deg)
+      }
+      .comparePickerGrid{
+        grid-template-columns:minmax(160px,.8fr) minmax(0,1.4fr)
+      }
+    }
   `;
   document.head.appendChild(style);
 
