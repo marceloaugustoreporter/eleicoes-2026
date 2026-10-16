@@ -1,7 +1,7 @@
 /* Central de Apuração — V7.16
    Camada sobre V7.15:
    - mapa municipal disponível com referência final do 1º turno
-   - Liderança / Margem / Lula / Flávio
+   - Liderança / Margem / % Lula / % Flávio
    - vermelho = Lula, azul = Flávio
    - zona neutra para disputa até 2 p.p.
 */
@@ -11,10 +11,10 @@
   if (window.__CENTRAL_APURACAO_V716__) return;
   window.__CENTRAL_APURACAO_V716__ = true;
 
-  const V716_NEUTRAL = '#5b6570';
+  const V716_NEUTRAL = '#7d8791';
   const V716_RED = '#d71920';
   const V716_BLUE = '#2374e1';
-  const V716_EMPTY = '#1a3346';
+  const V716_EMPTY = '#0d2230';
 
   if (!['leader','margin','lula','flavio'].includes(S.pres.mapMode)) {
     S.pres.mapMode = 'margin';
@@ -361,8 +361,8 @@ Seções totalizadas: ${ptxt(row.sections)}`;
     group.innerHTML = `
       <button class="modeBtn ${S.pres.mapMode==='leader'?'on':''}" data-map-mode="leader" type="button">Liderança</button>
       <button class="modeBtn ${S.pres.mapMode==='margin'?'on':''}" data-map-mode="margin" type="button">Margem</button>
-      <button class="modeBtn ${S.pres.mapMode==='lula'?'on':''}" data-map-mode="lula" type="button">Lula</button>
-      <button class="modeBtn ${S.pres.mapMode==='flavio'?'on':''}" data-map-mode="flavio" type="button">Flávio</button>
+      <button class="modeBtn ${S.pres.mapMode==='lula'?'on':''}" data-map-mode="lula" type="button">% Lula</button>
+      <button class="modeBtn ${S.pres.mapMode==='flavio'?'on':''}" data-map-mode="flavio" type="button">% Flávio</button>
     `;
 
     tools.querySelector('.mapModeWaiting')?.remove();
@@ -398,6 +398,23 @@ Seções totalizadas: ${ptxt(row.sections)}`;
       tools.insertAdjacentElement('afterend', hint);
     }
 
+
+    const legend = card?.querySelector('.mapLegend');
+    if (legend) {
+      const first = legend.querySelector('span');
+      if (first) {
+        const dot = first.querySelector('.legendDot');
+        if (dot) dot.style.background = V716_EMPTY;
+        first.lastChild && (first.lastChild.textContent = 'Sem votos/dados');
+      }
+      if (!legend.querySelector('[data-v716-neutral]')) {
+        const neutral = document.createElement('span');
+        neutral.dataset.v716Neutral = '1';
+        neutral.innerHTML = '<i class="legendDot" style="background:'+V716_NEUTRAL+'"></i>Equilíbrio · até 2 p.p.';
+        legend.insertBefore(neutral, legend.children[1] || null);
+      }
+    }
+
     const refresh = $('#stateMapRefresh');
     if (refresh && !refresh.dataset.v716) {
       refresh.dataset.v716 = '1';
@@ -412,6 +429,11 @@ Seções totalizadas: ${ptxt(row.sections)}`;
     const title = document.querySelector('#appView .topbar h2');
     if (title) title.textContent = 'Central de Apuração V7.16';
 
+
+    const centralNotice = [...document.querySelectorAll('#content .notice strong')]
+      .find(x => x.textContent.includes('Central de Dados V7.15'));
+    if (centralNotice) centralNotice.textContent = 'Central de Dados V7.16 ativa';
+
     const foot = document.querySelector('#appView .foot');
     if (foot) {
       foot.textContent =
@@ -419,6 +441,28 @@ Seções totalizadas: ${ptxt(row.sections)}`;
         'A V7.16 acrescenta leitura territorial por liderança e margem, com referência final do 1º turno até o início efetivo da totalização do 2º turno.';
     }
   }
+
+  const renderHomeV715 = renderHome;
+  renderHome = function(){
+    renderHomeV715();
+    v716Chrome();
+  };
+
+
+  function v716RecolorEmpty(){
+    document.querySelectorAll('#stateMap path').forEach(p=>{
+      const fill = String(p.getAttribute('fill') || '').toLowerCase();
+      if (fill === '#1a3346' || fill === 'rgb(26, 51, 70)') {
+        p.setAttribute('fill', V716_EMPTY);
+      }
+    });
+  }
+
+  const drawStateMunicipalMapV715 = drawStateMunicipalMap;
+  drawStateMunicipalMap = async function(){
+    await drawStateMunicipalMapV715();
+    v716RecolorEmpty();
+  };
 
   const renderPresidentV715 = renderPresident;
 
