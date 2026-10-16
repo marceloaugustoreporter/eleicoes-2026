@@ -1,146 +1,147 @@
 {
-  "version": "2026.1",
+  "version": "2026.2",
   "source": "Tribunal Superior Eleitoral",
   "source_url": "https://dadosabertos.tse.jus.br/dataset/eleitorado-2026",
   "reference_date": "14/07/2026",
-  "generated_at": "2026-10-16T00:10:38.271029Z",
-  "source_rows_read": 22093690,
+  "generated_at": "2026-10-16T00:22:42.725211Z",
+  "selected_csv": "perfil_eleitorado_2026_BRASIL.csv",
+  "source_rows_read": 11046845,
   "municipalities": 5571,
-  "voters_27_ufs": 315653174,
+  "voters_27_ufs": 157826587,
   "states": {
     "AC": {
       "municipalities": 22,
-      "voters": 1228750,
+      "voters": 614375,
       "file": "ac.json"
     },
     "AL": {
       "municipalities": 102,
-      "voters": 4883588,
+      "voters": 2441794,
       "file": "al.json"
     },
     "AP": {
       "municipalities": 16,
-      "voters": 1155068,
+      "voters": 577534,
       "file": "ap.json"
     },
     "AM": {
       "municipalities": 62,
-      "voters": 5602364,
+      "voters": 2801182,
       "file": "am.json"
     },
     "BA": {
       "municipalities": 417,
-      "voters": 22642010,
+      "voters": 11321005,
       "file": "ba.json"
     },
     "CE": {
       "municipalities": 184,
-      "voters": 13996988,
+      "voters": 6998494,
       "file": "ce.json"
     },
     "DF": {
       "municipalities": 1,
-      "voters": 4506264,
+      "voters": 2253132,
       "file": "df.json"
     },
     "ES": {
       "municipalities": 78,
-      "voters": 5980980,
+      "voters": 2990490,
       "file": "es.json"
     },
     "GO": {
       "municipalities": 246,
-      "voters": 10161510,
+      "voters": 5080755,
       "file": "go.json"
     },
     "MA": {
       "municipalities": 217,
-      "voters": 10373124,
+      "voters": 5186562,
       "file": "ma.json"
     },
     "MT": {
       "municipalities": 142,
-      "voters": 5276460,
+      "voters": 2638230,
       "file": "mt.json"
     },
     "MS": {
       "municipalities": 79,
-      "voters": 4049768,
+      "voters": 2024884,
       "file": "ms.json"
     },
     "MG": {
       "municipalities": 853,
-      "voters": 32755318,
+      "voters": 16377659,
       "file": "mg.json"
     },
     "PA": {
       "municipalities": 144,
-      "voters": 12530710,
+      "voters": 6265355,
       "file": "pa.json"
     },
     "PB": {
       "municipalities": 223,
-      "voters": 6494794,
+      "voters": 3247397,
       "file": "pb.json"
     },
     "PR": {
       "municipalities": 399,
-      "voters": 17218052,
+      "voters": 8609026,
       "file": "pr.json"
     },
     "PE": {
       "municipalities": 185,
-      "voters": 14451488,
+      "voters": 7225744,
       "file": "pe.json"
     },
     "PI": {
       "municipalities": 224,
-      "voters": 5416320,
+      "voters": 2708160,
       "file": "pi.json"
     },
     "RJ": {
       "municipalities": 92,
-      "voters": 25714000,
+      "voters": 12857000,
       "file": "rj.json"
     },
     "RN": {
       "municipalities": 167,
-      "voters": 5321130,
+      "voters": 2660565,
       "file": "rn.json"
     },
     "RS": {
       "municipalities": 497,
-      "voters": 17052466,
+      "voters": 8526233,
       "file": "rs.json"
     },
     "RO": {
       "municipalities": 52,
-      "voters": 2534210,
+      "voters": 1267105,
       "file": "ro.json"
     },
     "RR": {
       "municipalities": 15,
-      "voters": 802992,
+      "voters": 401496,
       "file": "rr.json"
     },
     "SC": {
       "municipalities": 295,
-      "voters": 11451506,
+      "voters": 5725753,
       "file": "sc.json"
     },
     "SP": {
       "municipalities": 645,
-      "voters": 68208452,
+      "voters": 34104226,
       "file": "sp.json"
     },
     "SE": {
       "municipalities": 75,
-      "voters": 3480248,
+      "voters": 1740124,
       "file": "se.json"
     },
     "TO": {
       "municipalities": 139,
-      "voters": 2364614,
+      "voters": 1182307,
       "file": "to.json"
     }
   }
