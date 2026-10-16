@@ -1,4 +1,4 @@
-/* Central de Apuração — V7.18
+/* Central de Apuração — V7.18 FINAL 2
    Rankings e Curiosidades Eleitorais
    - rankings municipais automáticos
    - maior vantagem de Lula
@@ -84,10 +84,10 @@
     }
     .v718RankRow{
       display:grid;
-      grid-template-columns:28px minmax(0,1fr) auto auto;
+      grid-template-columns:26px minmax(0,1.35fr) minmax(82px,.9fr) auto;
       align-items:center;
-      gap:8px;
-      padding:9px 10px;
+      gap:6px;
+      padding:9px 9px;
       border-bottom:1px solid #1d3548
     }
     .v718RankRow:last-child{border-bottom:0}
@@ -109,9 +109,11 @@
       display:block;
       font-size:10px;
       color:#fff;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis
+      white-space:normal;
+      overflow:visible;
+      text-overflow:clip;
+      overflow-wrap:anywhere;
+      line-height:1.18
     }
     .v718City span{
       display:block;
@@ -122,7 +124,7 @@
     }
     .v718Value{
       text-align:right;
-      white-space:nowrap
+      min-width:0
     }
     .v718Value b{
       display:block;
@@ -132,8 +134,10 @@
       display:block;
       margin-top:2px;
       color:var(--muted);
-      font-size:7.5px;
-      font-weight:800
+      font-size:7.2px;
+      font-weight:800;
+      line-height:1.22;
+      white-space:normal
     }
     .v718Value.red b{color:#ff7378}
     .v718Value.blue b{color:#72afff}
@@ -144,8 +148,8 @@
       background:#0a1b2a;
       color:#dcebf5;
       border-radius:8px;
-      padding:6px 8px;
-      font-size:8px;
+      padding:5px 6px;
+      font-size:7.4px;
       font-weight:900;
       cursor:pointer;
       white-space:nowrap
@@ -200,14 +204,20 @@
       .v718RankRow{
         grid-template-columns:26px minmax(0,1fr) auto;
       }
+      .v718Value{
+        grid-column:2/-1;
+        text-align:left
+      }
       .v718Open{
         grid-column:2/-1;
-        justify-self:end
+        justify-self:start
       }
     }
     @media(min-width:700px){
       .v718Kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
-      .v718Ranks{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .v718Ranks{
+        grid-template-columns:minmax(0,1fr) minmax(0,1.08fr) minmax(0,1fr)
+      }
       .v718Curiosities{grid-template-columns:repeat(3,minmax(0,1fr))}
     }
   `;
@@ -391,7 +401,7 @@
           <b>${value}</b>
           <span>${esc(sub)}</span>
         </div>
-        <button class="v718Open" data-v718-open="${esc(row.cd)}" type="button">Abrir município</button>
+        <button class="v718Open" data-v718-open="${esc(row.cd)}" type="button" title="Abrir ${esc(row.nm)}">Abrir</button>
       </div>
     `;
   }
