@@ -1,4 +1,4 @@
-/* Central de Apuração — V7.17 FINAL
+/* Central de Apuração — V7.17 FINAL 2
    Análise Regional + higienização visual de versão
    - Regiões Geográficas Intermediárias do IBGE
    - agregação automática dos resultados municipais do TSE
@@ -56,7 +56,7 @@
     }
 
     #v717MapFocus{
-      margin:10px 0 4px;
+      margin:10px 0 10px;
       display:none
     }
     #v717MapFocus.on{display:block}
@@ -450,13 +450,20 @@
     if (!mapCard) return null;
 
     let box = $('#v717MapFocus');
-    if (box) return box;
+    if (!box){
+      box = document.createElement('div');
+      box.id = 'v717MapFocus';
+    }
 
-    box = document.createElement('div');
-    box.id = 'v717MapFocus';
-
+    /* Posição estável: logo após os quatro indicadores do mapa. */
+    const summary = $('#stateMapSummary');
     const mapBox = map.closest('.mapBox');
-    if (mapBox) mapBox.insertAdjacentElement('beforebegin',box);
+
+    if (summary && summary.parentElement === mapCard){
+      summary.insertAdjacentElement('afterend',box);
+    }else if (mapBox && mapBox.parentElement === mapCard){
+      mapBox.insertAdjacentElement('beforebegin',box);
+    }
 
     return box;
   }
@@ -472,7 +479,12 @@
       return;
     }
 
-    const g = (S.pres.regionAnalysis || []).find(x=>x.id===focus.id);
+    /* O foco guarda uma cópia dos dados da região. Assim o cartão
+       independe da ordem em que mapa e tabela terminaram de renderizar. */
+    const g =
+      (focus && Number.isFinite(Number(focus.p13)) ? focus : null) ||
+      (S.pres.regionAnalysis || []).find(x=>x.id===focus.id);
+
     if (!g){
       box.className = '';
       box.innerHTML = '';
@@ -550,8 +562,7 @@
       S.pres.regionFocus = null;
     }else{
       S.pres.regionFocus = {
-        id:region.id,
-        name:region.name,
+        ...region,
         uf:S.pres.uf
       };
     }
