@@ -39,6 +39,7 @@ jobs:
           import csv
           import io
           import json
+          import shutil
           import zipfile
           from collections import defaultdict
           from datetime import datetime, timezone
@@ -53,44 +54,43 @@ jobs:
           ]
           UF_SET = set(UFS)
 
-          OUT_DIR.mkdir(parents=True, exist_ok=True)
+          required = {"SG_UF", "CD_MUNICIPIO", "NM_MUNICIPIO"}
+          selected_csv = None
+          selected_voters_col = None
 
-          totals = defaultdict(int)
-          names = {}
-          reference_date = None
-          source_rows = 0
-          data_csv_count = 0
-
+          # Escolhe apenas UM CSV nacional compatível.
+          # O ZIP pode conter mais de um CSV com estrutura semelhante.
           with zipfile.ZipFile(ZIP_PATH) as zf:
-              csv_files = [n for n in zf.namelist() if n.lower().endswith(".csv")]
-              if not csv_files:
+              candidates = sorted(
+                  [n for n in zf.namelist() if n.lower().endswith(".csv")],
+                  key=lambda n: zf.getinfo(n).file_size,
+                  reverse=True
+              )
+
+              if not candidates:
                   raise RuntimeError("Nenhum CSV encontrado no ZIP do TSE.")
 
-              print(f"{len(csv_files)} arquivo(s) CSV encontrado(s) no ZIP.")
+              print(f"{len(candidates)} CSV(s) encontrado(s) no ZIP.")
 
-              for csv_name in sorted(csv_files, key=lambda n: zf.getinfo(n).file_size, reverse=True):
-                  print(f"Lendo: {csv_name}")
+              for csv_name in candidates:
                   with zf.open(csv_name, "r") as raw:
                       text = io.TextIOWrapper(raw, encoding="latin-1", newline="")
-                      reader = csv.DictReader(text, delimiter=";")
-
-                      if reader.fieldnames:
-                          reader.fieldnames = [
-                              (f or "").lstrip("\ufeff").strip()
-                              for f in reader.fieldnames
-                          ]
-
-                      required = {"SG_UF", "CD_MUNICIPIO", "NM_MUNICIPIO"}
-                      fields = set(reader.fieldnames or [])
-                      if not required.issubset(fields):
-                          print(f"Ignorado: {csv_name} não contém as colunas municipais esperadas.")
+                      reader = csv.reader(text, delimiter=";")
+                      try:
+                          header = next(reader)
+                      except StopIteration:
                           continue
 
-                      voters_col = None
-                      for candidate in ("QT_ELEITORES_PERFIL", "QT_ELEITORES"):
-                          if candidate in fields:
-                              voters_col = candidate
-                              break
-                      if not voters_col:
-                          print(f"Ignorado: {csv_name} não contém coluna de quantidade de eleitores.")
-                          continue
+                  header = [(h or "").lstrip("\ufeff").strip() for h in header]
+                  fields = set(header)
+
+                  if not required.issubset(fields):
+                      continue
+
+                  voters_col = None
+                  for candidate in ("QT_ELEITORES_PERFIL", "QT_ELEITORES"):
+                      if candidate in fields:
+                          voters_col = candidate
+                          break
+
+                  if not voters_col:
