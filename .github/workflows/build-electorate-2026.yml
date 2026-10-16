@@ -39,6 +39,7 @@ jobs:
           import csv
           import io
           import json
+          import shutil
           import zipfile
           from collections import defaultdict
           from datetime import datetime, timezone
@@ -53,93 +54,123 @@ jobs:
           ]
           UF_SET = set(UFS)
 
-          OUT_DIR.mkdir(parents=True, exist_ok=True)
+          required = {"SG_UF", "CD_MUNICIPIO", "NM_MUNICIPIO"}
+          selected_csv = None
+          selected_voters_col = None
 
-          totals = defaultdict(int)
-          names = {}
-          reference_date = None
-          source_rows = 0
-          data_csv_count = 0
-
+          # Escolhe apenas UM CSV nacional compatível.
+          # O ZIP pode conter mais de um CSV com estrutura semelhante.
           with zipfile.ZipFile(ZIP_PATH) as zf:
-              csv_files = [n for n in zf.namelist() if n.lower().endswith(".csv")]
-              if not csv_files:
+              candidates = sorted(
+                  [n for n in zf.namelist() if n.lower().endswith(".csv")],
+                  key=lambda n: zf.getinfo(n).file_size,
+                  reverse=True
+              )
+
+              if not candidates:
                   raise RuntimeError("Nenhum CSV encontrado no ZIP do TSE.")
 
-              print(f"{len(csv_files)} arquivo(s) CSV encontrado(s) no ZIP.")
+              print(f"{len(candidates)} CSV(s) encontrado(s) no ZIP.")
 
-              for csv_name in csv_files:
-                  print(f"Lendo: {csv_name}")
+              for csv_name in candidates:
                   with zf.open(csv_name, "r") as raw:
                       text = io.TextIOWrapper(raw, encoding="latin-1", newline="")
-                      reader = csv.DictReader(text, delimiter=";")
-
-                      if reader.fieldnames:
-                          reader.fieldnames = [
-                              (f or "").lstrip("\ufeff").strip()
-                              for f in reader.fieldnames
-                          ]
-
-                      required = {"SG_UF", "CD_MUNICIPIO", "NM_MUNICIPIO"}
-                      fields = set(reader.fieldnames or [])
-                      if not required.issubset(fields):
-                          print(f"Ignorado: {csv_name} não contém as colunas municipais esperadas.")
+                      reader = csv.reader(text, delimiter=";")
+                      try:
+                          header = next(reader)
+                      except StopIteration:
                           continue
 
-                      voters_col = None
-                      for candidate in ("QT_ELEITORES_PERFIL", "QT_ELEITORES"):
-                          if candidate in fields:
-                              voters_col = candidate
-                              break
-                      if not voters_col:
-                          print(f"Ignorado: {csv_name} não contém coluna de quantidade de eleitores.")
+                  header = [(h or "").lstrip("\ufeff").strip() for h in header]
+                  fields = set(header)
+
+                  if not required.issubset(fields):
+                      continue
+
+                  voters_col = None
+                  for candidate in ("QT_ELEITORES_PERFIL", "QT_ELEITORES"):
+                      if candidate in fields:
+                          voters_col = candidate
+                          break
+
+                  if not voters_col:
+                      continue
+
+                  selected_csv = csv_name
+                  selected_voters_col = voters_col
+                  break
+
+              if not selected_csv:
+                  raise RuntimeError("Nenhum CSV municipal compatível foi encontrado no ZIP.")
+
+              info = zf.getinfo(selected_csv)
+              print(f"CSV selecionado: {selected_csv}")
+              print(f"Tamanho descompactado: {info.file_size:,} bytes")
+              print(f"Coluna de eleitorado: {selected_voters_col}")
+
+              totals = defaultdict(int)
+              names = {}
+              reference_date = None
+              source_rows = 0
+
+              with zf.open(selected_csv, "r") as raw:
+                  text = io.TextIOWrapper(raw, encoding="latin-1", newline="")
+                  reader = csv.DictReader(text, delimiter=";")
+
+                  if reader.fieldnames:
+                      reader.fieldnames = [
+                          (f or "").lstrip("\ufeff").strip()
+                          for f in reader.fieldnames
+                      ]
+
+                  for row in reader:
+                      source_rows += 1
+
+                      uf = (row.get("SG_UF") or "").strip().upper()
+                      if uf not in UF_SET:
                           continue
 
-                      data_csv_count += 1
+                      code = "".join(
+                          ch for ch in (row.get("CD_MUNICIPIO") or "")
+                          if ch.isdigit()
+                      ).zfill(5)
 
-                      for row in reader:
-                          source_rows += 1
-                          uf = (row.get("SG_UF") or "").strip().upper()
-                          if uf not in UF_SET:
-                              continue
+                      if not code.strip("0"):
+                          continue
 
-                          code = "".join(
-                              ch for ch in (row.get("CD_MUNICIPIO") or "")
-                              if ch.isdigit()
-                          ).zfill(5)
-                          if not code.strip("0"):
-                              continue
+                      name = (row.get("NM_MUNICIPIO") or "").strip()
 
-                          name = (row.get("NM_MUNICIPIO") or "").strip()
-                          raw_voters = "".join(
-                              ch for ch in (row.get(voters_col) or "0")
-                              if ch.isdigit()
-                          )
-                          voters = int(raw_voters or 0)
+                      raw_voters = "".join(
+                          ch for ch in (row.get(selected_voters_col) or "0")
+                          if ch.isdigit()
+                      )
+                      voters = int(raw_voters or 0)
 
-                          key = (uf, code)
-                          totals[key] += voters
-                          if name:
-                              names[key] = name
+                      key = (uf, code)
+                      totals[key] += voters
 
-                          if not reference_date:
-                              dt = (row.get("DT_GERACAO") or "").strip()
-                              if dt:
-                                  reference_date = dt
+                      if name:
+                          names[key] = name
 
-          if not data_csv_count:
-              raise RuntimeError("Nenhum CSV de dados compatível foi encontrado.")
+                      if not reference_date:
+                          dt = (row.get("DT_GERACAO") or "").strip()
+                          if dt:
+                              reference_date = dt
 
           generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+          state_payloads = {}
           state_meta = {}
           national_total = 0
           national_municipalities = 0
 
           for uf in UFS:
               items = []
+
               for (row_uf, code), voters in totals.items():
                   if row_uf != uf or voters <= 0:
                       continue
+
                   items.append({
                       "code": code,
                       "name": names.get((row_uf, code), ""),
@@ -148,11 +179,12 @@ jobs:
 
               items.sort(key=lambda x: x["name"])
               state_total = sum(x["voters"] for x in items)
+
               national_total += state_total
               national_municipalities += len(items)
 
-              payload = {
-                  "version": "2026.1",
+              state_payloads[uf] = {
+                  "version": "2026.2",
                   "source": "Tribunal Superior Eleitoral",
                   "source_url": "https://dadosabertos.tse.jus.br/dataset/eleitorado-2026",
                   "reference_date": reference_date,
@@ -163,25 +195,89 @@ jobs:
                   "items": items
               }
 
-              (OUT_DIR / f"{uf.lower()}.json").write_text(
-                  json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
-                  encoding="utf-8"
-              )
-
               state_meta[uf] = {
                   "municipalities": len(items),
                   "voters": state_total,
                   "file": f"{uf.lower()}.json"
               }
 
-              print(f"{uf}: {len(items)} municípios | {state_total:,} eleitores")
+          # Validação ANTES de substituir os arquivos existentes.
+          if national_municipalities != 5571:
+              raise RuntimeError(
+                  f"Quantidade inesperada de municípios: {national_municipalities}."
+              )
+
+          if not 150_000_000 <= national_total <= 165_000_000:
+              raise RuntimeError(
+                  f"Total nacional fora da faixa esperada: {national_total:,}."
+              )
+
+          if state_meta["MG"]["municipalities"] != 853:
+              raise RuntimeError(
+                  f"MG com quantidade inesperada de municípios: "
+                  f"{state_meta['MG']['municipalities']}."
+              )
+
+          if state_meta["SP"]["municipalities"] != 645:
+              raise RuntimeError(
+                  f"SP com quantidade inesperada de municípios: "
+                  f"{state_meta['SP']['municipalities']}."
+              )
+
+          passos = next(
+              (x for x in state_payloads["MG"]["items"]
+               if x["name"].upper() == "PASSOS"),
+              None
+          )
+
+          franca = next(
+              (x for x in state_payloads["SP"]["items"]
+               if x["name"].upper() == "FRANCA"),
+              None
+          )
+
+          if not passos:
+              raise RuntimeError("Passos não foi encontrado na base.")
+          if not franca:
+              raise RuntimeError("Franca não foi encontrada na base.")
+
+          if passos["voters"] != 81252:
+              raise RuntimeError(
+                  f"Validação de Passos falhou: "
+                  f"esperado 81.252, obtido {passos['voters']:,}."
+              )
+
+          print(f"Referência TSE: {reference_date}")
+          print(f"Linhas lidas: {source_rows:,}")
+          print(f"Municípios: {national_municipalities:,}")
+          print(f"Eleitorado nacional da base: {national_total:,}")
+          print(f"Passos/MG: {passos['voters']:,}")
+          print(f"Franca/SP: {franca['voters']:,}")
+          print(f"Minas Gerais: {state_meta['MG']['voters']:,}")
+          print(f"São Paulo: {state_meta['SP']['voters']:,}")
+
+          # Só agora substitui a base anterior.
+          if OUT_DIR.exists():
+              shutil.rmtree(OUT_DIR)
+          OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+          for uf in UFS:
+              (OUT_DIR / f"{uf.lower()}.json").write_text(
+                  json.dumps(
+                      state_payloads[uf],
+                      ensure_ascii=False,
+                      separators=(",", ":")
+                  ),
+                  encoding="utf-8"
+              )
 
           index = {
-              "version": "2026.1",
+              "version": "2026.2",
               "source": "Tribunal Superior Eleitoral",
               "source_url": "https://dadosabertos.tse.jus.br/dataset/eleitorado-2026",
               "reference_date": reference_date,
               "generated_at": generated_at,
+              "selected_csv": selected_csv,
               "source_rows_read": source_rows,
               "municipalities": national_municipalities,
               "voters_27_ufs": national_total,
@@ -192,42 +288,6 @@ jobs:
               json.dumps(index, ensure_ascii=False, indent=2),
               encoding="utf-8"
           )
-
-          # Barreiras de segurança: não grava uma base claramente incompleta.
-          if national_municipalities < 5500:
-              raise RuntimeError(
-                  f"Base incompleta: apenas {national_municipalities} municípios encontrados."
-              )
-          if state_meta["SP"]["municipalities"] < 640:
-              raise RuntimeError(
-                  f"Base de SP parece incompleta: {state_meta['SP']['municipalities']} municípios."
-              )
-          if state_meta["MG"]["municipalities"] < 850:
-              raise RuntimeError(
-                  f"Base de MG parece incompleta: {state_meta['MG']['municipalities']} municípios."
-              )
-
-          sp_items = json.loads(
-              (OUT_DIR / "sp.json").read_text(encoding="utf-8")
-          )["items"]
-          mg_items = json.loads(
-              (OUT_DIR / "mg.json").read_text(encoding="utf-8")
-          )["items"]
-
-          franca = next(
-              (x for x in sp_items if x["name"].upper() == "FRANCA"),
-              None
-          )
-          passos = next(
-              (x for x in mg_items if x["name"].upper() == "PASSOS"),
-              None
-          )
-
-          print("Validação Passos:", passos)
-          print("Validação Franca:", franca)
-
-          if not passos or not franca:
-              raise RuntimeError("Passos ou Franca não foram encontrados na base reduzida.")
 
       - name: Mostrar arquivos gerados
         shell: bash
@@ -246,8 +306,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add v7/data/electorate_2026
 
           if git diff --cached --quiet; then
@@ -255,5 +317,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "Gerar base municipal do Cadastro Eleitoral 2026"
+          git commit -m "Corrigir base municipal do Cadastro Eleitoral 2026"
           git push origin HEAD:main
