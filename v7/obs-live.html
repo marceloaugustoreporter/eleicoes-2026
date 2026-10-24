@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Central de Apuração 2026 · OBS</title>
+<style>
+:root{
+  --bg:#06101a;--panel:#0a1b2a;--panel2:#071522;--line:#24445d;
+  --text:#f7fbff;--muted:#91a9bb;--cyan:#35d0f6;--green:#4fe0ad;
+  --yellow:#ffd34e;--red:#d71920;--blue:#2374e1
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+body{background:radial-gradient(circle at 50% 0,#0c2438 0,#06101a 42%,#04101a 100%)}
+.stage{width:100vw;height:100vh;position:relative;overflow:hidden;padding:3.3vh 3vw 2.5vh}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:2vw}
+.ey{font-size:1.1vw;letter-spacing:.18em;font-weight:900;color:var(--cyan)}
+.title{font-size:3vw;font-weight:950;line-height:1;margin-top:.5vh}
+.place{font-size:1.45vw;color:#cce0ed;font-weight:800;margin-top:.8vh}
+.status{display:flex;align-items:center;gap:.7vw;border:1px solid var(--line);background:rgba(7,21,34,.8);padding:.8vh 1vw;border-radius:1vw;font-size:1vw;font-weight:850;color:#cfe0ec}
+.dot{width:.7vw;height:.7vw;border-radius:50%;background:var(--yellow)}
+.dot.ok{background:var(--green)} .dot.err{background:#ff6f74}
+.progressWrap{margin-top:2.2vh}
+.progressMeta{display:flex;justify-content:space-between;align-items:center;font-size:1vw;font-weight:850;color:#b5c9d8}
+.progress{height:1.25vh;background:#10273b;border-radius:99px;overflow:hidden;margin-top:.65vh}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:99px}
+.candidates{display:grid;grid-template-columns:1fr 1fr;gap:2vw;margin-top:3vh}
+.cand{position:relative;display:grid;grid-template-columns:13vw 1fr;gap:1.4vw;align-items:center;min-height:39vh;border:1px solid var(--line);background:linear-gradient(155deg,rgba(10,27,42,.98),rgba(6,20,32,.96));border-radius:2vw;padding:2vw;overflow:hidden}
+.cand:before{content:"";position:absolute;left:0;top:0;bottom:0;width:.55vw;background:var(--cand)}
+.photo{width:12vw;height:12vw;border-radius:50%;overflow:hidden;border:.35vw solid var(--cand);background:#102335;display:grid;place-items:center;position:relative}
+.photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;z-index:2}
+.initial{font-size:4vw;font-weight:950;color:#d8e8f2;z-index:1}
+.candName{font-size:2.1vw;font-weight:950;line-height:1.05}
+.meta{font-size:1vw;color:var(--muted);font-weight:850;margin-top:.65vh}
+.pct{font-size:5.5vw;font-weight:950;line-height:.95;color:var(--cand);margin-top:2.2vh}
+.votes{font-size:1.4vw;font-weight:900;margin-top:.7vh}
+.bar{height:1.1vh;background:#122a3d;border-radius:99px;overflow:hidden;margin-top:1.5vh}
+.bar i{display:block;height:100%;background:var(--cand);border-radius:99px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1vw;margin-top:2.2vh}
+.stat{border:1px solid var(--line);background:rgba(7,21,34,.86);border-radius:1.1vw;padding:1.1vw}
+.stat b{display:block;font-size:1.55vw}
+.stat span{display:block;margin-top:.35vh;color:var(--muted);font-size:.82vw;font-weight:800}
+.foot{position:absolute;left:3vw;right:3vw;bottom:1.5vh;display:flex;justify-content:space-between;align-items:center;color:#7891a5;font-size:.78vw;font-weight:800}
+.waiting{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(4,16,26,.55);backdrop-filter:blur(2px);z-index:10}
+.waiting.on{display:flex}
+.waitBox{border:1px solid #31536d;background:#081a29;border-radius:1.5vw;padding:2vw 2.4vw;text-align:center}
+.waitBox b{font-size:2vw}.waitBox span{display:block;margin-top:.7vh;color:#a9bfce;font-size:1vw}
+
+/* Vertical 1080×1920 */
+body.vertical .stage{padding:3.2vh 4.3vw 2.2vh}
+body.vertical .ey{font-size:2.3vw}
+body.vertical .title{font-size:6.6vw;margin-top:.8vh}
+body.vertical .place{font-size:3.1vw;margin-top:.7vh}
+body.vertical .status{font-size:2.1vw;border-radius:2.2vw;padding:1vh 2vw}
+body.vertical .dot{width:1.5vw;height:1.5vw}
+body.vertical .progressMeta{font-size:2.15vw}
+body.vertical .progress{height:1vh;margin-top:.6vh}
+body.vertical .candidates{grid-template-columns:1fr;gap:1.5vh;margin-top:2vh}
+body.vertical .cand{grid-template-columns:27vw 1fr;min-height:27.3vh;border-radius:3.5vw;padding:3.6vw;gap:3vw}
+body.vertical .cand:before{width:1.2vw}
+body.vertical .photo{width:25vw;height:25vw;border-width:.8vw}
+body.vertical .initial{font-size:9vw}
+body.vertical .candName{font-size:5vw}
+body.vertical .meta{font-size:2.2vw;margin-top:.4vh}
+body.vertical .pct{font-size:10.5vw;margin-top:1.7vh}
+body.vertical .votes{font-size:3vw;margin-top:.45vh}
+body.vertical .bar{height:.9vh;margin-top:1vh}
+body.vertical .stats{grid-template-columns:repeat(2,1fr);gap:1.4vw;margin-top:1.7vh}
+body.vertical .stat{border-radius:2.4vw;padding:2.6vw}
+body.vertical .stat b{font-size:4vw}
+body.vertical .stat span{font-size:1.9vw;margin-top:.25vh}
+body.vertical .foot{left:4.3vw;right:4.3vw;bottom:1.2vh;font-size:1.65vw}
+body.vertical .waitBox{border-radius:3vw;padding:4vw}
+body.vertical .waitBox b{font-size:4.8vw}
+body.vertical .waitBox span{font-size:2.4vw}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="top">
+    <div>
+      <div class="ey">CENTRAL DE APURAÇÃO · ELEIÇÕES 2026</div>
+      <div id="title" class="title">PRESIDENTE · 2º TURNO</div>
+      <div id="place" class="place">Brasil</div>
+    </div>
+    <div class="status"><i id="dot" class="dot"></i><span id="status">Conectando ao TSE</span></div>
+  </div>
+
+  <div class="progressWrap">
+    <div class="progressMeta">
+      <span id="progressText">Aguardando totalização</span>
+      <span id="updated">--:--:--</span>
+    </div>
+    <div class="progress"><i id="progressBar"></i></div>
+  </div>
+
+  <div id="candidates" class="candidates"></div>
+  <div id="stats" class="stats"></div>
+
+  <div class="foot">
+    <span>Fonte dos resultados: Tribunal Superior Eleitoral (TSE)</span>
+    <span>Atualização automática · 30 s</span>
+  </div>
+
+  <div id="waiting" class="waiting">
+    <div class="waitBox">
+      <b>Aguardando a totalização do 2º turno</b>
+      <span>As candidaturas já estão preparadas. Os números entram automaticamente quando o TSE iniciar a divulgação.</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const Q=new URLSearchParams(location.search);
+const layout=Q.get('layout')==='vertical'?'vertical':'horizontal';
+const office=Q.get('office')==='gov'?'gov':'pres';
+const uf=(Q.get('uf')||'br').toLowerCase();
+const mun=(Q.get('mun')||'').replace(/\D/g,'');
+const customLabel=(Q.get('label')||'').trim();
+
+document.body.classList.add(layout);
+
+const BASE='https://resultados.tse.jus.br/oficial/ele2026';
+const CFG=office==='pres'
+  ? {election:'6258',reference:'6257',cargo:'1',title:'PRESIDENTE · 2º TURNO'}
+  : {election:'6260',reference:'6259',cargo:'3',title:'GOVERNADOR · 2º TURNO'};
+
+const UF_NAMES={
+  ac:'Acre',al:'Alagoas',ap:'Amapá',am:'Amazonas',ba:'Bahia',ce:'Ceará',df:'Distrito Federal',
+  es:'Espírito Santo',go:'Goiás',ma:'Maranhão',mt:'Mato Grosso',ms:'Mato Grosso do Sul',
+  mg:'Minas Gerais',pa:'Pará',pb:'Paraíba',pr:'Paraná',pe:'Pernambuco',pi:'Piauí',
+  rj:'Rio de Janeiro',rn:'Rio Grande do Norte',rs:'Rio Grande do Sul',ro:'Rondônia',
+  rr:'Roraima',sc:'Santa Catarina',sp:'São Paulo',se:'Sergipe',to:'Tocantins'
+};
+
+const $=s=>document.querySelector(s);
+const nf=n=>new Intl.NumberFormat('pt-BR').format(Number(n||0));
+const num=v=>{if(typeof v==='number')return v;if(v==null||v==='')return 0;return Number(String(v).replace(/\./g,'').replace(',','.'))||0};
+const pct=v=>num(v);
+const ptxt=v=>pct(v).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+'%';
+const pad=(v,n)=>String(v).padStart(n,'0');
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+let lastGood=null;
+let reference=null;
+let placeLabel=customLabel || (uf==='br'?'Brasil':(UF_NAMES[uf]||uf.toUpperCase()));
+let loading=false;
+
+function resultUrl(election){
+  const scope=mun?uf+pad(mun,5):uf;
+  return `${BASE}/${election}/dados/${uf}/${scope}-c${pad(CFG.cargo,4)}-e${pad(election,6)}-u.json`;
+}
+function photoUrl(c){
+  if(!c?.sqcand)return'';
+  const folder=office==='pres'?'br':uf;
+  return `${BASE}/${CFG.reference}/fotos/${folder}/${c.sqcand}.jpeg`;
+}
+async function getJSON(url){
+  const r=await fetch(url,{cache:'no-store'});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+function cargo(data){return data?.carg?.[0]||null}
+function flatten(data){
+  const c=cargo(data);if(!c)return[];
+  const out=[];
+  (c.agr||[]).forEach(a=>(a.par||[]).forEach(p=>(p.cand||[]).forEach(x=>out.push({...x,party:p.sg||''}))));
+  return out;
+}
+function uniqueCandidates(data){
+  const m=new Map();
+  flatten(data).forEach(x=>{
+    const key=String(x.n||'')+'|'+String(x.nmu||x.nm||'');
+    const old=m.get(key);
+    if(!old||num(x.vap)>num(old.vap))m.set(key,x);
+  });
+  return [...m.values()];
+}
+function round2Reference(data){
+  const all=uniqueCandidates(data);
+  if(office==='pres'){
+    return all.filter(c=>['13','22'].includes(String(c.n))).sort((a,b)=>String(a.n).localeCompare(String(b.n)));
+  }
+  const marked=all.filter(c=>/2º\s*turno|2o\s*turno|segundo\s*turno/i.test(String(c.st||'')));
+  if(marked.length>=2)return marked.slice(0,2);
+  return [...all].sort((a,b)=>num(b.vap)-num(a.vap)).slice(0,2);
+}
+function totalPct(data){return pct(data?.s?.pst ?? data?.s?.psa ?? 0)}
+function started(data){return !!data&&(String(data.and||'').toLowerCase()!=='n'||totalPct(data)>0||num(data?.v?.tv)>0)}
+function stats(data){
+  return {valid:num(data?.v?.vv),comp:num(data?.e?.c),abst:num(data?.e?.a),pabs:pct(data?.e?.pa)};
+}
+function colorFor(c,index){
+  if(office==='pres'&&String(c?.n)==='13')return'#d71920';
+  if(office==='pres'&&String(c?.n)==='22')return'#2374e1';
+  return index===0?'#35d0f6':'#ffd34e';
+}
+function initials(name){
+  return String(name||'?').split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase();
+}
+async function resolvePlace(){
+  if(customLabel||!mun)return;
+  try{
+    const j=await getJSON(`${BASE}/6257/config/mun-e006257-cm.json`);
+    const state=(j.abr||[]).find(x=>String(x.cd||'').toLowerCase()===uf);
+    const m=(state?.mu||[]).find(x=>pad(x.cd,5)===pad(mun,5));
+    if(m?.nm)placeLabel=m.nm;
+  }catch(_){}
+}
+async function ensureReference(){
+  if(reference)return;
+  try{reference=await getJSON(resultUrl(CFG.reference))}catch(_){}
+}
+function candidateIdentity(live){
+  const liveArr=uniqueCandidates(live);
+  if(liveArr.length>=2)return liveArr.slice(0,2);
+  return round2Reference(reference).slice(0,2);
+}
+function render(data,stale=false){
+  const isStarted=started(data);
+  const ids=candidateIdentity(data);
+  const liveMap=new Map(uniqueCandidates(data).map(c=>[String(c.n),c]));
+
+  $('#title').textContent=CFG.title;
+  $('#place').textContent=placeLabel+(uf!=='br'&&!mun?` · ${uf.toUpperCase()}`:'');
+  $('#dot').className='dot '+(data?'ok':'err');
+  $('#status').textContent=stale?'Último dado válido':data?'TSE conectado':'Aguardando TSE';
+
+  const p=totalPct(data);
+  $('#progressText').textContent=isStarted?`${ptxt(p)} das seções totalizadas`:'Aguardando totalização';
+  $('#progressBar').style.width=Math.min(100,p)+'%';
+  $('#updated').textContent=new Date().toLocaleTimeString('pt-BR');
+  $('#waiting').classList.toggle('on',!isStarted);
+
+  $('#candidates').innerHTML=ids.map((id,i)=>{
+    const c=liveMap.get(String(id.n))||id;
+    const color=colorFor(id,i);
+    const cp=isStarted?pct(c.pvap):0;
+    const votes=isStarted?nf(c.vap):'—';
+    const photo=photoUrl(id);
+    return `
+      <section class="cand" style="--cand:${color}">
+        <div class="photo">
+          <span class="initial">${esc(initials(id.nmu||id.nm))}</span>
+          ${photo?`<img src="${photo}" alt="" onerror="this.remove()">`:''}
+        </div>
+        <div>
+          <div class="candName">${esc(id.nmu||id.nm||'Candidato')}</div>
+          <div class="meta">${esc(id.party||'')} · ${esc(id.n||'')}</div>
+          <div class="pct">${isStarted?ptxt(cp):'—'}</div>
+          <div class="votes">${votes}${isStarted?' votos':''}</div>
+          <div class="bar"><i style="width:${Math.max(0,Math.min(100,cp))}%"></i></div>
+        </div>
+      </section>`;
+  }).join('');
+
+  const s=stats(data);
+  $('#stats').innerHTML=`
+    <div class="stat"><b>${isStarted?nf(s.valid):'—'}</b><span>votos válidos</span></div>
+    <div class="stat"><b>${isStarted?nf(s.comp):'—'}</b><span>comparecimento</span></div>
+    <div class="stat"><b>${isStarted?nf(s.abst):'—'}</b><span>abstenção${isStarted&&s.pabs?' · '+ptxt(s.pabs):''}</span></div>
+    <div class="stat"><b>${isStarted?ptxt(p):'0,0%'}</b><span>seções totalizadas</span></div>`;
+}
+async function refresh(){
+  if(loading)return;
+  loading=true;
+  await ensureReference();
+  try{
+    const live=await getJSON(resultUrl(CFG.election));
+    lastGood=live;
+    render(live,false);
+  }catch(_){
+    if(lastGood)render(lastGood,true);
+    else render(null,false);
+  }finally{loading=false}
+}
+
+resolvePlace().then(()=>ensureReference().then(refresh));
+setInterval(refresh,30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
+</script>
+</body>
+</html>
