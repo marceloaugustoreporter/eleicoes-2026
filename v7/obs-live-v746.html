@@ -1,0 +1,916 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Central de Apuração · Saída PRO V7.46</title>
+<style>
+:root{
+  --bg:#06101a;--panel:#0a1b2a;--line:#24445d;--text:#f7fbff;--muted:#91a9bb;
+  --cyan:#35d0f6;--green:#4fe0ad;--yellow:#ffd34e;--red:#d71920;--blue:#2374e1
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;color:var(--text);font-family:Arial,Helvetica,sans-serif}
+body.fullscreen{background:radial-gradient(circle at 50% 0,#0c2438 0,#06101a 42%,#04101a 100%)}
+body.overlay{background:transparent}
+.stage{width:100vw;height:100vh;position:relative;overflow:hidden}
+.full{position:absolute;inset:0;padding:3.2vh 3vw 2.5vh;background:radial-gradient(circle at 50% 0,#0c2438 0,#06101a 42%,#04101a 100%)}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:2vw}
+.ey{font-size:1.05vw;letter-spacing:.18em;font-weight:900;color:var(--cyan)}
+.title{font-size:3vw;font-weight:950;line-height:1;margin-top:.5vh}
+.place{font-size:1.42vw;color:#cce0ed;font-weight:800;margin-top:.8vh}
+.status{display:flex;align-items:center;gap:.7vw;border:1px solid var(--line);background:rgba(7,21,34,.92);padding:.8vh 1vw;border-radius:1vw;font-size:1vw;font-weight:850;color:#cfe0ec}
+.dot{width:.7vw;height:.7vw;border-radius:50%;background:var(--yellow)} .dot.ok{background:var(--green)}
+.progressWrap{margin-top:2vh}.progressMeta{display:flex;justify-content:space-between;align-items:center;font-size:1vw;font-weight:850;color:#b5c9d8}
+.progress{height:1.2vh;background:#10273b;border-radius:99px;overflow:hidden;margin-top:.65vh}.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:99px}
+.candidates{display:grid;grid-template-columns:1fr 1fr;gap:2vw;margin-top:2.8vh}
+.cand{position:relative;display:grid;grid-template-columns:13vw 1fr;gap:1.4vw;align-items:center;min-height:39vh;border:1px solid var(--line);background:linear-gradient(155deg,rgba(10,27,42,.98),rgba(6,20,32,.96));border-radius:2vw;padding:2vw;overflow:hidden}
+.cand:before{content:"";position:absolute;left:0;top:0;bottom:0;width:.55vw;background:var(--cand)}
+.photo{width:12vw;height:12vw;border-radius:50%;overflow:hidden;border:.35vw solid var(--cand);background:#102335;display:grid;place-items:center;position:relative}
+.photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;z-index:2}.initial{font-size:4vw;font-weight:950;color:#d8e8f2}
+.candName{font-size:2.05vw;font-weight:950;line-height:1.05}.meta{font-size:1vw;color:var(--muted);font-weight:850;margin-top:.65vh}
+.pct{font-size:5.4vw;font-weight:950;line-height:.95;color:var(--cand);margin-top:2.1vh}.votes{font-size:1.35vw;font-weight:900;margin-top:.7vh}
+.bar{height:1.05vh;background:#122a3d;border-radius:99px;overflow:hidden;margin-top:1.45vh}.bar i{display:block;height:100%;background:var(--cand);border-radius:99px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1vw;margin-top:2vh}.stat{border:1px solid var(--line);background:rgba(7,21,34,.96);border-radius:1.1vw;padding:1.05vw}
+.stat b{display:block;font-size:1.5vw}.stat span{display:block;margin-top:.35vh;color:var(--muted);font-size:.8vw;font-weight:800}
+.foot{position:absolute;left:3vw;right:3vw;bottom:1.4vh;display:flex;justify-content:space-between;align-items:center;color:#7891a5;font-size:.76vw;font-weight:800}
+
+/* Sidebars */
+.sidebar{position:absolute;top:4vh;bottom:4vh;width:32vw;border:1px solid rgba(55,95,125,.75);background:rgba(5,18,29,.94);backdrop-filter:blur(5px);border-radius:1.4vw;padding:1.3vw;display:none}
+.sidebar.right{right:2vw}.sidebar.left{left:2vw}
+.sidebar .sideTitle{font-size:1.8vw;font-weight:950}.sidebar .sidePlace{font-size:1vw;color:#b9cfdd;margin-top:.4vh;font-weight:800}
+.sideCand{display:grid;grid-template-columns:5vw 1fr;gap:.8vw;align-items:center;margin-top:2vh;padding:1vw;border:1px solid var(--line);border-radius:1vw;background:rgba(9,28,43,.95)}
+.sidePhoto{width:4.6vw;height:4.6vw;border-radius:50%;overflow:hidden;border:.25vw solid var(--cand);position:relative;background:#102335}
+.sidePhoto img{width:100%;height:100%;object-fit:cover}.sideName{font-size:1.25vw;font-weight:950}.sidePct{font-size:2vw;font-weight:950;color:var(--cand);margin-top:.3vh}
+.sideStats{display:grid;grid-template-columns:1fr 1fr;gap:.6vw;margin-top:1.3vh}.sideStat{border:1px solid var(--line);border-radius:.8vw;padding:.7vw;background:rgba(7,21,34,.95)}
+.sideStat b{font-size:1vw}.sideStat span{display:block;font-size:.65vw;color:var(--muted);margin-top:.2vh}
+
+/* Lower third */
+.lower{position:absolute;left:2vw;right:2vw;bottom:2.2vh;min-height:18vh;border:1px solid rgba(55,95,125,.8);background:rgba(5,18,29,.95);backdrop-filter:blur(5px);border-radius:1.2vw;padding:1vw 1.2vw;display:none}
+.lowerTop{display:flex;justify-content:space-between;align-items:center;gap:1vw}
+.lowerTitle{font-size:1.4vw;font-weight:950}.lowerPlace{font-size:.85vw;color:var(--muted)}
+.lowerCandidates{display:grid;grid-template-columns:1fr 1fr;gap:1vw;margin-top:.7vh}
+.lowerCand{display:grid;grid-template-columns:auto 1fr auto;gap:.7vw;align-items:center}
+.lowerPic{width:3vw;height:3vw;border-radius:50%;overflow:hidden;border:.2vw solid var(--cand)}.lowerPic img{width:100%;height:100%;object-fit:cover}
+.lowerName{font-size:1vw;font-weight:950}.lowerVotes{font-size:.7vw;color:var(--muted);margin-top:.15vh}.lowerPct{font-size:1.8vw;font-weight:950;color:var(--cand)}
+.lowerProgress{height:.55vh;background:#10273b;border-radius:99px;margin-top:.7vh;overflow:hidden}.lowerProgress i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.lowerMeta{display:flex;justify-content:space-between;margin-top:.55vh;color:#9bb1c1;font-size:.72vw;font-weight:800}
+
+
+/* Governadores · 2º turno */
+.govDash{position:absolute;inset:0;padding:2.5vh 2.4vw;background:radial-gradient(circle at 50% 0,#0c2438 0,#06101a 42%,#04101a 100%);display:none}
+.govHead{display:flex;justify-content:space-between;align-items:flex-start;gap:2vw}
+.govTitle{font-size:2.6vw;font-weight:950;line-height:1}.govSub{font-size:1vw;color:#a9bfce;margin-top:.6vh;font-weight:800}
+.govGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1vw;margin-top:2vh}
+.govCard{border:1px solid #284a63;background:linear-gradient(155deg,rgba(10,27,42,.98),rgba(6,20,32,.96));border-radius:1.25vw;padding:1.05vw;min-height:24vh}
+.govCardHead{display:flex;justify-content:space-between;align-items:center;gap:.5vw}
+.govUf{font-size:1.35vw;font-weight:950}.govTot{font-size:.75vw;color:#a9bfce;font-weight:850}
+.govCand{display:grid;grid-template-columns:3.6vw 1fr auto;gap:.65vw;align-items:center;margin-top:1vh;padding:.65vw;border:1px solid #1f3d52;border-radius:.8vw;background:#081827}
+.govPic{width:3.4vw;height:3.4vw;border-radius:50%;overflow:hidden;border:.2vw solid var(--cand);background:#102335}
+.govPic img{width:100%;height:100%;object-fit:cover}.govName{font-size:.88vw;font-weight:950;line-height:1.1}.govParty{font-size:.62vw;color:#91a9bb;margin-top:.2vh}.govPct{font-size:1.35vw;font-weight:950;color:var(--cand)}
+.govVotes{font-size:.58vw;color:#91a9bb;margin-top:.15vh}.govBar{height:.4vh;background:#10273b;border-radius:99px;overflow:hidden;margin-top:.45vh}.govBar i{display:block;height:100%;background:var(--cand)}
+.govFoot{position:absolute;left:2.4vw;right:2.4vw;bottom:1.1vh;display:flex;justify-content:space-between;color:#7891a5;font-size:.72vw;font-weight:800}
+.govOverlay{display:none}
+.govOverlayCard{position:absolute;top:4vh;bottom:4vh;width:33vw;border:1px solid rgba(55,95,125,.75);background:rgba(5,18,29,.95);backdrop-filter:blur(5px);border-radius:1.4vw;padding:1.25vw}
+.govOverlayCard.right{right:2vw}.govOverlayCard.left{left:2vw}
+.govOverlayTitle{font-size:1.5vw;font-weight:950}.govOverlaySub{font-size:.8vw;color:#9fb5c5;margin-top:.35vh}
+.govOverlay .govCand{grid-template-columns:4.6vw 1fr auto;padding:.8vw}.govOverlay .govPic{width:4.3vw;height:4.3vw}.govOverlay .govName{font-size:1.05vw}.govOverlay .govPct{font-size:1.65vw}
+.govLower{position:absolute;left:2vw;right:2vw;bottom:2.2vh;border:1px solid rgba(55,95,125,.8);background:rgba(5,18,29,.95);backdrop-filter:blur(5px);border-radius:1.2vw;padding:.9vw 1.1vw;display:none}
+.govLowerRow{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:1vw;align-items:center}.govLowerUf{font-size:1.35vw;font-weight:950}.govLower .govCand{margin:0;grid-template-columns:2.8vw 1fr auto}.govLower .govPic{width:2.6vw;height:2.6vw}.govLower .govName{font-size:.8vw}.govLower .govPct{font-size:1.25vw}
+
+.standby,.unauth{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 30%,#10283d 0,#06101a 55%,#04101a 100%);z-index:20;text-align:center}
+.standby.on,.unauth.on{display:flex}.standbyBox{max-width:70vw}.standbyEy{font-size:1.1vw;letter-spacing:.22em;color:var(--cyan);font-weight:900}
+.standbyTitle{font-size:4.5vw;font-weight:950;margin-top:1.4vh}.standbySub{font-size:1.35vw;color:#a8bece;margin-top:1vh;font-weight:750}
+.channel{position:absolute;right:2vw;top:1.5vh;font-size:.8vw;color:#7891a5;font-weight:850}
+
+
+/* Studio Multislot */
+.studio{position:absolute;inset:0;display:none;background:transparent}
+.studioSide{position:absolute;top:3vh;bottom:22vh;width:29vw;border:1px solid rgba(55,95,125,.8);background:rgba(5,18,29,.95);backdrop-filter:blur(5px);border-radius:1.3vw;padding:1.05vw;overflow:hidden}
+.studioSide.left{left:1.7vw}.studioSide.right{right:1.7vw}
+.studioLower{position:absolute;left:1.7vw;right:1.7vw;bottom:2vh;height:17vh;border:1px solid rgba(55,95,125,.8);background:rgba(5,18,29,.95);backdrop-filter:blur(5px);border-radius:1.15vw;padding:.8vw 1vw;overflow:hidden}
+.studioBlank{height:100%;display:grid;place-items:center;color:#5d7789;font-size:.75vw;font-weight:800}
+.studioKicker{font-size:.72vw;letter-spacing:.12em;color:var(--cyan);font-weight:950}
+.studioTitle{font-size:1.2vw;font-weight:950;margin-top:.3vh}.studioSub{font-size:.7vw;color:#9db3c2;margin-top:.25vh}
+.studioCand{display:grid;grid-template-columns:4vw 1fr auto;gap:.65vw;align-items:center;margin-top:1.05vh;padding:.7vw;border:1px solid #1f3d52;border-radius:.8vw;background:#081827}
+.studioPic{width:3.8vw;height:3.8vw;border-radius:50%;overflow:hidden;border:.2vw solid var(--cand);background:#102335}.studioPic img{width:100%;height:100%;object-fit:cover}
+.studioName{font-size:.9vw;font-weight:950}.studioMeta{font-size:.58vw;color:#91a9bb;margin-top:.15vh}.studioPct{font-size:1.45vw;font-weight:950;color:var(--cand)}
+.studioBar{height:.38vh;background:#10273b;border-radius:99px;overflow:hidden;margin-top:.35vh}.studioBar i{height:100%;display:block;background:var(--cand)}
+.studioStat{display:flex;justify-content:space-between;gap:1vw;margin-top:.8vh;color:#91a9bb;font-size:.62vw;font-weight:850}
+.studioLower .studioInner{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:.8vw;align-items:center;height:100%}
+.studioLower .studioCand{margin:0;grid-template-columns:2.7vw 1fr auto;padding:.55vw}.studioLower .studioPic{width:2.5vw;height:2.5vw}.studioLower .studioName{font-size:.75vw}.studioLower .studioPct{font-size:1.15vw}
+
+
+/* Mapas territoriais */
+.mapFull{position:absolute;inset:0;display:none;padding:2.4vh 2.3vw;background:radial-gradient(circle at 50% 0,#0c2438 0,#06101a 42%,#04101a 100%)}
+.mapHead{display:flex;align-items:flex-start;justify-content:space-between;gap:2vw}
+.mapTitle{font-size:2.6vw;font-weight:950;line-height:1}.mapSub{font-size:.9vw;color:#a9bfce;margin-top:.55vh;font-weight:800}
+.mapMain{display:grid;grid-template-columns:minmax(0,1fr) 20vw;gap:1.3vw;height:79vh;margin-top:1.7vh}
+.mapCanvas{border:1px solid #24445d;background:#071522;border-radius:1.25vw;overflow:hidden;padding:.7vw}
+.mapCanvas svg{width:100%;height:100%;display:block}
+.mapAside{display:grid;align-content:start;gap:.75vw}
+.mapKpi{border:1px solid #24445d;background:#071522;border-radius:1vw;padding:.9vw}
+.mapKpi b{display:block;font-size:1.4vw}.mapKpi span{display:block;margin-top:.25vh;color:#91a9bb;font-size:.68vw;font-weight:800;line-height:1.3}
+.mapLegendBar{height:.8vh;border-radius:99px;background:linear-gradient(90deg,#d71920 0%,#d9999c 36%,#7d8791 50%,#91add0 64%,#2374e1 100%);margin-top:.6vh}
+.mapLegendText{display:flex;justify-content:space-between;gap:.5vw;color:#91a9bb;font-size:.55vw;font-weight:850;margin-top:.35vh}
+.mapFoot{position:absolute;left:2.3vw;right:2.3vw;bottom:1vh;display:flex;justify-content:space-between;color:#7891a5;font-size:.7vw;font-weight:800}
+.mapShape{stroke:#3b5f78;stroke-width:1.45;vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision;cursor:pointer;transition:opacity .12s,filter .12s}.mapShape:hover{stroke:#8fb6cc;stroke-width:1.8;opacity:.9;filter:brightness(1.16)}
+.mapMun{stroke:#31516a;stroke-width:.52;vector-effect:non-scaling-stroke;shape-rendering:geometricPrecision;cursor:pointer}.mapMun:hover{stroke:#fff;stroke-width:1.15}
+.studioMapWrap{height:100%;display:flex;flex-direction:column}
+.studioMapWrap svg{width:100%;flex:1;min-height:0;margin-top:.5vh}
+.studioMapLegend{height:.4vh;border-radius:99px;background:linear-gradient(90deg,#d71920,#d9999c,#7d8791,#91add0,#2374e1);margin-top:.5vh}
+
+/* Vertical 9:16 · composição própria */
+body.vertical .stage{width:100vw;height:100vh}
+body.vertical .full{padding:3.2vh 5.2vw 2.2vh}
+body.vertical .top{display:block}
+body.vertical .ey{font-size:2.4vw;letter-spacing:.14em}
+body.vertical .title{font-size:6.2vw;line-height:1.02;margin-top:.7vh}
+body.vertical .place{font-size:2.9vw;margin-top:.7vh}
+body.vertical .status{position:absolute;right:5.2vw;top:3.1vh;font-size:1.65vw;padding:.65vh 1.4vw;border-radius:1.6vw}
+body.vertical .dot{width:1.2vw;height:1.2vw}
+body.vertical .progressWrap{margin-top:2vh}
+body.vertical .progressMeta{font-size:1.85vw}
+body.vertical .progress{height:.75vh}
+body.vertical .candidates{grid-template-columns:1fr;gap:1.4vh;margin-top:2vh}
+body.vertical .cand{grid-template-columns:18vw 1fr;gap:2.4vw;min-height:auto;border-radius:2.5vw;padding:2.2vw 2.5vw}
+body.vertical .cand:before{width:.7vw}
+body.vertical .photo{width:16vw;height:16vw;border-width:.5vw}
+body.vertical .initial{font-size:5vw}
+body.vertical .candName{font-size:3.8vw;line-height:1.03}
+body.vertical .meta{font-size:1.9vw;margin-top:.35vh}
+body.vertical .pct{font-size:8.5vw;margin-top:1vh}
+body.vertical .votes{font-size:2.2vw;margin-top:.35vh}
+body.vertical .bar{height:.7vh;margin-top:.8vh}
+body.vertical .stats{grid-template-columns:1fr 1fr;gap:1vw;margin-top:1.5vh}
+body.vertical .stat{border-radius:1.6vw;padding:1.5vw}
+body.vertical .stat b{font-size:2.8vw}
+body.vertical .stat span{font-size:1.45vw;margin-top:.2vh}
+body.vertical .foot{left:5.2vw;right:5.2vw;bottom:1.2vh;font-size:1.25vw}
+body.vertical .sidebar,body.vertical .lower,body.vertical .studio,body.vertical .govOverlay,body.vertical .govLower{display:none!important}
+body.vertical .govDash{padding:3vh 4.5vw}
+body.vertical .govTitle{font-size:5vw}
+body.vertical .govSub{font-size:1.8vw}
+body.vertical .govGrid{grid-template-columns:1fr;gap:1vh;margin-top:1.5vh;overflow:auto;height:83vh;padding-right:.5vw}
+body.vertical .govCard{min-height:0;padding:1.6vw;border-radius:1.8vw}
+body.vertical .govUf{font-size:2.4vw}.vertical .govTot{font-size:1.35vw}
+body.vertical .govCand{grid-template-columns:8vw 1fr auto;padding:1vw;margin-top:.6vh}
+body.vertical .govPic{width:7.4vw;height:7.4vw}.vertical .govName{font-size:1.8vw}.vertical .govParty{font-size:1.15vw}.vertical .govPct{font-size:2.5vw}.vertical .govVotes{font-size:1.05vw}
+body.vertical .mapFull{padding:2.6vh 4vw}
+body.vertical .mapTitle{font-size:5vw}
+body.vertical .mapSub{font-size:1.7vw}
+body.vertical .mapMain{grid-template-columns:1fr;height:82vh}
+body.vertical .mapAside{grid-template-columns:1fr 1fr;gap:1vw}
+body.vertical .mapKpi{padding:1.4vw}.vertical .mapKpi b{font-size:2.6vw}.vertical .mapKpi span{font-size:1.2vw}
+body.vertical .mapFoot{left:4vw;right:4vw;font-size:1.1vw}
+
+/* V7.46 · mapa com leitura reforçada */
+.mapFull{padding:2.2vh 2.1vw}
+.mapTitle{font-size:3vw;letter-spacing:-.02em}
+.mapSub{font-size:1vw;max-width:70vw;line-height:1.35}
+.mapMain{grid-template-columns:minmax(0,1fr) 22vw;gap:1.15vw;height:78vh;margin-top:1.45vh}
+.mapCanvas{
+  border-color:#315d79;
+  background:linear-gradient(180deg,#081b2a,#061521);
+  padding:.95vw;
+  box-shadow:inset 0 0 0 1px rgba(53,208,246,.04)
+}
+.mapAside{gap:.7vw}
+.mapKpi{border-color:#2c526c;padding:1vw;background:linear-gradient(180deg,#081827,#06131e)}
+.mapKpi b{font-size:1.65vw}
+.mapKpi span{font-size:.78vw;line-height:1.4}
+.mapLegendBar{height:.9vh}
+.mapLegendText{font-size:.62vw}
+.mapFoot{font-size:.78vw}
+.mapShape{stroke:#3b5f78;stroke-width:1.45;vector-effect:non-scaling-stroke}
+.mapMun{stroke:#31516a;stroke-width:.52;vector-effect:non-scaling-stroke}
+.mapMun:hover{stroke:#fff;stroke-width:1.5;filter:brightness(1.15)}
+body.vertical .mapTitle{font-size:5.4vw}
+body.vertical .mapSub{font-size:1.9vw}
+body.vertical .mapKpi b{font-size:3vw}
+body.vertical .mapKpi span{font-size:1.35vw}
+
+</style>
+</head>
+<body>
+<div class="stage">
+  <div id="full" class="full">
+    <div class="top">
+      <div>
+        <div class="ey">CENTRAL DE APURAÇÃO · ELEIÇÕES 2026</div>
+        <div id="title" class="title">PRESIDENTE · 2º TURNO</div>
+        <div id="place" class="place">Brasil</div>
+      </div>
+      <div class="status"><i id="dot" class="dot"></i><span id="status">Conectando</span></div>
+    </div>
+    <div class="progressWrap">
+      <div class="progressMeta"><span id="progressText">Aguardando totalização</span><span id="updated">--:--:--</span></div>
+      <div class="progress"><i id="progressBar"></i></div>
+    </div>
+    <div id="candidates" class="candidates"></div>
+    <div id="stats" class="stats"></div>
+    <div class="foot"><span>Fonte: Tribunal Superior Eleitoral (TSE)</span><span>Atualização automática · 30 s</span></div>
+  </div>
+
+  <aside id="sideRight" class="sidebar right"></aside>
+  <aside id="sideLeft" class="sidebar left"></aside>
+  <div id="lower" class="lower"></div>
+
+  <section id="govDash" class="govDash">
+    <div class="govHead">
+      <div>
+        <div class="ey">CENTRAL DE APURAÇÃO · ELEIÇÕES 2026</div>
+        <div class="govTitle">GOVERNADORES · 2º TURNO</div>
+        <div class="govSub">Acre · Amazonas · Distrito Federal · Espírito Santo · Rio Grande do Norte · Tocantins</div>
+      </div>
+      <div class="status"><i id="govDot" class="dot"></i><span id="govStatus">Conectando</span></div>
+    </div>
+    <div id="govGrid" class="govGrid"></div>
+    <div class="govFoot"><span>Fonte: Tribunal Superior Eleitoral (TSE)</span><span>Atualização automática · 30 s</span></div>
+  </section>
+
+  <div id="govOverlay" class="govOverlay"></div>
+  <div id="govLower" class="govLower"></div>
+
+  <section id="mapFull" class="mapFull">
+    <div class="mapHead">
+      <div><div class="ey">CENTRAL DE APURAÇÃO · ELEIÇÕES 2026</div><div id="mapFullTitle" class="mapTitle">MAPA ELEITORAL</div><div id="mapFullSub" class="mapSub"></div></div>
+      <div class="status"><i id="mapDot" class="dot"></i><span id="mapStatus">Carregando</span></div>
+    </div>
+    <div class="mapMain">
+      <div class="mapCanvas"><svg id="mapFullSvg" viewBox="0 0 900 650"></svg></div>
+      <aside id="mapFullAside" class="mapAside"></aside>
+    </div>
+    <div class="mapFoot"><span>Fonte: Tribunal Superior Eleitoral (TSE)</span><span>Vermelho = Lula · azul = Flávio · cinza = diferença de até 2 p.p.</span></div>
+  </section>
+
+  <section id="studio" class="studio">
+    <div id="studioLeft" class="studioSide left"></div>
+    <div id="studioRight" class="studioSide right"></div>
+    <div id="studioLower" class="studioLower"></div>
+  </section>
+
+  <div id="channelName" class="channel"></div>
+
+  <div id="standby" class="standby">
+    <div class="standbyBox">
+      <div class="standbyEy">ELEIÇÕES 2026 · CENTRAL DE APURAÇÃO</div>
+      <div class="standbyTitle">Aguardando próxima atualização</div>
+      <div class="standbySub">A transmissão continua em instantes.</div>
+    </div>
+  </div>
+
+  <div id="unauth" class="unauth">
+    <div class="standbyBox">
+      <div class="standbyEy">CENTRAL DE APURAÇÃO</div>
+      <div class="standbyTitle">Saída indisponível</div>
+      <div class="standbySub">Verifique a URL configurada no OBS ou vMix.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const Q=new URLSearchParams(location.search);
+const layout=Q.get('layout')==='vertical'?'vertical':'horizontal';
+document.body.classList.add(layout);
+
+const SUPABASE_URL='https://jtysotwfuejjqdturoos.supabase.co';
+const SUPABASE_KEY='sb_publishable_ssWHaqZKXeozdzJ82_ufAQ_pdnVHORV';
+const TSE='https://resultados.tse.jus.br/oficial/ele2026';
+const GOV2_UFS=['ac','am','df','es','rn','to'];
+const GOV2_NAMES={ac:'Acre',am:'Amazonas',df:'Distrito Federal',es:'Espírito Santo',rn:'Rio Grande do Norte',to:'Tocantins'};
+const UF_NAMES={ac:'Acre',al:'Alagoas',ap:'Amapá',am:'Amazonas',ba:'Bahia',ce:'Ceará',df:'Distrito Federal',es:'Espírito Santo',go:'Goiás',ma:'Maranhão',mt:'Mato Grosso',ms:'Mato Grosso do Sul',mg:'Minas Gerais',pa:'Pará',pb:'Paraíba',pr:'Paraná',pe:'Pernambuco',pi:'Piauí',rj:'Rio de Janeiro',rn:'Rio Grande do Norte',rs:'Rio Grande do Sul',ro:'Rondônia',rr:'Roraima',sc:'Santa Catarina',sp:'São Paulo',se:'Sergipe',to:'Tocantins'};
+const GEO_URL='https://cdn.jsdelivr.net/gh/codeforamerica/click_that_hood@master/public/data/brazil-states.geojson';
+const MUN_GEO_BASE='https://cdn.jsdelivr.net/gh/henriquemalvar/br-geojson@main/dist/municipios';
+const channel=Q.get('channel')||'';
+const token=Q.get('token')||'';
+const direct=Q.get('direct')==='1';
+
+const $=s=>document.querySelector(s);
+const nf=n=>new Intl.NumberFormat('pt-BR').format(Number(n||0));
+const num=v=>{if(typeof v==='number')return v;if(v==null||v==='')return 0;return Number(String(v).replace(/\./g,'').replace(',','.'))||0};
+const pct=v=>num(v);
+const ptxt=v=>pct(v).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+'%';
+const pad=(v,n)=>String(v).padStart(n,'0');
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const NAME_TO_UF=Object.fromEntries(Object.entries(UF_NAMES).map(([k,v])=>[norm(v),k]));
+let d3Promise=null;
+function ensureD3(){
+  if(window.d3)return Promise.resolve(window.d3);
+  if(d3Promise)return d3Promise;
+  d3Promise=new Promise((resolve,reject)=>{
+    const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js';
+    s.onload=()=>resolve(window.d3);s.onerror=reject;document.head.appendChild(s);
+  });
+  return d3Promise;
+}
+const geoCache=new Map();
+async function loadGeo(url){
+  if(geoCache.has(url))return geoCache.get(url);
+  const p=getJSON(url);geoCache.set(url,p);
+  try{return await p}catch(e){geoCache.delete(url);throw e}
+}
+async function broadcastData(dataMode,uf=''){
+  if(!channel||!token)throw new Error('Saída sem credenciais de dados');
+  const u=new URL(`${SUPABASE_URL}/functions/v1/broadcast-output`);
+  u.searchParams.set('channel',channel);u.searchParams.set('token',token);u.searchParams.set('data_mode',dataMode);
+  u.searchParams.set('election',state.round==='1'?'6257':'6258');
+  if(uf)u.searchParams.set('uf',uf);
+  u.searchParams.set('_',Date.now());
+  const r=await fetch(u.href,{headers:{apikey:SUPABASE_KEY},cache:'no-store'});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+  return j;
+}
+
+let state={
+  screen:Q.get('screen')||'president',
+  scene:Q.get('scene')||'fullscreen',
+  office:Q.get('office')==='gov'?'gov':'pres',
+  round:Q.get('round')==='1'?'1':'2',
+  uf:(Q.get('uf')||'br').toLowerCase(),
+  mun:(Q.get('mun')||'').replace(/\D/g,''),
+  label:(Q.get('label')||'').trim(),
+  studio_slots:(()=>{try{return JSON.parse(Q.get('slots')||'null')}catch(_){return null}})()||{
+    left:{kind:'president',uf:'mg',label:'Minas Gerais'},
+    right:{kind:'gov2'},
+    lower:{kind:'president',uf:'br',label:'Brasil'}
+  },
+  channel_name:''
+};
+let stateKey='',lastGood=null,reference=null,loading=false;
+
+function cfg(){
+  if(state.office==='pres'){
+    return state.round==='1'
+      ? {election:'6257',reference:'6257',cargo:'1',title:'PRESIDENTE · 1º TURNO · FINAL'}
+      : {election:'6258',reference:'6257',cargo:'1',title:'PRESIDENTE · 2º TURNO'};
+  }
+  return state.round==='1'
+    ? {election:'6259',reference:'6259',cargo:'3',title:'GOVERNADOR · 1º TURNO · FINAL'}
+    : {election:'6260',reference:'6259',cargo:'3',title:'GOVERNADOR · 2º TURNO'};
+}
+function resultUrl(election){
+  const scope=state.mun?state.uf+pad(state.mun,5):state.uf;
+  return `${TSE}/${election}/dados/${state.uf}/${scope}-c${pad(cfg().cargo,4)}-e${pad(election,6)}-u.json`;
+}
+function photoUrl(c){
+  if(!c?.sqcand)return'';
+  const folder=state.office==='pres'?'br':state.uf;
+  return `${TSE}/${cfg().reference}/fotos/${folder}/${c.sqcand}.jpeg`;
+}
+async function getJSON(url){
+  const r=await fetch(url,{cache:'no-store'});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+function cargo(data){return data?.carg?.[0]||null}
+function flatten(data){
+  const c=cargo(data);if(!c)return[];
+  const out=[];
+  (c.agr||[]).forEach(a=>(a.par||[]).forEach(p=>(p.cand||[]).forEach(x=>out.push({...x,party:p.sg||''}))));
+  return out;
+}
+function uniqueCandidates(data){
+  const m=new Map();
+  flatten(data).forEach(x=>{
+    const key=String(x.n||'')+'|'+String(x.nmu||x.nm||'');
+    const old=m.get(key);
+    if(!old||num(x.vap)>num(old.vap))m.set(key,x);
+  });
+  return [...m.values()];
+}
+function candidatesFrom(data){
+  const all=uniqueCandidates(data);
+  if(state.office==='pres'&&state.round==='2'){
+    const wanted=all.filter(c=>['13','22'].includes(String(c.n)));
+    wanted.sort((a,b)=>String(a.n)==='13'?-1:String(b.n)==='13'?1:0);
+    return wanted.slice(0,2);
+  }
+  return all.sort((a,b)=>num(b.vap)-num(a.vap)).slice(0,2);
+}
+function started(data){return !!data&&(String(data.and||'').toLowerCase()!=='n'||pct(data?.s?.pst??data?.s?.psa)>0||num(data?.v?.tv)>0)}
+function totalPct(data){return pct(data?.s?.pst??data?.s?.psa??0)}
+function colorFor(c,index){
+  if(state.office==='pres'&&String(c?.n)==='13')return'#d71920';
+  if(state.office==='pres'&&String(c?.n)==='22')return'#2374e1';
+  return index===0?'#35d0f6':'#ffd34e';
+}
+function initials(name){return String(name||'?').split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()}
+function stateSignature(s){return[s.screen,s.scene,s.office,s.round,s.uf,s.mun,s.label,JSON.stringify(s.studio_slots||{})].join('|')}
+
+function setScene(){
+  const scene=layout==='vertical'?'fullscreen':state.scene;
+  const gov2=state.screen==='gov2';
+  const mapScreen=state.screen==='map-br'||state.screen==='map-mg'||state.screen==='map-state';
+  $('#full').style.display=!gov2&&!mapScreen&&scene==='fullscreen'?'block':'none';
+  $('#sideRight').style.display=!gov2&&scene==='sidebar-right'?'block':'none';
+  $('#sideLeft').style.display=!gov2&&scene==='sidebar-left'?'block':'none';
+  $('#lower').style.display=!gov2&&scene==='lower-third'?'block':'none';
+  $('#govDash').style.display=gov2&&scene==='fullscreen'?'block':'none';
+  $('#govOverlay').style.display=gov2&&(scene==='sidebar-right'||scene==='sidebar-left')?'block':'none';
+  $('#govLower').style.display=gov2&&scene==='lower-third'?'block':'none';
+  $('#studio').style.display=scene==='studio'?'block':'none';
+  $('#mapFull').style.display=mapScreen&&scene==='fullscreen'?'block':'none';
+  document.body.classList.toggle('overlay',scene!=='fullscreen');
+  document.body.classList.toggle('fullscreen',scene==='fullscreen');
+}
+function showStandby(on){$('#standby').classList.toggle('on',on);$('#unauth').classList.remove('on')}
+function showUnauth(){$('#unauth').classList.add('on');$('#standby').classList.remove('on')}
+
+async function fetchOutputState(){
+  if(direct)return;
+  try{
+    const r=await fetch(`${SUPABASE_URL}/functions/v1/broadcast-output?channel=${encodeURIComponent(channel)}&token=${encodeURIComponent(token)}&_=${Date.now()}`,{
+      method:'GET',
+      headers:{'apikey':SUPABASE_KEY},
+      cache:'no-store'
+    });
+    if(r.status===404){showUnauth();return}
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const row=await r.json();
+    const next={
+      screen:row.screen||'waiting',
+      scene:row.scene||'fullscreen',
+      office:row.office||'pres',
+      round:row.round==='1'?'1':'2',
+      uf:row.uf||'br',mun:row.mun||'',label:row.label||'',
+      studio_slots:row.studio_slots||{
+        left:{kind:'president',uf:'mg',label:'Minas Gerais'},
+        right:{kind:'gov2'},
+        lower:{kind:'president',uf:'br',label:'Brasil'}
+      },
+      channel_name:row.channel_name||channel
+    };
+    $('#channelName').textContent=next.channel_name;
+    const sig=stateSignature(next);
+    if(sig!==stateKey){
+      state=next;stateKey=sig;reference=null;lastGood=null;gov2Index=0;
+      setScene();
+      await refreshResult(true);
+    }
+  }catch(_){
+    $('#status').textContent='Reconectando controle';
+  }
+}
+
+async function ensureReference(){
+  if(reference||state.screen==='waiting')return;
+  try{reference=await getJSON(resultUrl(cfg().reference))}catch(_){}
+}
+
+function coreData(data){
+  const active=started(data);
+  const live=candidatesFrom(data);
+  const ids=live.length>=2?live:candidatesFrom(reference);
+  const liveMap=new Map(uniqueCandidates(data).map(c=>[String(c.n),c]));
+  const p=totalPct(data);
+  const cands=ids.map((id,i)=>{
+    const c=liveMap.get(String(id.n))||id;
+    return {
+      id,c,color:colorFor(id,i),
+      percent:active?pct(c.pvap):0,
+      votes:active?num(c.vap):0,
+      photo:photoUrl(id)
+    };
+  });
+  return{
+    active,p,cands,
+    stats:{valid:num(data?.v?.vv),comp:num(data?.e?.c),abst:num(data?.e?.a),pabs:pct(data?.e?.pa)}
+  };
+}
+
+function renderFull(data,stale){
+  const d=coreData(data);
+  $('#title').textContent=cfg().title;
+  $('#place').textContent=state.label||(state.uf==='br'?'Brasil':state.uf.toUpperCase());
+  $('#dot').className='dot '+(data?'ok':'');
+  $('#status').textContent=stale?'Último dado válido':data?'TSE conectado':'Aguardando TSE';
+  $('#progressText').textContent=d.active?`${ptxt(d.p)} das seções totalizadas`:'Aguardando totalização';
+  $('#progressBar').style.width=Math.min(100,d.p)+'%';
+  $('#updated').textContent=new Date().toLocaleTimeString('pt-BR');
+  $('#candidates').innerHTML=d.cands.map(({id,c,color,percent,votes,photo})=>`
+    <section class="cand" style="--cand:${color}">
+      <div class="photo"><span class="initial">${esc(initials(id.nmu||id.nm))}</span>${photo?`<img src="${photo}" alt="" onerror="this.remove()">`:''}</div>
+      <div>
+        <div class="candName">${esc(id.nmu||id.nm||'Candidato')}</div>
+        <div class="meta">${esc(id.party||'')} · ${esc(id.n||'')}</div>
+        <div class="pct">${d.active?ptxt(percent):'—'}</div>
+        <div class="votes">${d.active?nf(votes)+' votos':'Aguardando votos'}</div>
+        <div class="bar"><i style="width:${Math.max(0,Math.min(100,percent))}%"></i></div>
+      </div>
+    </section>`).join('');
+  $('#stats').innerHTML=`
+    <div class="stat"><b>${d.active?nf(d.stats.valid):'—'}</b><span>votos válidos</span></div>
+    <div class="stat"><b>${d.active?nf(d.stats.comp):'—'}</b><span>comparecimento</span></div>
+    <div class="stat"><b>${d.active?nf(d.stats.abst):'—'}</b><span>abstenção${d.active&&d.stats.pabs?' · '+ptxt(d.stats.pabs):''}</span></div>
+    <div class="stat"><b>${d.active?ptxt(d.p):'0,0%'}</b><span>seções totalizadas</span></div>`;
+}
+
+function renderSidebar(el,data){
+  const d=coreData(data);
+  el.innerHTML=`
+    <div class="ey">ELEIÇÕES 2026</div>
+    <div class="sideTitle">${esc(cfg().title)}</div>
+    <div class="sidePlace">${esc(state.label||(state.uf==='br'?'Brasil':state.uf.toUpperCase()))}</div>
+    ${d.cands.map(({id,c,color,percent,votes,photo})=>`
+      <div class="sideCand" style="--cand:${color}">
+        <div class="sidePhoto">${photo?`<img src="${photo}" alt="" onerror="this.remove()">`:''}</div>
+        <div>
+          <div class="sideName">${esc(id.nmu||id.nm||'Candidato')}</div>
+          <div class="sidePct">${d.active?ptxt(percent):'—'}</div>
+          <div class="lowerVotes">${d.active?nf(votes)+' votos':'Aguardando votos'}</div>
+        </div>
+      </div>`).join('')}
+    <div class="sideStats">
+      <div class="sideStat"><b>${d.active?ptxt(d.p):'0,0%'}</b><span>totalizado</span></div>
+      <div class="sideStat"><b>${d.active?nf(d.stats.valid):'—'}</b><span>válidos</span></div>
+      <div class="sideStat"><b>${d.active?nf(d.stats.comp):'—'}</b><span>comparecimento</span></div>
+      <div class="sideStat"><b>${d.active?nf(d.stats.abst):'—'}</b><span>abstenção</span></div>
+    </div>`;
+}
+
+function renderLower(data){
+  const d=coreData(data);
+  $('#lower').innerHTML=`
+    <div class="lowerTop">
+      <div><div class="lowerTitle">${esc(cfg().title)}</div><div class="lowerPlace">${esc(state.label||(state.uf==='br'?'Brasil':state.uf.toUpperCase()))}</div></div>
+      <div class="lowerPlace">${d.active?ptxt(d.p)+' totalizado':'Aguardando totalização'}</div>
+    </div>
+    <div class="lowerCandidates">
+      ${d.cands.map(({id,color,percent,votes,photo})=>`
+        <div class="lowerCand" style="--cand:${color}">
+          <div class="lowerPic">${photo?`<img src="${photo}" alt="" onerror="this.remove()">`:''}</div>
+          <div><div class="lowerName">${esc(id.nmu||id.nm||'Candidato')}</div><div class="lowerVotes">${d.active?nf(votes)+' votos':'Aguardando votos'}</div></div>
+          <div class="lowerPct">${d.active?ptxt(percent):'—'}</div>
+        </div>`).join('')}
+    </div>
+    <div class="lowerProgress"><i style="width:${Math.min(100,d.p)}%"></i></div>
+    <div class="lowerMeta"><span>Fonte: TSE</span><span>${new Date().toLocaleTimeString('pt-BR')}</span></div>`;
+}
+
+
+let gov2Index=0,gov2Timer=null,gov2Last=[];
+function gov2Url(uf,election='6260'){
+  return `${TSE}/${election}/dados/${uf}/${uf}-c0003-e${pad(election,6)}-u.json`;
+}
+function gov2Photo(uf,c){
+  if(!c?.sqcand)return'';
+  return `${TSE}/6259/fotos/${uf}/${c.sqcand}.jpeg`;
+}
+async function loadGov2State(uf){
+  let live=null,ref=null;
+  try{live=await getJSON(gov2Url(uf,'6260'))}catch(_){}
+  try{ref=await getJSON(gov2Url(uf,'6259'))}catch(_){}
+  const source=live||ref;
+  const all=source?(()=>{
+    const c=source?.carg?.[0];const out=[];
+    (c?.agr||[]).forEach(a=>(a.par||[]).forEach(p=>(p.cand||[]).forEach(x=>out.push({...x,party:p.sg||''}))));
+    return out;
+  })():[];
+  const ranked=all.sort((a,b)=>num(b.vap)-num(a.vap)).slice(0,2);
+  const active=live&&started(live);
+  const liveAll=live?(()=>{
+    const c=live?.carg?.[0];const out=[];
+    (c?.agr||[]).forEach(a=>(a.par||[]).forEach(p=>(p.cand||[]).forEach(x=>out.push({...x,party:p.sg||''}))));
+    return out;
+  })():[];
+  const lm=new Map(liveAll.map(x=>[String(x.n),x]));
+  return {
+    uf,name:GOV2_NAMES[uf],active,total:live?totalPct(live):0,
+    candidates:ranked.map((r,i)=>{
+      const c=lm.get(String(r.n))||r;
+      return {base:r,live:c,color:i===0?'#35d0f6':'#ffd34e',percent:active?pct(c.pvap):0,votes:active?num(c.vap):0,photo:gov2Photo(uf,r)};
+    })
+  };
+}
+function govCandMarkup(x,compact=false){
+  return `<div class="govCand" style="--cand:${x.color}">
+    <div class="govPic">${x.photo?`<img src="${x.photo}" alt="" onerror="this.remove()">`:''}</div>
+    <div><div class="govName">${esc(x.base.nmu||x.base.nm||'Candidato')}</div><div class="govParty">${esc(x.base.party||'')} · ${esc(x.base.n||'')}</div><div class="govVotes">${x.votes?nf(x.votes)+' votos':'Aguardando votos'}</div><div class="govBar"><i style="width:${Math.max(0,Math.min(100,x.percent))}%"></i></div></div>
+    <div class="govPct">${x.votes?ptxt(x.percent):'—'}</div>
+  </div>`;
+}
+function renderGov2(data){
+  gov2Last=data;
+  const scene=layout==='vertical'?'fullscreen':state.scene;
+  setScene();showStandby(false);
+  const activeCount=data.filter(x=>x.active).length;
+  $('#govDot').className='dot '+(activeCount?'ok':'');
+  $('#govStatus').textContent=activeCount?`${activeCount}/6 com totalização`:'Aguardando TSE';
+  if(scene==='fullscreen'){
+    $('#govGrid').innerHTML=data.map(s=>`<article class="govCard">
+      <div class="govCardHead"><div class="govUf">${esc(s.name)} · ${s.uf.toUpperCase()}</div><div class="govTot">${s.active?ptxt(s.total)+' totalizado':'Aguardando'}</div></div>
+      ${s.candidates.map(c=>govCandMarkup(c)).join('')}
+    </article>`).join('');
+    return;
+  }
+  const s=data[gov2Index%Math.max(1,data.length)];
+  if(!s)return;
+  if(scene==='sidebar-right'||scene==='sidebar-left'){
+    $('#govOverlay').innerHTML=`<section class="govOverlayCard ${scene==='sidebar-right'?'right':'left'}">
+      <div class="ey">GOVERNADORES · 2º TURNO</div>
+      <div class="govOverlayTitle">${esc(s.name)} · ${s.uf.toUpperCase()}</div>
+      <div class="govOverlaySub">${s.active?ptxt(s.total)+' das seções totalizadas':'Aguardando totalização'}</div>
+      ${s.candidates.map(c=>govCandMarkup(c,true)).join('')}
+      <div class="govOverlaySub" style="margin-top:1vh">Rotação automática entre os seis estados</div>
+    </section>`;
+  }else if(scene==='lower-third'){
+    $('#govLower').innerHTML=`<div class="govLowerRow">
+      <div><div class="ey">2º TURNO</div><div class="govLowerUf">${esc(s.uf.toUpperCase())}</div></div>
+      ${s.candidates.map(c=>govCandMarkup(c,true)).join('')}
+      <div class="govOverlaySub">${s.active?ptxt(s.total):'0,0%'}<br>totalizado</div>
+    </div>`;
+  }
+}
+function ensureGov2Rotation(){
+  if(gov2Timer)return;
+  gov2Timer=setInterval(()=>{
+    if(state.screen!=='gov2'||!gov2Last.length)return;
+    const scene=layout==='vertical'?'fullscreen':state.scene;
+    if(scene==='fullscreen')return;
+    gov2Index=(gov2Index+1)%gov2Last.length;
+    renderGov2(gov2Last);
+  },7000);
+}
+async function refreshGov2(){
+  if(loading)return;
+  loading=true;
+  try{
+    const data=await Promise.all(GOV2_UFS.map(loadGov2State));
+    renderGov2(data);
+    ensureGov2Rotation();
+  }finally{loading=false}
+}
+
+
+
+const mapCache=new Map();
+function mapColor(margin,hasVotes=true){
+  if(!hasVotes)return'#173044';
+  const m=Math.max(-35,Math.min(35,num(margin))),a=Math.abs(m);
+  if(a<=2)return'#7d8791';
+  const t=Math.max(0,Math.min(1,(a-2)/23));
+  const lerp=(a,b,t)=>{
+    const A=a.match(/\w\w/g).map(x=>parseInt(x,16)),B=b.match(/\w\w/g).map(x=>parseInt(x,16));
+    return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('');
+  };
+  return m>0?lerp('#d9999c','#d71920',t):lerp('#91add0','#2374e1',t);
+}
+function postMapSelection(payload){
+  if(!direct)return;
+  try{window.parent.postMessage({type:'central-map-select',...payload},location.origin)}catch(_){}
+}
+async function loadBrazilMapData(){
+  const key='map-br:'+state.round,old=mapCache.get(key);
+  if(old&&Date.now()-old.at<28000)return old.data;
+  const packet=await broadcastData('president-map');
+  const out={};
+  (packet.data?.states||[]).forEach(item=>{
+    const arr=[];
+    const c=item?.payload?.carg?.[0];
+    (c?.agr||[]).forEach(a=>(a.par||[]).forEach(p=>(p.cand||[]).forEach(x=>arr.push({...x,party:p.sg||''}))));
+    const c13=arr.find(x=>String(x.n)==='13'),c22=arr.find(x=>String(x.n)==='22');
+    const v13=num(c13?.vap),v22=num(c22?.vap),p13=pct(c13?.pvap),p22=pct(c22?.pvap);
+    out[item.uf]={uf:item.uf,v13,v22,p13,p22,margin:p13-p22,hasVotes:(v13+v22)>0||num(item?.payload?.v?.vv)>0,sections:pct(item?.payload?.s?.pst??item?.payload?.s?.psa)};
+  });
+  mapCache.set(key,{at:Date.now(),data:out});return out;
+}
+async function loadStateMapData(ufCode='mg'){
+  const key='map-state:'+state.round+':'+ufCode,old=mapCache.get(key);
+  if(old&&Date.now()-old.at<115000)return old.data;
+  const packet=await broadcastData('state-municipal-map',ufCode);
+  const data={rows:packet.data?.municipalities||[],meta:packet.meta||{},building:!!packet.data?.building};
+  mapCache.set(key,{at:Date.now(),data});return data;
+}
+function mapAsideHtml(rows,type){
+  const valid=rows.filter(x=>x.hasVotes!==false && (num(x.v13)+num(x.v22)>0 || num(x.valid)>0));
+  const lula=valid.filter(x=>num(x.margin)>2).length,flavio=valid.filter(x=>num(x.margin)<-2).length,tight=valid.filter(x=>Math.abs(num(x.margin))<=2).length;
+  const closest=[...valid].sort((a,b)=>Math.abs(num(a.margin))-Math.abs(num(b.margin)))[0];
+  return `<div class="mapKpi"><b>${nf(lula)}</b><span>${type==='br'?'estados':'municípios'} com Lula à frente por mais de 2 p.p.</span></div>
+  <div class="mapKpi"><b>${nf(flavio)}</b><span>${type==='br'?'estados':'municípios'} com Flávio à frente por mais de 2 p.p.</span></div>
+  <div class="mapKpi"><b>${nf(tight)}</b><span>disputas equilibradas · diferença de até 2 p.p.</span></div>
+  <div class="mapKpi"><b>${esc(closest?.nm||UF_NAMES[closest?.uf]||'—')}</b><span>menor diferença entre os dois</span></div>
+  <div class="mapKpi"><span>INTENSIDADE DA VANTAGEM</span><div class="mapLegendBar"></div><div class="mapLegendText"><span>Lula</span><span>equilíbrio</span><span>Flávio</span></div></div>`;
+}
+async function renderBrazilMap(svgEl,compact=false){
+  const d3=await ensureD3(),geo=await loadGeo(GEO_URL),data=await loadBrazilMapData();
+  const svg=d3.select(svgEl);svg.selectAll('*').remove();
+  const box=compact?[[8,8],[342,470]]:[[20,18],[880,625]];
+  const projection=d3.geoMercator().fitExtent(box,geo),path=d3.geoPath(projection);
+  svg.selectAll('path').data(geo.features||[]).enter().append('path')
+    .attr('class','mapShape').attr('d',path)
+    .attr('fill',f=>{
+      const name=f.properties?.name||f.properties?.NAME_1||'',uf=NAME_TO_UF[norm(name)],r=data[uf];
+      return mapColor(r?.margin,r?.hasVotes);
+    })
+    .on('click',(_e,f)=>{
+      const name=f.properties?.name||f.properties?.NAME_1||'',uf=NAME_TO_UF[norm(name)];
+      if(uf)postMapSelection({uf,label:UF_NAMES[uf]||name});
+    })
+    .append('title').text(f=>{
+      const name=f.properties?.name||f.properties?.NAME_1||'',uf=NAME_TO_UF[norm(name)],r=data[uf];
+      if(!r?.hasVotes)return `${name}\nAguardando votos`;
+      const lead=Math.abs(r.margin)<=2?'Equilíbrio':r.margin>0?'Lula':'Flávio Bolsonaro';
+      return `${name}\nLula: ${ptxt(r.p13)}\nFlávio: ${ptxt(r.p22)}\n${lead} · diferença ${Math.abs(r.margin).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})} p.p.`;
+    });
+  return Object.values(data).map(r=>({...r,nm:UF_NAMES[r.uf]}));
+}
+async function renderStateMap(svgEl,ufCode='mg',compact=false){
+  const d3=await ensureD3(),geo=await loadGeo(`${MUN_GEO_BASE}/${ufCode.toUpperCase()}.geojson`),packet=await loadStateMapData(ufCode);
+  const rows=packet.rows||[],byId=new Map(rows.map(r=>[String(r.cdi||'').replace(/\D/g,''),r])),byName=new Map(rows.map(r=>[norm(r.nm),r]));
+  const svg=d3.select(svgEl);svg.selectAll('*').remove();
+  const box=compact?[[6,6],[344,480]]:[[15,12],[885,625]];
+  const projection=d3.geoIdentity().reflectY(true).fitExtent(box,geo),path=d3.geoPath(projection);
+  svg.selectAll('path').data(geo.features||[]).enter().append('path')
+    .attr('class','mapMun').attr('d',path)
+    .attr('fill',f=>{
+      const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,''),name=f.properties?.nome||f.properties?.name||'',r=byId.get(id)||byName.get(norm(name));
+      return mapColor(r?.margin,(num(r?.v13)+num(r?.v22)>0)||num(r?.valid)>0);
+    })
+    .on('click',(_e,f)=>{
+      const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,''),name=f.properties?.nome||f.properties?.name||'',r=byId.get(id)||byName.get(norm(name));
+      if(r?.cd)postMapSelection({uf:ufCode,mun:String(r.cd).padStart(5,'0'),label:r.nm||name});
+    })
+    .append('title').text(f=>{
+      const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,''),name=f.properties?.nome||f.properties?.name||'Município',r=byId.get(id)||byName.get(norm(name));
+      if(!r||(num(r.v13)+num(r.v22)<=0))return `${name}\nAguardando votos`;
+      const lead=Math.abs(num(r.margin))<=2?'Equilíbrio':num(r.margin)>0?'Lula':'Flávio Bolsonaro';
+      return `${name}\nLula: ${ptxt(r.p13)}\nFlávio: ${ptxt(r.p22)}\n${lead} · diferença ${Math.abs(num(r.margin)).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})} p.p.`;
+    });
+  return rows;
+}
+async function refreshFullMap(){
+  if(state.screen!=='map-br'&&state.screen!=='map-mg'&&state.screen!=='map-state')return;
+  setScene();showStandby(false);
+  $('#mapDot').className='dot';
+  $('#mapStatus').textContent='Atualizando mapa';
+  try{
+    if(state.screen==='map-br'){
+      $('#mapFullTitle').textContent=`MAPA DO BRASIL · PRESIDENTE · ${state.round==='1'?'1º TURNO':'2º TURNO'}`;
+      $('#mapFullSub').textContent=`Comparativo Lula × Flávio por estado · ${state.round==='1'?'resultado final do 1º turno':'apuração do 2º turno'} · intensidade = diferença percentual`;
+      const rows=await renderBrazilMap($('#mapFullSvg'),false);
+      $('#mapFullAside').innerHTML=mapAsideHtml(rows,'br');
+    }else{
+      const mapUf=state.screen==='map-mg'?'mg':(state.uf||'mg');
+      $('#mapFullTitle').textContent=`MAPA DE ${UF_NAMES[mapUf]?.toUpperCase()||mapUf.toUpperCase()} · PRESIDENTE · ${state.round==='1'?'1º TURNO':'2º TURNO'}`;
+      $('#mapFullSub').textContent=`Comparativo Lula × Flávio município a município · ${state.round==='1'?'resultado final do 1º turno':'apuração do 2º turno'} · intensidade = diferença percentual`;
+      const rows=await renderStateMap($('#mapFullSvg'),mapUf,false);
+      $('#mapFullAside').innerHTML=mapAsideHtml(rows,'mg');
+    }
+    $('#mapDot').className='dot ok';$('#mapStatus').textContent='Mapa atualizado';
+  }catch(e){
+    $('#mapStatus').textContent='Última leitura indisponível';
+    $('#mapFullAside').innerHTML=`<div class="mapKpi"><b>Mapa</b><span>${esc(e.message||'Não foi possível atualizar agora.')}</span></div>`;
+  }
+}
+async function renderMapSlot(el,kind,slot){
+  const mapUf=kind==='map-mg'?'mg':(slot?.uf||state.uf||'mg');
+  el.innerHTML=`<div class="studioMapWrap"><div class="studioKicker">MAPA ELEITORAL · ${state.round==='1'?'1º TURNO':'2º TURNO'}</div><div class="studioTitle">${kind==='map-br'?'Brasil · por estado':`${UF_NAMES[mapUf]||mapUf.toUpperCase()} · por município`}</div><div class="studioSub">Cor e intensidade mostram a diferença entre os dois candidatos.</div><svg viewBox="0 0 350 490"></svg><div class="studioMapLegend"></div><div class="studioStat"><span>Lula</span><span>equilíbrio · até 2 p.p.</span><span>Flávio</span></div></div>`;
+  const svg=el.querySelector('svg');
+  if(kind==='map-br')await renderBrazilMap(svg,true);else await renderStateMap(svg,mapUf,true);
+}
+
+const studioCache=new Map();
+let studioGovIndex=0,studioRotateTimer=null;
+
+function slotKey(s){return JSON.stringify(s||{})}
+async function loadPresidentSlot(s){
+  const key='p:'+state.round+':'+slotKey(s),now=Date.now(),old=studioCache.get(key);
+  if(old&&now-old.at<28000)return old.data;
+  const election=state.round==='1'?'6257':'6258',referenceElection='6257',uf=(s.uf||'br').toLowerCase(),mun=String(s.mun||'').replace(/\D/g,'');
+  const scope=mun?uf+pad(mun,5):uf;
+  const url=`${TSE}/${election}/dados/${uf}/${scope}-c0001-e${pad(election,6)}-u.json`;
+  const refUrl=`${TSE}/${referenceElection}/dados/${uf}/${scope}-c0001-e${pad(referenceElection,6)}-u.json`;
+  let live=null,ref=null;
+  try{live=await getJSON(url)}catch(_){}
+  try{ref=await getJSON(refUrl)}catch(_){}
+  const extract=d=>{
+    const out=[],c=d?.carg?.[0];
+    (c?.agr||[]).forEach(a=>(a.par||[]).forEach(p=>(p.cand||[]).forEach(x=>out.push({...x,party:p.sg||''}))));
+    return out;
+  };
+  let ids=[];
+  if(state.round==='1'){
+    ids=extract(live||ref).sort((a,b)=>num(b.vap)-num(a.vap)).slice(0,2);
+  }else{
+    ids=extract(ref).filter(c=>['13','22'].includes(String(c.n))).sort((a,b)=>String(a.n)==='13'?-1:1).slice(0,2);
+  }
+  const liveAll=extract(live),lm=new Map(liveAll.map(c=>[String(c.n),c]));
+  const active=!!live&&started(live),total=live?totalPct(live):0;
+  const candidates=ids.map((r,i)=>{
+    const c=lm.get(String(r.n))||r;
+    const color=String(r.n)==='13'?'#d71920':String(r.n)==='22'?'#2374e1':(i===0?'#35d0f6':'#ffd34e');
+    return {base:r,color,percent:active?pct(c.pvap):0,votes:active?num(c.vap):0,
+      photo:`${TSE}/6257/fotos/br/${r.sqcand}.jpeg`};
+  });
+  const data={kind:'president',label:s.label||(uf==='br'?'Brasil':uf.toUpperCase()),active,total,candidates};
+  studioCache.set(key,{at:now,data});return data;
+}
+async function loadGov2Slot(){
+  const key='gov2',now=Date.now(),old=studioCache.get(key);
+  if(old&&now-old.at<28000)return old.data;
+  const data=await Promise.all(GOV2_UFS.map(loadGov2State));
+  studioCache.set(key,{at:now,data});return data;
+}
+function slotCand(c){
+  return `<div class="studioCand" style="--cand:${c.color}">
+    <div class="studioPic">${c.photo?`<img src="${c.photo}" alt="" onerror="this.remove()">`:''}</div>
+    <div><div class="studioName">${esc(c.base.nmu||c.base.nm||'Candidato')}</div><div class="studioMeta">${esc(c.base.party||'')} · ${esc(c.base.n||'')} · ${c.votes?nf(c.votes)+' votos':'aguardando'}</div><div class="studioBar"><i style="width:${Math.max(0,Math.min(100,c.percent))}%"></i></div></div>
+    <div class="studioPct">${c.votes?ptxt(c.percent):'—'}</div>
+  </div>`;
+}
+async function renderStudioSlot(el,s,lower=false){
+  if(!s||s.kind==='off'){el.innerHTML='<div class="studioBlank">SLOT DESLIGADO</div>';return}
+  if(s.kind==='map-br'||s.kind==='map-mg'||s.kind==='map-state'){
+    if(lower){el.innerHTML='<div class="studioBlank">MAPA DISPONÍVEL EM LEFT / RIGHT</div>';return}
+    await renderMapSlot(el,s.kind,s);return;
+  }
+  if(s.kind==='president'){
+    const d=await loadPresidentSlot(s);
+    if(lower){
+      el.innerHTML=`<div class="studioInner"><div><div class="studioKicker">PRESIDENTE</div><div class="studioTitle">${esc(d.label)}</div><div class="studioSub">${d.active?ptxt(d.total)+' totalizado':'Aguardando TSE'}</div></div>${d.candidates.map(slotCand).join('')}<div class="studioSub">Fonte: TSE</div></div>`;
+    }else{
+      el.innerHTML=`<div class="studioKicker">PRESIDENTE · ${state.round==='1'?'1º TURNO · FINAL':'2º TURNO'}</div><div class="studioTitle">${esc(d.label)}</div><div class="studioSub">${d.active?ptxt(d.total)+' das seções totalizadas':'Aguardando totalização'}</div>${d.candidates.map(slotCand).join('')}<div class="studioStat"><span>Fonte: TSE</span><span>${new Date().toLocaleTimeString('pt-BR')}</span></div>`;
+    }
+    return;
+  }
+  if(s.kind==='gov2'){
+    const all=await loadGov2Slot();
+    const d=all[studioGovIndex%Math.max(1,all.length)];
+    if(!d){el.innerHTML='<div class="studioBlank">Aguardando governadores</div>';return}
+    if(lower){
+      el.innerHTML=`<div class="studioInner"><div><div class="studioKicker">GOVERNADORES · 2º TURNO</div><div class="studioTitle">${esc(d.name)} · ${d.uf.toUpperCase()}</div><div class="studioSub">${d.active?ptxt(d.total)+' totalizado':'Aguardando'}</div></div>${d.candidates.map(c=>slotCand({base:c.base,color:c.color,percent:c.percent,votes:c.votes,photo:c.photo})).join('')}<div class="studioSub">Rotação 7 s</div></div>`;
+    }else{
+      el.innerHTML=`<div class="studioKicker">GOVERNADORES · 2º TURNO</div><div class="studioTitle">${esc(d.name)} · ${d.uf.toUpperCase()}</div><div class="studioSub">${d.active?ptxt(d.total)+' das seções totalizadas':'Aguardando totalização'}</div>${d.candidates.map(c=>slotCand({base:c.base,color:c.color,percent:c.percent,votes:c.votes,photo:c.photo})).join('')}<div class="studioStat"><span>Rotação automática</span><span>${studioGovIndex%6+1}/6</span></div>`;
+    }
+  }
+}
+async function refreshStudio(){
+  const slots=state.studio_slots||{};
+  setScene();showStandby(false);
+  await Promise.all([
+    renderStudioSlot($('#studioLeft'),slots.left,false),
+    renderStudioSlot($('#studioRight'),slots.right,false),
+    renderStudioSlot($('#studioLower'),slots.lower,true)
+  ]);
+  if(!studioRotateTimer){
+    studioRotateTimer=setInterval(()=>{
+      if(state.scene!=='studio')return;
+      const ss=state.studio_slots||{};
+      if([ss.left?.kind,ss.right?.kind,ss.lower?.kind].includes('gov2')){
+        studioGovIndex=(studioGovIndex+1)%6;
+        refreshStudio();
+      }
+    },7000);
+  }
+}
+
+function render(data,stale=false){
+  if(state.screen==='waiting'){showStandby(true);return}
+  if((state.screen==='map-br'||state.screen==='map-mg'||state.screen==='map-state')&&layout!=='vertical'){refreshFullMap();return}
+  if(state.scene==='studio'&&layout!=='vertical'){refreshStudio();return}
+  if(state.screen==='gov2'){if(gov2Last.length)renderGov2(gov2Last);return}
+  showStandby(false);setScene();
+  const scene=layout==='vertical'?'fullscreen':state.scene;
+  if(scene==='fullscreen')renderFull(data,stale);
+  else if(scene==='sidebar-right')renderSidebar($('#sideRight'),data);
+  else if(scene==='sidebar-left')renderSidebar($('#sideLeft'),data);
+  else if(scene==='lower-third')renderLower(data);
+}
+
+async function refreshResult(){
+  if(loading)return;
+  if(state.screen==='waiting'){render(null);return}
+  if((state.screen==='map-br'||state.screen==='map-mg'||state.screen==='map-state')&&layout!=='vertical'){await refreshFullMap();return}
+  if(state.scene==='studio'&&layout!=='vertical'){await refreshStudio();return}
+  if(state.screen==='gov2'){await refreshGov2();return}
+  loading=true;
+  await ensureReference();
+  try{
+    const live=await getJSON(resultUrl(cfg().election));
+    lastGood=live;render(live,false);
+  }catch(_){
+    if(lastGood)render(lastGood,true);
+    else render(null,false);
+  }finally{loading=false}
+}
+
+if(direct){
+  stateKey=stateSignature(state);
+  $('#channelName').textContent='PRÉVIA';
+  setScene();refreshResult();
+}else{
+  if(!channel||!token)showUnauth();
+  const poll=async()=>{
+    await fetchOutputState();
+    setTimeout(poll,1500);
+  };
+  poll();
+}
+setInterval(refreshResult,30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(!direct)fetchOutputState();refreshResult()}});
+</script>
+</body>
+</html>
