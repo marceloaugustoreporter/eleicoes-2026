@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Central de Apuração · FREE V7.32</title>
+<style>
+:root{--bg:#06101a;--panel:#0a1b2a;--line:#24445d;--text:#f7fbff;--muted:#91a9bb;--cyan:#35d0f6;--green:#4fe0ad;--red:#d71920;--blue:#2374e1;--yellow:#ffd34e}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#0c2438 0,#06101a 45%,#04101a 100%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:18px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.ey{font-size:10px;letter-spacing:.18em;color:var(--cyan);font-weight:950}.title{font-size:28px;font-weight:950;margin-top:5px}.muted{color:var(--muted);font-size:11px;line-height:1.45}
+.badge{border:1px solid #31536d;background:#081a29;border-radius:999px;padding:8px 11px;font-size:9px;font-weight:950;color:#dff7ff}
+.card{border:1px solid var(--line);background:rgba(8,24,39,.96);border-radius:15px;padding:14px;margin-top:12px}
+.controls{display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px}.controls select,.controls button{min-height:42px;border:1px solid #31516a;background:#071522;color:#fff;border-radius:10px;padding:9px 10px;font-size:11px}
+.controls button{cursor:pointer;font-weight:950;background:#0b2536;border-color:#2a7292}.controls button:hover{filter:brightness(1.1)}
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.cand{border:1px solid var(--line);border-radius:14px;padding:14px;background:#071522;position:relative;overflow:hidden}
+.cand:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c)}.candTop{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.candName{font-size:18px;font-weight:950}.pct{font-size:35px;font-weight:950;color:var(--c)}.votes{font-size:11px;color:var(--muted);font-weight:850}.bar{height:7px;background:#10273b;border-radius:99px;overflow:hidden;margin-top:12px}.bar i{display:block;height:100%;background:var(--c)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.stat{border:1px solid var(--line);background:#071522;border-radius:11px;padding:10px}.stat b{display:block;font-size:17px}.stat span{display:block;margin-top:3px;color:var(--muted);font-size:8px;font-weight:850}
+.govGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.gov{border:1px solid var(--line);background:#071522;border-radius:12px;padding:10px}.gov h3{margin:0 0 7px;font-size:13px}.mini{display:flex;justify-content:space-between;gap:8px;border-top:1px solid #173247;padding:7px 0;font-size:10px}.mini b:last-child{color:var(--cyan)}
+.notice{font-size:9px;color:#8da7b8;margin-top:8px}.links{display:flex;gap:8px;flex-wrap:wrap}.link{color:#cdefff;text-decoration:none;border:1px solid #31536d;border-radius:9px;padding:8px 10px;font-size:9px;font-weight:900}
+@media(max-width:760px){.controls{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.govGrid{grid-template-columns:1fr}.title{font-size:23px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><div class="ey">ELEIÇÕES 2026 · ACESSO FREE</div><div class="title">Central de Apuração</div><div class="muted">Consulta pública dos resultados oficiais. Sem acesso à transmissão ou aos controles PRO.</div></div>
+    <div class="links"><span class="badge">FREE · SOMENTE LEITURA</span><a class="link" href="./">ÁREA PRO</a></div>
+  </div>
+
+  <section class="card">
+    <div class="ey">PRESIDENTE · 2º TURNO</div>
+    <div class="controls" style="margin-top:9px">
+      <select id="uf"></select>
+      <select id="city"><option value="">Estado inteiro</option></select>
+      <button id="refresh">ATUALIZAR</button>
+    </div>
+    <div id="scope" class="muted" style="margin-top:8px">Brasil</div>
+    <div id="hero" class="hero"></div>
+    <div id="stats" class="stats"></div>
+    <div id="status" class="notice">Carregando dados oficiais…</div>
+  </section>
+
+  <section class="card">
+    <div class="ey">GOVERNADORES · 2º TURNO</div>
+    <div class="muted" style="margin-top:5px">AC · AM · DF · ES · RN · TO</div>
+    <div id="govs" class="govGrid" style="margin-top:10px"></div>
+  </section>
+
+  <div class="notice" style="margin:14px 2px">Fonte: Tribunal Superior Eleitoral (TSE) · atualização automática a cada 30 segundos.</div>
+</div>
+
+<script>
+const BASE='https://jtysotwfuejjqdturoos.supabase.co/functions/v1/free-election-data';
+const KEY='sb_publishable_ssWHaqZKXeozdzJ82_ufAQ_pdnVHORV';
+const UFS={br:'Brasil',ac:'Acre',al:'Alagoas',ap:'Amapá',am:'Amazonas',ba:'Bahia',ce:'Ceará',df:'Distrito Federal',es:'Espírito Santo',go:'Goiás',ma:'Maranhão',mt:'Mato Grosso',ms:'Mato Grosso do Sul',mg:'Minas Gerais',pa:'Pará',pb:'Paraíba',pr:'Paraná',pe:'Pernambuco',pi:'Piauí',rj:'Rio de Janeiro',rn:'Rio Grande do Norte',rs:'Rio Grande do Sul',ro:'Rondônia',rr:'Roraima',sc:'Santa Catarina',sp:'São Paulo',se:'Sergipe',to:'Tocantins'};
+const GOV2=['ac','am','df','es','rn','to'];
+const $=s=>document.querySelector(s),nf=n=>new Intl.NumberFormat('pt-BR').format(Number(n||0));
+const num=v=>{if(typeof v==='number')return v;if(v==null||v==='')return 0;return Number(String(v).replace(/\./g,'').replace(',','.'))||0};
+const pct=v=>num(v).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+'%';
+const pad=(v,n)=>String(v).padStart(n,'0');
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+let municipalities=null;
+
+async function api(params){
+  const u=new URL(BASE);Object.entries(params).forEach(([k,v])=>{if(v!==''&&v!=null)u.searchParams.set(k,v)});
+  const r=await fetch(u.href,{headers:{apikey:KEY},cache:'no-store'});const j=await r.json();
+  if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j;
+}
+function candidates(data){
+  const out=[],c=data?.carg?.[0];
+  (c?.agr||[]).forEach(a=>(a.par||[]).forEach(p=>(p.cand||[]).forEach(x=>out.push({...x,party:p.sg||''}))));
+  return out;
+}
+function renderPresident(data){
+  const arr=candidates(data).filter(c=>['13','22'].includes(String(c.n))).sort((a,b)=>String(a.n)==='13'?-1:1);
+  $('#hero').innerHTML=arr.map(c=>{
+    const color=String(c.n)==='13'?'#d71920':'#2374e1';
+    return `<div class="cand" style="--c:${color}"><div class="candTop"><div><div class="candName">${esc(c.nmu||c.nm)}</div><div class="votes">${esc(c.party)} · ${esc(c.n)} · ${nf(c.vap)} votos</div></div><div class="pct">${pct(c.pvap)}</div></div><div class="bar"><i style="width:${Math.min(100,num(c.pvap))}%"></i></div></div>`;
+  }).join('');
+  const total=num(data?.s?.pst??data?.s?.psa),valid=num(data?.v?.vv),comp=num(data?.e?.c),abst=num(data?.e?.a);
+  $('#stats').innerHTML=`<div class="stat"><b>${pct(total)}</b><span>seções totalizadas</span></div><div class="stat"><b>${nf(valid)}</b><span>votos válidos</span></div><div class="stat"><b>${nf(comp)}</b><span>comparecimento</span></div><div class="stat"><b>${nf(abst)}</b><span>abstenção</span></div>`;
+}
+async function loadMunicipalities(){
+  if(municipalities)return;
+  const j=await api({mode:'municipalities'});municipalities={};
+  (j.data?.abr||[]).forEach(a=>{const uf=String(a.cd||'').toLowerCase();municipalities[uf]=(a.mu||[]).map(m=>({cd:pad(m.cd,5),nm:m.nm})).sort((a,b)=>a.nm.localeCompare(b.nm,'pt-BR'))});
+}
+async function fillCities(){
+  const uf=$('#uf').value;$('#city').innerHTML='<option value="">Estado inteiro</option>';
+  if(uf==='br')return;
+  await loadMunicipalities();
+  (municipalities[uf]||[]).forEach(m=>$('#city').insertAdjacentHTML('beforeend',`<option value="${m.cd}">${esc(m.nm)}</option>`));
+}
+async function loadPresident(){
+  try{
+    $('#status').textContent='Atualizando…';
+    const uf=$('#uf').value,mun=$('#city').value;
+    const j=await api({mode:'result',election:'6258',cargo:'1',uf,mun});
+    renderPresident(j.data);
+    const cityName=$('#city').selectedOptions[0]?.textContent;
+    $('#scope').textContent=mun?`${cityName} · ${uf.toUpperCase()}`:UFS[uf];
+    $('#status').textContent='Atualizado às '+new Date().toLocaleTimeString('pt-BR');
+  }catch(e){$('#status').textContent='Não foi possível atualizar agora. '+e.message}
+}
+async function loadGovs(){
+  const rows=await Promise.all(GOV2.map(async uf=>{
+    try{
+      const j=await api({mode:'result',election:'6260',cargo:'3',uf});
+      const arr=candidates(j.data).sort((a,b)=>num(b.vap)-num(a.vap)).slice(0,2);
+      return {uf,total:num(j.data?.s?.pst??j.data?.s?.psa),arr};
+    }catch(_){return {uf,total:0,arr:[]}}
+  }));
+  $('#govs').innerHTML=rows.map(r=>`<div class="gov"><h3>${esc(UFS[r.uf])} · ${r.uf.toUpperCase()}</h3><div class="muted">${pct(r.total)} totalizado</div>${r.arr.map(c=>`<div class="mini"><span>${esc(c.nmu||c.nm)} <small>${esc(c.party||'')}</small></span><b>${pct(c.pvap)}</b></div>`).join('')||'<div class="notice">Aguardando dados.</div>'}</div>`).join('');
+}
+$('#uf').innerHTML=Object.entries(UFS).map(([k,v])=>`<option value="${k}">${v}${k==='br'?'':' · '+k.toUpperCase()}</option>`).join('');
+$('#uf').addEventListener('change',async()=>{await fillCities();await loadPresident()});
+$('#city').addEventListener('change',loadPresident);
+$('#refresh').addEventListener('click',()=>{loadPresident();loadGovs()});
+loadPresident();loadGovs();
+setInterval(()=>{if(!document.hidden){loadPresident();loadGovs()}},30000);
+</script>
+</body>
+</html>
