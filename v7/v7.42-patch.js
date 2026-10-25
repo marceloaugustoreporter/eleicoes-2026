@@ -298,6 +298,44 @@ css.textContent=`
 .v738RadarSelect{width:100%;min-height:44px;border:1px solid #31516a;background:#071522;color:#fff;border-radius:10px;padding:9px 10px;font-size:12px}
 @media(max-width:800px){.v738MapFields,.v738MapActions{grid-template-columns:1fr}}
 
+
+/* V7.42 · ajuste de leitura do seletor de mapa estadual */
+.v738MapFields{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+  margin-top:10px!important;
+  overflow:visible!important;
+}
+.v738MapFields>div{
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+}
+.v738MapFields label{
+  display:block!important;
+  margin-bottom:6px!important;
+}
+.v738MapFields select{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  position:relative!important;
+  z-index:2!important;
+  color:#fff!important;
+  background:#0a1c2b!important;
+}
+.v738MapActions{
+  position:relative!important;
+  z-index:1!important;
+  margin-top:10px!important;
+}
+.v738MapStatus{
+  clear:both!important;
+}
 `;
 document.head.appendChild(css);
 
@@ -448,7 +486,7 @@ renderBroadcast=async function(){
       if(!mapUf||mapUf==='br')return;
       const all=await loadMunicipalities();
       (all[mapUf]||[]).forEach(m=>sel.insertAdjacentHTML('beforeend',`<option value="${esc(m.cd)}">${esc(m.nm)}</option>`));
-      const st=$('#v738MapStatus');if(st)st.textContent=`${(all[mapUf]||[]).length} municípios disponíveis em ${UF_NAMES[mapUf]||mapUf.toUpperCase()}.`;
+      const st=$('#v738MapStatus');if(st)st.innerHTML=`<strong>ESTADO DO MAPA: ${esc(UF_NAMES[mapUf]||mapUf.toUpperCase())}</strong> · ${(all[mapUf]||[]).length} municípios disponíveis.`;
     }
     function v732SelectedCity(){
       const mapUf=$('#v732MapUf')?.value||uf.value;
@@ -502,6 +540,7 @@ renderBroadcast=async function(){
       const mu=$('#v732MapUf');
       if(mu&&!mu.options.length){mu.innerHTML=uf.innerHTML}
       if(mu&&(!mu.value||mu.value==='br'))mu.value=uf.value==='br'?'mg':uf.value;
+      if(mu&&$('#v732MapFinder')?.classList.contains('on'))v732FillMapCities().catch(()=>{});
     }
     async function prepareV730(){
       office.value=$('#v730Gov')?.classList.contains('on')?'gov':'pres';
