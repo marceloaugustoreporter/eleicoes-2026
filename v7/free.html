@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Central de Apuração · FREE V7.41</title>
+<title>Central de Apuração · FREE V7.42</title>
 <style>
 :root{--bg:#06101a;--panel:#081827;--line:#24445d;--line2:#31536d;--text:#f7fbff;--muted:#91a9bb;--cyan:#35d0f6;--green:#4fe0ad;--yellow:#ffd34e;--red:#d71920;--blue:#2374e1;--neutral:#7d8791}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#0d2437 0,#06101a 43%,#04101a 100%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
@@ -35,7 +35,7 @@ button,select,input{font:inherit}.wrap{max-width:1280px;margin:auto;padding:18px
 </style>
 
 <style>
-/* V7.41 · leitura pública */
+/* V7.42 · leitura pública */
 .tabs .tab{font-size:10px;padding:10px 12px}
 .card h2{font-size:22px}
 .controls select,.controls input,.controls .btn{font-size:11px}
@@ -48,7 +48,7 @@ button,select,input{font:inherit}.wrap{max-width:1280px;margin:auto;padding:18px
 
 
 <style>
-/* V7.41 · fotos oficiais na FREE */
+/* V7.42 · fotos oficiais na FREE */
 .freeCandIdentity{display:flex;align-items:center;gap:10px}
 .freeCandPhoto{width:54px;height:54px;border-radius:50%;overflow:hidden;background:#10283a;border:1px solid #31526b;flex:0 0 auto}
 .freeCandPhoto img{width:100%;height:100%;object-fit:cover;display:block}
@@ -57,6 +57,15 @@ button,select,input{font:inherit}.wrap{max-width:1280px;margin:auto;padding:18px
 .freeGovPhoto img{width:100%;height:100%;object-fit:cover;display:block}
 .freeGovText{min-width:0}.freeGovText b{display:block;font-size:10px}.freeGovText span{display:block;font-size:8px;color:#8da7b8;margin-top:2px}
 @media(max-width:520px){.freeCandPhoto{width:48px;height:48px}.freeGovCand{grid-template-columns:38px 1fr auto}.freeGovPhoto{width:36px;height:36px}}
+</style>
+
+
+<style>
+/* V7.42 · interação FREE */
+.rankRow.rankOpen{width:100%;border:0;border-top:1px solid #173247;background:transparent;color:inherit;text-align:left;cursor:pointer;font:inherit}
+.rankRow.rankOpen:hover{background:rgba(53,208,246,.08)}
+.mapMun{cursor:pointer}
+.mapMun:hover{stroke:#fff!important;stroke-width:1.2!important;filter:brightness(1.18)}
 </style>
 
 </head>
@@ -126,7 +135,7 @@ async function loadMunicipalities(){if(municipalities)return municipalities;cons
 async function loadElectorateScopes(){if(electorateScopes!==null)return electorateScopes;try{const j=await api({mode:'official-electorate'});electorateScopes=j.data?.byScope||{}}catch(_){electorateScopes={}}return electorateScopes}
 async function municipalElectorate(uf,mun){try{const j=await api({mode:'official-electorate',uf,mun});return j.data?.row||null}catch(_){return null}}
 function candidates(data){const out=[],c=data?.carg?.[0];(c?.agr||[]).forEach(a=>(a.par||[]).forEach(p=>(p.cand||[]).forEach(x=>out.push({...x,party:p.sg||''}))));return out}
-function presPair(data){return candidates(data).filter(c=>['13','22'].includes(String(c.n))).sort((a,b)=>String(a.n)==='13'?-1:1).map(c=>({n:String(c.n),name:c.nmu||c.nm,party:c.party,votes:num(c.vap),pct:num(c.pvap),color:String(c.n)==='13'?'#d71920':'#2374e1'}))}
+function presPair(data){return candidates(data).filter(c=>['13','22'].includes(String(c.n))).sort((a,b)=>String(a.n)==='13'?-1:1).map(c=>({n:String(c.n),name:c.nmu||c.nm,party:c.party,votes:num(c.vap),pct:num(c.pvap),sqcand:c.sqcand||'',color:String(c.n)==='13'?'#d71920':'#2374e1'}))}
 function stats(data){return{total:num(data?.s?.pst??data?.s?.psa),valid:num(data?.v?.vv),comp:num(data?.e?.c),abst:num(data?.e?.a)}}
 function resultCard(data,label){const pair=presPair(data),st=stats(data);return{label,pair,st,margin:(pair[0]?.pct||0)-(pair[1]?.pct||0)}}
 function heroHtml(data){return presPair(data).map(c=>{
@@ -145,7 +154,9 @@ async function loadResults(){try{const uf=$('#rUf').value,mun=$('#rCity').value;
 function mapColor(margin,has=true){if(!has)return'#173044';const m=Math.max(-35,Math.min(35,num(margin))),a=Math.abs(m);if(a<=2)return'#7d8791';const t=Math.max(0,Math.min(1,(a-2)/23));const lerp=(a,b,t)=>{const A=a.match(/\w\w/g).map(x=>parseInt(x,16)),B=b.match(/\w\w/g).map(x=>parseInt(x,16));return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')};return m>0?lerp('#d9999c','#d71920',t):lerp('#91add0','#2374e1',t)}
 function mapSide(rows,type){const v=rows.filter(r=>r.has),l=v.filter(r=>r.margin>2).length,f=v.filter(r=>r.margin<-2).length,t=v.filter(r=>Math.abs(r.margin)<=2).length,c=[...v].sort((a,b)=>Math.abs(a.margin)-Math.abs(b.margin))[0];return `<div class="mapKpi"><b>${nf(l)}</b><span>${type==='br'?'estados':'municípios'} com Lula à frente</span></div><div class="mapKpi"><b>${nf(f)}</b><span>${type==='br'?'estados':'municípios'} com Flávio à frente</span></div><div class="mapKpi"><b>${nf(t)}</b><span>equilíbrio · até 2 p.p.</span></div><div class="mapKpi"><b>${esc(c?.name||'—')}</b><span>menor diferença</span></div><div class="mapKpi"><span>INTENSIDADE DA VANTAGEM</span><div class="legend"></div><div class="legendText"><span>Lula</span><span>equilíbrio</span><span>Flávio</span></div></div>`}
 async function drawBrazil(){const [geo,j]=await Promise.all([loadGeo(GEO_URL),api({mode:'president-map'})]),data={},rows=[];(j.data?.states||[]).forEach(x=>{const p=presPair(x.payload),r={uf:x.uf,name:UFS[x.uf],p13:p[0]?.pct||0,p22:p[1]?.pct||0,margin:(p[0]?.pct||0)-(p[1]?.pct||0),has:(p[0]?.votes||0)+(p[1]?.votes||0)>0};data[x.uf]=r;rows.push(r)});const svg=d3.select('#mapSvg');svg.selectAll('*').remove();const pr=d3.geoMercator().fitExtent([[20,15],[880,630]],geo),path=d3.geoPath(pr);svg.selectAll('path').data(geo.features||[]).enter().append('path').attr('class','mapShape').attr('d',path).attr('fill',f=>{const uf=NAME_TO_UF[norm(f.properties?.name||f.properties?.NAME_1||'')],r=data[uf];return mapColor(r?.margin,r?.has)}).on('click',(_e,f)=>{const uf=NAME_TO_UF[norm(f.properties?.name||f.properties?.NAME_1||'')];if(uf){$('#rUf').value=uf;fillCities('#rUf','#rCity').then(loadResults);showView('results')}});$('#mapSide').innerHTML=mapSide(rows,'br')}
-async function drawState(){const uf=$('#mUf').value;if(!uf)return;$('#mapSide').innerHTML='<div class="loading">Carregando municípios…</div>';const [geo,j]=await Promise.all([loadGeo(`${MUN_GEO_BASE}/${uf.toUpperCase()}.geojson`),api({mode:'state-municipal-map',uf,election:'6258',cargo:'1'})]);const src=j.data?.municipalities||[],byId=new Map(src.map(r=>[String(r.cdi||'').replace(/\D/g,''),r])),byName=new Map(src.map(r=>[norm(r.nm),r])),rows=src.map(r=>({name:r.nm,margin:num(r.margin),has:(num(r.v13)+num(r.v22)>0)||num(r.valid)>0,...r}));const svg=d3.select('#mapSvg');svg.selectAll('*').remove();const pr=d3.geoIdentity().reflectY(true).fitExtent([[15,12],[885,630]],geo),path=d3.geoPath(pr);svg.selectAll('path').data(geo.features||[]).enter().append('path').attr('class','mapMun').attr('d',path).attr('fill',f=>{const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,''),name=f.properties?.nome||f.properties?.name||'',r=byId.get(id)||byName.get(norm(name));return mapColor(num(r?.margin),(num(r?.v13)+num(r?.v22)>0)||num(r?.valid)>0)}).on('click',(_e,f)=>{const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,''),name=f.properties?.nome||f.properties?.name||'',r=byId.get(id)||byName.get(norm(name));if(r?.cd){$('#rUf').value=uf;fillCities('#rUf','#rCity').then(()=>{$('#rCity').value=String(r.cd).padStart(5,'0');loadResults();showView('results')})}});$('#mapSide').innerHTML=mapSide(rows,'state')}
+async function drawState(){const uf=$('#mUf').value;if(!uf)return;$('#mapSide').innerHTML='<div class="loading">Carregando municípios…</div>';const [geo,j]=await Promise.all([loadGeo(`${MUN_GEO_BASE}/${uf.toUpperCase()}.geojson`),api({mode:'state-municipal-map',uf,election:'6258',cargo:'1'})]);const src=j.data?.municipalities||[],byId=new Map(src.map(r=>[String(r.cdi||'').replace(/\D/g,''),r])),byName=new Map(src.map(r=>[norm(r.nm),r])),rows=src.map(r=>({name:r.nm,margin:num(r.margin),has:(num(r.v13)+num(r.v22)>0)||num(r.valid)>0,...r}));const svg=d3.select('#mapSvg');svg.selectAll('*').remove();const pr=d3.geoIdentity().reflectY(true).fitExtent([[15,12],[885,630]],geo),path=d3.geoPath(pr);const paths=svg.selectAll('path').data(geo.features||[]).enter().append('path').attr('class','mapMun').attr('d',path).attr('fill',f=>{const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,''),name=f.properties?.nome||f.properties?.name||'',r=byId.get(id)||byName.get(norm(name));return mapColor(num(r?.margin),(num(r?.v13)+num(r?.v22)>0)||num(r?.valid)>0)}).on('click',(_e,f)=>{const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,''),name=f.properties?.nome||f.properties?.name||'',r=byId.get(id)||byName.get(norm(name));if(r?.cd){$('#rUf').value=uf;fillCities('#rUf','#rCity').then(()=>{$('#rCity').value=String(r.cd).padStart(5,'0');loadResults();showView('results')})}});
+paths.append('title').text(f=>{const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,''),name=f.properties?.nome||f.properties?.name||'',r=byId.get(id)||byName.get(norm(name));return r?.nm||name||'Município'});
+$('#mapSide').innerHTML=mapSide(rows,'state')}
 
 async function loadRadar(){const uf=$('#radUf').value,mun=$('#radCity').value;if(!mun)return;const city=$('#radCity').selectedOptions[0]?.textContent||'Município';$('#radarGrid').innerHTML='<div class="loading">Carregando…</div>';const [a,b,c]=await Promise.all([api({mode:'result',election:'6258',cargo:'1',uf,mun}),api({mode:'result',election:'6258',cargo:'1',uf}),api({mode:'result',election:'6258',cargo:'1',uf:'br'})]);const cards=[resultCard(a.data,city),resultCard(b.data,UFS[uf]),resultCard(c.data,'Brasil')];$('#radarGrid').innerHTML=cards.map(x=>`<div class="radarBox"><h3>${esc(x.label)}</h3>${x.pair.map(p=>`<div class="radarPct"><span>${esc(p.name)}</span><b style="color:${p.color}">${ptxt(p.pct)}</b></div>`).join('')}<div class="notice">Diferença: ${Math.abs(x.margin).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})} p.p.</div></div>`).join('')}
 
@@ -182,7 +193,7 @@ async function rankings(){
 
     const box=(title,list)=>`<div class="rankBox"><div class="rankHead">${title}</div>${
       list.length
-        ? list.map((r,i)=>`<div class="rankRow"><span class="pos">${i+1}</span><span>${esc(r.nm)}</span><b>${Math.abs(r.margin).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})} p.p.</b></div>`).join('')
+        ? list.map((r,i)=>`<button class="rankRow rankOpen" type="button" data-rank-uf="${uf}" data-rank-cd="${esc(String(r.cd||'').padStart(5,'0'))}"><span class="pos">${i+1}</span><span>${esc(r.nm)}</span><b>${Math.abs(r.margin).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})} p.p.</b></button>`).join('')
         : '<div class="notice" style="padding:10px">Nenhum município nesta categoria.</div>'
     }</div>`;
 
@@ -191,7 +202,16 @@ async function rankings(){
       box('Mais equilibradas',tight)+
       box('Maior vantagem · Flávio',topF);
 
-    $('#rankStatus').textContent=`${rows.length} municípios analisados · ${source}.`;
+    $('#rankStatus').textContent=`${rows.length} municípios analisados · ${source}. Clique em uma cidade para abrir o resultado detalhado.`;
+    $$('.rankOpen').forEach(b=>b.addEventListener('click',async()=>{
+      const ru=b.dataset.rankUf,rc=b.dataset.rankCd;
+      $('#rUf').value=ru;
+      await fillCities('#rUf','#rCity');
+      $('#rCity').value=rc;
+      await loadResults();
+      showView('results');
+      window.scrollTo({top:0,behavior:'smooth'});
+    }));
   }catch(e){
     $('#rankGrid').innerHTML='<div class="loading">Não foi possível montar o ranking agora.</div>';
     $('#rankStatus').textContent='Falha ao carregar ranking: '+e.message;
