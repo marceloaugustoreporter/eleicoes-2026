@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Central de Apuração · Cenas PRO</title>
+<style>
+:root{
+  --bg:#06101a;--panel:#0a1b2a;--line:#24445d;--text:#f7fbff;--muted:#91a9bb;
+  --cyan:#35d0f6;--green:#4fe0ad;--yellow:#ffd34e;--red:#d71920;--blue:#2374e1
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;color:var(--text);font-family:Arial,Helvetica,sans-serif}
+body.fullscreen{background:radial-gradient(circle at 50% 0,#0c2438 0,#06101a 42%,#04101a 100%)}
+body.overlay{background:transparent}
+.stage{width:100vw;height:100vh;position:relative;overflow:hidden}
+.full{position:absolute;inset:0;padding:3.2vh 3vw 2.5vh;background:radial-gradient(circle at 50% 0,#0c2438 0,#06101a 42%,#04101a 100%)}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:2vw}
+.ey{font-size:1.05vw;letter-spacing:.18em;font-weight:900;color:var(--cyan)}
+.title{font-size:3vw;font-weight:950;line-height:1;margin-top:.5vh}
+.place{font-size:1.42vw;color:#cce0ed;font-weight:800;margin-top:.8vh}
+.status{display:flex;align-items:center;gap:.7vw;border:1px solid var(--line);background:rgba(7,21,34,.92);padding:.8vh 1vw;border-radius:1vw;font-size:1vw;font-weight:850;color:#cfe0ec}
+.dot{width:.7vw;height:.7vw;border-radius:50%;background:var(--yellow)} .dot.ok{background:var(--green)}
+.progressWrap{margin-top:2vh}.progressMeta{display:flex;justify-content:space-between;align-items:center;font-size:1vw;font-weight:850;color:#b5c9d8}
+.progress{height:1.2vh;background:#10273b;border-radius:99px;overflow:hidden;margin-top:.65vh}.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:99px}
+.candidates{display:grid;grid-template-columns:1fr 1fr;gap:2vw;margin-top:2.8vh}
+.cand{position:relative;display:grid;grid-template-columns:13vw 1fr;gap:1.4vw;align-items:center;min-height:39vh;border:1px solid var(--line);background:linear-gradient(155deg,rgba(10,27,42,.98),rgba(6,20,32,.96));border-radius:2vw;padding:2vw;overflow:hidden}
+.cand:before{content:"";position:absolute;left:0;top:0;bottom:0;width:.55vw;background:var(--cand)}
+.photo{width:12vw;height:12vw;border-radius:50%;overflow:hidden;border:.35vw solid var(--cand);background:#102335;display:grid;place-items:center;position:relative}
+.photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;z-index:2}.initial{font-size:4vw;font-weight:950;color:#d8e8f2}
+.candName{font-size:2.05vw;font-weight:950;line-height:1.05}.meta{font-size:1vw;color:var(--muted);font-weight:850;margin-top:.65vh}
+.pct{font-size:5.4vw;font-weight:950;line-height:.95;color:var(--cand);margin-top:2.1vh}.votes{font-size:1.35vw;font-weight:900;margin-top:.7vh}
+.bar{height:1.05vh;background:#122a3d;border-radius:99px;overflow:hidden;margin-top:1.45vh}.bar i{display:block;height:100%;background:var(--cand);border-radius:99px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1vw;margin-top:2vh}.stat{border:1px solid var(--line);background:rgba(7,21,34,.96);border-radius:1.1vw;padding:1.05vw}
+.stat b{display:block;font-size:1.5vw}.stat span{display:block;margin-top:.35vh;color:var(--muted);font-size:.8vw;font-weight:800}
+.foot{position:absolute;left:3vw;right:3vw;bottom:1.4vh;display:flex;justify-content:space-between;align-items:center;color:#7891a5;font-size:.76vw;font-weight:800}
+
+/* Sidebars */
+.sidebar{position:absolute;top:4vh;bottom:4vh;width:32vw;border:1px solid rgba(55,95,125,.75);background:rgba(5,18,29,.94);backdrop-filter:blur(5px);border-radius:1.4vw;padding:1.3vw;display:none}
+.sidebar.right{right:2vw}.sidebar.left{left:2vw}
+.sidebar .sideTitle{font-size:1.8vw;font-weight:950}.sidebar .sidePlace{font-size:1vw;color:#b9cfdd;margin-top:.4vh;font-weight:800}
+.sideCand{display:grid;grid-template-columns:5vw 1fr;gap:.8vw;align-items:center;margin-top:2vh;padding:1vw;border:1px solid var(--line);border-radius:1vw;background:rgba(9,28,43,.95)}
+.sidePhoto{width:4.6vw;height:4.6vw;border-radius:50%;overflow:hidden;border:.25vw solid var(--cand);position:relative;background:#102335}
+.sidePhoto img{width:100%;height:100%;object-fit:cover}.sideName{font-size:1.25vw;font-weight:950}.sidePct{font-size:2vw;font-weight:950;color:var(--cand);margin-top:.3vh}
+.sideStats{display:grid;grid-template-columns:1fr 1fr;gap:.6vw;margin-top:1.3vh}.sideStat{border:1px solid var(--line);border-radius:.8vw;padding:.7vw;background:rgba(7,21,34,.95)}
+.sideStat b{font-size:1vw}.sideStat span{display:block;font-size:.65vw;color:var(--muted);margin-top:.2vh}
+
+/* Lower third */
+.lower{position:absolute;left:2vw;right:2vw;bottom:2.2vh;min-height:18vh;border:1px solid rgba(55,95,125,.8);background:rgba(5,18,29,.95);backdrop-filter:blur(5px);border-radius:1.2vw;padding:1vw 1.2vw;display:none}
+.lowerTop{display:flex;justify-content:space-between;align-items:center;gap:1vw}
+.lowerTitle{font-size:1.4vw;font-weight:950}.lowerPlace{font-size:.85vw;color:var(--muted)}
+.lowerCandidates{display:grid;grid-template-columns:1fr 1fr;gap:1vw;margin-top:.7vh}
+.lowerCand{display:grid;grid-template-columns:auto 1fr auto;gap:.7vw;align-items:center}
+.lowerPic{width:3vw;height:3vw;border-radius:50%;overflow:hidden;border:.2vw solid var(--cand)}.lowerPic img{width:100%;height:100%;object-fit:cover}
+.lowerName{font-size:1vw;font-weight:950}.lowerVotes{font-size:.7vw;color:var(--muted);margin-top:.15vh}.lowerPct{font-size:1.8vw;font-weight:950;color:var(--cand)}
+.lowerProgress{height:.55vh;background:#10273b;border-radius:99px;margin-top:.7vh;overflow:hidden}.lowerProgress i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.lowerMeta{display:flex;justify-content:space-between;margin-top:.55vh;color:#9bb1c1;font-size:.72vw;font-weight:800}
+
+.standby,.unauth{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 30%,#10283d 0,#06101a 55%,#04101a 100%);z-index:20;text-align:center}
+.standby.on,.unauth.on{display:flex}.standbyBox{max-width:70vw}.standbyEy{font-size:1.1vw;letter-spacing:.22em;color:var(--cyan);font-weight:900}
+.standbyTitle{font-size:4.5vw;font-weight:950;margin-top:1.4vh}.standbySub{font-size:1.35vw;color:#a8bece;margin-top:1vh;font-weight:750}
+.channel{position:absolute;right:2vw;top:1.5vh;font-size:.8vw;color:#7891a5;font-weight:850}
+
+/* Vertical stays as full layout for reliability */
+body.vertical .full{padding:3.1vh 4.3vw 2.1vh}
+body.vertical .ey{font-size:2.25vw}.vertical .title{font-size:6.5vw}.vertical .place{font-size:3.05vw}
+.vertical .status{font-size:2.05vw;border-radius:2.2vw;padding:1vh 2vw}.vertical .dot{width:1.45vw;height:1.45vw}
+.vertical .progressMeta{font-size:2.1vw}.vertical .progress{height:.95vh}
+.vertical .candidates{grid-template-columns:1fr;gap:1.45vh;margin-top:1.9vh}
+.vertical .cand{grid-template-columns:27vw 1fr;min-height:27.2vh;border-radius:3.5vw;padding:3.6vw;gap:3vw}.vertical .cand:before{width:1.2vw}
+.vertical .photo{width:25vw;height:25vw;border-width:.8vw}.vertical .initial{font-size:9vw}.vertical .candName{font-size:5vw}
+.vertical .meta{font-size:2.2vw}.vertical .pct{font-size:10.5vw;margin-top:1.7vh}.vertical .votes{font-size:3vw}
+.vertical .bar{height:.9vh}.vertical .stats{grid-template-columns:repeat(2,1fr);gap:1.4vw;margin-top:1.65vh}
+.vertical .stat{border-radius:2.4vw;padding:2.6vw}.vertical .stat b{font-size:4vw}.vertical .stat span{font-size:1.9vw}
+.vertical .foot{left:4.3vw;right:4.3vw;bottom:1.2vh;font-size:1.65vw}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div id="full" class="full">
+    <div class="top">
+      <div>
+        <div class="ey">CENTRAL DE APURAÇÃO · ELEIÇÕES 2026</div>
+        <div id="title" class="title">PRESIDENTE · 2º TURNO</div>
+        <div id="place" class="place">Brasil</div>
+      </div>
+      <div class="status"><i id="dot" class="dot"></i><span id="status">Conectando</span></div>
+    </div>
+    <div class="progressWrap">
+      <div class="progressMeta"><span id="progressText">Aguardando totalização</span><span id="updated">--:--:--</span></div>
+      <div class="progress"><i id="progressBar"></i></div>
+    </div>
+    <div id="candidates" class="candidates"></div>
+    <div id="stats" class="stats"></div>
+    <div class="foot"><span>Fonte: Tribunal Superior Eleitoral (TSE)</span><span>Atualização automática · 30 s</span></div>
+  </div>
+
+  <aside id="sideRight" class="sidebar right"></aside>
+  <aside id="sideLeft" class="sidebar left"></aside>
+  <div id="lower" class="lower"></div>
+
+  <div id="channelName" class="channel"></div>
+
+  <div id="standby" class="standby">
+    <div class="standbyBox">
+      <div class="standbyEy">ELEIÇÕES 2026 · CENTRAL DE APURAÇÃO</div>
+      <div class="standbyTitle">Aguardando próxima atualização</div>
+      <div class="standbySub">A transmissão continua em instantes.</div>
+    </div>
+  </div>
+
+  <div id="unauth" class="unauth">
+    <div class="standbyBox">
+      <div class="standbyEy">CENTRAL DE APURAÇÃO</div>
+      <div class="standbyTitle">Saída indisponível</div>
+      <div class="standbySub">Verifique a URL configurada no OBS ou vMix.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const Q=new URLSearchParams(location.search);
+const layout=Q.get('layout')==='vertical'?'vertical':'horizontal';
+document.body.classList.add(layout);
+
+const SUPABASE_URL='https://jtysotwfuejjqdturoos.supabase.co';
+const SUPABASE_KEY='sb_publishable_ssWHaqZKXeozdzJ82_ufAQ_pdnVHORV';
+const TSE='https://resultados.tse.jus.br/oficial/ele2026';
+const channel=Q.get('channel')||'';
+const token=Q.get('token')||'';
+const direct=Q.get('direct')==='1';
+
+const $=s=>document.querySelector(s);
+const nf=n=>new Intl.NumberFormat('pt-BR').format(Number(n||0));
+const num=v=>{if(typeof v==='number')return v;if(v==null||v==='')return 0;return Number(String(v).replace(/\./g,'').replace(',','.'))||0};
+const pct=v=>num(v);
+const ptxt=v=>pct(v).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})+'%';
+const pad=(v,n)=>String(v).padStart(n,'0');
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+let state={
+  screen:Q.get('screen')||'president',
+  scene:Q.get('scene')||'fullscreen',
+  office:Q.get('office')==='gov'?'gov':'pres',
+  uf:(Q.get('uf')||'br').toLowerCase(),
+  mun:(Q.get('mun')||'').replace(/\D/g,''),
+  label:(Q.get('label')||'').trim(),
+  channel_name:''
+};
+let stateKey='',lastGood=null,reference=null,loading=false;
+
+function cfg(){
+  return state.office==='pres'
+    ? {election:'6258',reference:'6257',cargo:'1',title:'PRESIDENTE · 2º TURNO'}
+    : {election:'6260',reference:'6259',cargo:'3',title:'GOVERNADOR · 2º TURNO'};
+}
+function resultUrl(election){
+  const scope=state.mun?state.uf+pad(state.mun,5):state.uf;
+  return `${TSE}/${election}/dados/${state.uf}/${scope}-c${pad(cfg().cargo,4)}-e${pad(election,6)}-u.json`;
+}
+function photoUrl(c){
+  if(!c?.sqcand)return'';
+  const folder=state.office==='pres'?'br':state.uf;
+  return `${TSE}/${cfg().reference}/fotos/${folder}/${c.sqcand}.jpeg`;
+}
+async function getJSON(url){
+  const r=await fetch(url,{cache:'no-store'});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+function cargo(data){return data?.carg?.[0]||null}
+function flatten(data){
+  const c=cargo(data);if(!c)return[];
+  const out=[];
+  (c.agr||[]).forEach(a=>(a.par||[]).forEach(p=>(p.cand||[]).forEach(x=>out.push({...x,party:p.sg||''}))));
+  return out;
+}
+function uniqueCandidates(data){
+  const m=new Map();
+  flatten(data).forEach(x=>{
+    const key=String(x.n||'')+'|'+String(x.nmu||x.nm||'');
+    const old=m.get(key);
+    if(!old||num(x.vap)>num(old.vap))m.set(key,x);
+  });
+  return [...m.values()];
+}
+function candidatesFrom(data){
+  const all=uniqueCandidates(data);
+  if(state.office==='pres'){
+    const wanted=all.filter(c=>['13','22'].includes(String(c.n)));
+    wanted.sort((a,b)=>String(a.n)==='13'?-1:String(b.n)==='13'?1:0);
+    return wanted.slice(0,2);
+  }
+  return all.sort((a,b)=>num(b.vap)-num(a.vap)).slice(0,2);
+}
+function started(data){return !!data&&(String(data.and||'').toLowerCase()!=='n'||pct(data?.s?.pst??data?.s?.psa)>0||num(data?.v?.tv)>0)}
+function totalPct(data){return pct(data?.s?.pst??data?.s?.psa??0)}
+function colorFor(c,index){
+  if(state.office==='pres'&&String(c?.n)==='13')return'#d71920';
+  if(state.office==='pres'&&String(c?.n)==='22')return'#2374e1';
+  return index===0?'#35d0f6':'#ffd34e';
+}
+function initials(name){return String(name||'?').split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()}
+function stateSignature(s){return[s.screen,s.scene,s.office,s.uf,s.mun,s.label].join('|')}
+
+function setScene(){
+  const scene=layout==='vertical'?'fullscreen':state.scene;
+  $('#full').style.display=scene==='fullscreen'?'block':'none';
+  $('#sideRight').style.display=scene==='sidebar-right'?'block':'none';
+  $('#sideLeft').style.display=scene==='sidebar-left'?'block':'none';
+  $('#lower').style.display=scene==='lower-third'?'block':'none';
+  document.body.classList.toggle('overlay',scene!=='fullscreen');
+  document.body.classList.toggle('fullscreen',scene==='fullscreen');
+}
+function showStandby(on){$('#standby').classList.toggle('on',on);$('#unauth').classList.remove('on')}
+function showUnauth(){$('#unauth').classList.add('on');$('#standby').classList.remove('on')}
+
+async function fetchOutputState(){
+  if(direct)return;
+  try{
+    const r=await fetch(`${SUPABASE_URL}/functions/v1/broadcast-output?channel=${encodeURIComponent(channel)}&token=${encodeURIComponent(token)}`,{
+      method:'GET',
+      headers:{'apikey':SUPABASE_KEY},
+      cache:'no-store'
+    });
+    if(r.status===404){showUnauth();return}
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const row=await r.json();
+    const next={
+      screen:row.screen||'waiting',
+      scene:row.scene||'fullscreen',
+      office:row.office||'pres',
+      uf:row.uf||'br',mun:row.mun||'',label:row.label||'',
+      channel_name:row.channel_name||channel
+    };
+    $('#channelName').textContent=next.channel_name;
+    const sig=stateSignature(next);
+    if(sig!==stateKey){
+      state=next;stateKey=sig;reference=null;lastGood=null;
+      setScene();
+      await refreshResult(true);
+    }
+  }catch(_){
+    $('#status').textContent='Reconectando controle';
+  }
+}
+
+async function ensureReference(){
+  if(reference||state.screen==='waiting')return;
+  try{reference=await getJSON(resultUrl(cfg().reference))}catch(_){}
+}
+
+function coreData(data){
+  const active=started(data);
+  const live=candidatesFrom(data);
+  const ids=live.length>=2?live:candidatesFrom(reference);
+  const liveMap=new Map(uniqueCandidates(data).map(c=>[String(c.n),c]));
+  const p=totalPct(data);
+  const cands=ids.map((id,i)=>{
+    const c=liveMap.get(String(id.n))||id;
+    return {
+      id,c,color:colorFor(id,i),
+      percent:active?pct(c.pvap):0,
+      votes:active?num(c.vap):0,
+      photo:photoUrl(id)
+    };
+  });
+  return{
+    active,p,cands,
+    stats:{valid:num(data?.v?.vv),comp:num(data?.e?.c),abst:num(data?.e?.a),pabs:pct(data?.e?.pa)}
+  };
+}
+
+function renderFull(data,stale){
+  const d=coreData(data);
+  $('#title').textContent=cfg().title;
+  $('#place').textContent=state.label||(state.uf==='br'?'Brasil':state.uf.toUpperCase());
+  $('#dot').className='dot '+(data?'ok':'');
+  $('#status').textContent=stale?'Último dado válido':data?'TSE conectado':'Aguardando TSE';
+  $('#progressText').textContent=d.active?`${ptxt(d.p)} das seções totalizadas`:'Aguardando totalização';
+  $('#progressBar').style.width=Math.min(100,d.p)+'%';
+  $('#updated').textContent=new Date().toLocaleTimeString('pt-BR');
+  $('#candidates').innerHTML=d.cands.map(({id,c,color,percent,votes,photo})=>`
+    <section class="cand" style="--cand:${color}">
+      <div class="photo"><span class="initial">${esc(initials(id.nmu||id.nm))}</span>${photo?`<img src="${photo}" alt="" onerror="this.remove()">`:''}</div>
+      <div>
+        <div class="candName">${esc(id.nmu||id.nm||'Candidato')}</div>
+        <div class="meta">${esc(id.party||'')} · ${esc(id.n||'')}</div>
+        <div class="pct">${d.active?ptxt(percent):'—'}</div>
+        <div class="votes">${d.active?nf(votes)+' votos':'Aguardando votos'}</div>
+        <div class="bar"><i style="width:${Math.max(0,Math.min(100,percent))}%"></i></div>
+      </div>
+    </section>`).join('');
+  $('#stats').innerHTML=`
+    <div class="stat"><b>${d.active?nf(d.stats.valid):'—'}</b><span>votos válidos</span></div>
+    <div class="stat"><b>${d.active?nf(d.stats.comp):'—'}</b><span>comparecimento</span></div>
+    <div class="stat"><b>${d.active?nf(d.stats.abst):'—'}</b><span>abstenção${d.active&&d.stats.pabs?' · '+ptxt(d.stats.pabs):''}</span></div>
+    <div class="stat"><b>${d.active?ptxt(d.p):'0,0%'}</b><span>seções totalizadas</span></div>`;
+}
+
+function renderSidebar(el,data){
+  const d=coreData(data);
+  el.innerHTML=`
+    <div class="ey">ELEIÇÕES 2026</div>
+    <div class="sideTitle">${esc(cfg().title)}</div>
+    <div class="sidePlace">${esc(state.label||(state.uf==='br'?'Brasil':state.uf.toUpperCase()))}</div>
+    ${d.cands.map(({id,c,color,percent,votes,photo})=>`
+      <div class="sideCand" style="--cand:${color}">
+        <div class="sidePhoto">${photo?`<img src="${photo}" alt="" onerror="this.remove()">`:''}</div>
+        <div>
+          <div class="sideName">${esc(id.nmu||id.nm||'Candidato')}</div>
+          <div class="sidePct">${d.active?ptxt(percent):'—'}</div>
+          <div class="lowerVotes">${d.active?nf(votes)+' votos':'Aguardando votos'}</div>
+        </div>
+      </div>`).join('')}
+    <div class="sideStats">
+      <div class="sideStat"><b>${d.active?ptxt(d.p):'0,0%'}</b><span>totalizado</span></div>
+      <div class="sideStat"><b>${d.active?nf(d.stats.valid):'—'}</b><span>válidos</span></div>
+      <div class="sideStat"><b>${d.active?nf(d.stats.comp):'—'}</b><span>comparecimento</span></div>
+      <div class="sideStat"><b>${d.active?nf(d.stats.abst):'—'}</b><span>abstenção</span></div>
+    </div>`;
+}
+
+function renderLower(data){
+  const d=coreData(data);
+  $('#lower').innerHTML=`
+    <div class="lowerTop">
+      <div><div class="lowerTitle">${esc(cfg().title)}</div><div class="lowerPlace">${esc(state.label||(state.uf==='br'?'Brasil':state.uf.toUpperCase()))}</div></div>
+      <div class="lowerPlace">${d.active?ptxt(d.p)+' totalizado':'Aguardando totalização'}</div>
+    </div>
+    <div class="lowerCandidates">
+      ${d.cands.map(({id,color,percent,votes,photo})=>`
+        <div class="lowerCand" style="--cand:${color}">
+          <div class="lowerPic">${photo?`<img src="${photo}" alt="" onerror="this.remove()">`:''}</div>
+          <div><div class="lowerName">${esc(id.nmu||id.nm||'Candidato')}</div><div class="lowerVotes">${d.active?nf(votes)+' votos':'Aguardando votos'}</div></div>
+          <div class="lowerPct">${d.active?ptxt(percent):'—'}</div>
+        </div>`).join('')}
+    </div>
+    <div class="lowerProgress"><i style="width:${Math.min(100,d.p)}%"></i></div>
+    <div class="lowerMeta"><span>Fonte: TSE</span><span>${new Date().toLocaleTimeString('pt-BR')}</span></div>`;
+}
+
+function render(data,stale=false){
+  if(state.screen==='waiting'){showStandby(true);return}
+  showStandby(false);setScene();
+  const scene=layout==='vertical'?'fullscreen':state.scene;
+  if(scene==='fullscreen')renderFull(data,stale);
+  else if(scene==='sidebar-right')renderSidebar($('#sideRight'),data);
+  else if(scene==='sidebar-left')renderSidebar($('#sideLeft'),data);
+  else if(scene==='lower-third')renderLower(data);
+}
+
+async function refreshResult(){
+  if(loading)return;
+  if(state.screen==='waiting'){render(null);return}
+  loading=true;
+  await ensureReference();
+  try{
+    const live=await getJSON(resultUrl(cfg().election));
+    lastGood=live;render(live,false);
+  }catch(_){
+    if(lastGood)render(lastGood,true);
+    else render(null,false);
+  }finally{loading=false}
+}
+
+if(direct){
+  stateKey=stateSignature(state);
+  $('#channelName').textContent='PRÉVIA';
+  setScene();refreshResult();
+}else{
+  if(!channel||!token)showUnauth();
+  fetchOutputState();
+  setInterval(fetchOutputState,2000);
+}
+setInterval(refreshResult,30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(!direct)fetchOutputState();refreshResult()}});
+</script>
+</body>
+</html>
