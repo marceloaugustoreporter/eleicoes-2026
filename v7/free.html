@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Central de Apuração · FREE V7.42</title>
+<title>Central de Apuração · FREE V7.43</title>
 <style>
 :root{--bg:#06101a;--panel:#081827;--line:#24445d;--line2:#31536d;--text:#f7fbff;--muted:#91a9bb;--cyan:#35d0f6;--green:#4fe0ad;--yellow:#ffd34e;--red:#d71920;--blue:#2374e1;--neutral:#7d8791}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#0d2437 0,#06101a 43%,#04101a 100%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
@@ -35,7 +35,7 @@ button,select,input{font:inherit}.wrap{max-width:1280px;margin:auto;padding:18px
 </style>
 
 <style>
-/* V7.42 · leitura pública */
+/* V7.43 · leitura pública */
 .tabs .tab{font-size:10px;padding:10px 12px}
 .card h2{font-size:22px}
 .controls select,.controls input,.controls .btn{font-size:11px}
@@ -48,7 +48,7 @@ button,select,input{font:inherit}.wrap{max-width:1280px;margin:auto;padding:18px
 
 
 <style>
-/* V7.42 · fotos oficiais na FREE */
+/* V7.43 · fotos oficiais na FREE */
 .freeCandIdentity{display:flex;align-items:center;gap:10px}
 .freeCandPhoto{width:54px;height:54px;border-radius:50%;overflow:hidden;background:#10283a;border:1px solid #31526b;flex:0 0 auto}
 .freeCandPhoto img{width:100%;height:100%;object-fit:cover;display:block}
@@ -61,17 +61,30 @@ button,select,input{font:inherit}.wrap{max-width:1280px;margin:auto;padding:18px
 
 
 <style>
-/* V7.42 · interação FREE */
+/* V7.43 · interação FREE */
 .rankRow.rankOpen{width:100%;border:0;border-top:1px solid #173247;background:transparent;color:inherit;text-align:left;cursor:pointer;font:inherit}
 .rankRow.rankOpen:hover{background:rgba(53,208,246,.08)}
 .mapMun{cursor:pointer}
 .mapMun:hover{stroke:#fff!important;stroke-width:1.2!important;filter:brightness(1.18)}
 </style>
 
+
+<style>
+/* V7.43 · seletor de turno */
+.roundBar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 0;padding:9px 10px;border:1px solid #274760;background:#071522;border-radius:12px}
+.roundBtns{display:flex;gap:7px;flex-wrap:wrap}
+.roundBtn{border:1px solid #31516a;background:#0a1c2b;color:#a9c0cf;border-radius:9px;padding:8px 11px;font-size:9px;font-weight:950;cursor:pointer}
+.roundBtn.on{border-color:#35d0f6;background:rgba(53,208,246,.14);color:#fff}
+.roundState{font-size:9px;font-weight:950;color:#ffd34e;text-align:right}
+.roundState.live{color:#4fe0ad}
+@media(max-width:650px){.roundBar{align-items:stretch;flex-direction:column}.roundState{text-align:left}}
+</style>
+
 </head>
 <body><div class="wrap">
 <div class="top"><div><div class="ey">ELEIÇÕES 2026 · ACESSO FREE</div><div class="title">Central de Apuração</div><div class="muted">Resultados, mapas e análises eleitorais. A área de transmissão profissional aparece abaixo apenas como demonstração.</div></div><div class="links"><span class="badge">FREE · SOMENTE LEITURA</span><a class="link" href="./">ÁREA PRO</a></div></div>
 <nav class="tabs"><button class="tab on" data-view="results">RESULTADOS</button><button class="tab" data-view="maps">MAPAS</button><button class="tab" data-view="radar">RADAR</button><button class="tab" data-view="compare">COMPARAR</button><button class="tab" data-view="rankings">RANKINGS</button><button class="tab" data-view="governors">GOVERNADORES</button></nav>
+<div class="roundBar"><div class="roundBtns"><button id="freeRound2" class="roundBtn on" type="button">2º TURNO</button><button id="freeRound1" class="roundBtn" type="button">1º TURNO · FINAL</button></div><div id="freeRoundState" class="roundState">2º TURNO · AGUARDANDO APURAÇÃO</div></div>
 
 <section id="results" class="view on"><div class="card"><div class="ey">PRESIDENTE · 2º TURNO</div><h2>Brasil, estado ou município</h2><div class="controls"><select id="rUf"></select><select id="rCity"><option value="">Estado inteiro</option></select><button id="rRefresh" class="btn">ATUALIZAR</button></div><div id="rScope" class="muted" style="margin-top:8px">Brasil</div><div id="rElectorate" class="electorate"></div><div id="rHero" class="hero"></div><div id="rStats" class="stats"></div><div id="rStatus" class="notice"></div></div></section>
 
@@ -113,6 +126,21 @@ const MUN_GEO_BASE='https://cdn.jsdelivr.net/gh/henriquemalvar/br-geojson@main/d
 const UFS={br:'Brasil',ac:'Acre',al:'Alagoas',ap:'Amapá',am:'Amazonas',ba:'Bahia',ce:'Ceará',df:'Distrito Federal',es:'Espírito Santo',go:'Goiás',ma:'Maranhão',mt:'Mato Grosso',ms:'Mato Grosso do Sul',mg:'Minas Gerais',pa:'Pará',pb:'Paraíba',pr:'Paraná',pe:'Pernambuco',pi:'Piauí',rj:'Rio de Janeiro',rn:'Rio Grande do Norte',rs:'Rio Grande do Sul',ro:'Rondônia',rr:'Roraima',sc:'Santa Catarina',sp:'São Paulo',se:'Sergipe',to:'Tocantins'};
 const NAME_TO_UF=Object.fromEntries(Object.entries(UFS).filter(([k])=>k!=='br').map(([k,v])=>[norm(v),k]));
 const GOV2=['ac','am','df','es','rn','to'];
+let FREE_ROUND='2';
+const freePresElection=()=>FREE_ROUND==='1'?'6257':'6258';
+const freeGovElection=()=>FREE_ROUND==='1'?'6259':'6260';
+function freeRoundLabel(data=null){
+  if(FREE_ROUND==='1')return'1º TURNO · RESULTADO FINAL';
+  const t=num(data?.s?.pst??data?.s?.psa);
+  if(t>=99.9)return'2º TURNO · RESULTADO FINAL';
+  if(t>0)return'2º TURNO · AO VIVO';
+  return'2º TURNO · AGUARDANDO APURAÇÃO';
+}
+function syncFreeRoundUI(data=null){
+  $('#freeRound1')?.classList.toggle('on',FREE_ROUND==='1');
+  $('#freeRound2')?.classList.toggle('on',FREE_ROUND==='2');
+  const s=$('#freeRoundState');if(s){s.textContent=freeRoundLabel(data);s.classList.toggle('live',FREE_ROUND==='2'&&num(data?.s?.pst??data?.s?.psa)>0)}
+}
 const TSE_BASE='https://resultados.tse.jus.br/oficial/ele2026';
 function candidatePhoto(c,office='pres',uf='br'){
   if(!c?.sqcand)return'';
@@ -136,9 +164,13 @@ async function loadElectorateScopes(){if(electorateScopes!==null)return electora
 async function municipalElectorate(uf,mun){try{const j=await api({mode:'official-electorate',uf,mun});return j.data?.row||null}catch(_){return null}}
 function candidates(data){const out=[],c=data?.carg?.[0];(c?.agr||[]).forEach(a=>(a.par||[]).forEach(p=>(p.cand||[]).forEach(x=>out.push({...x,party:p.sg||''}))));return out}
 function presPair(data){return candidates(data).filter(c=>['13','22'].includes(String(c.n))).sort((a,b)=>String(a.n)==='13'?-1:1).map(c=>({n:String(c.n),name:c.nmu||c.nm,party:c.party,votes:num(c.vap),pct:num(c.pvap),sqcand:c.sqcand||'',color:String(c.n)==='13'?'#d71920':'#2374e1'}))}
+function resultCandidates(data){
+  if(FREE_ROUND==='2')return presPair(data);
+  return candidates(data).sort((a,b)=>num(b.vap)-num(a.vap)).map(c=>({n:String(c.n||''),name:c.nmu||c.nm,party:c.party,votes:num(c.vap),pct:num(c.pvap),sqcand:c.sqcand||'',color:String(c.n)==='13'?'#d71920':String(c.n)==='22'?'#2374e1':'#597286'}));
+}
 function stats(data){return{total:num(data?.s?.pst??data?.s?.psa),valid:num(data?.v?.vv),comp:num(data?.e?.c),abst:num(data?.e?.a)}}
 function resultCard(data,label){const pair=presPair(data),st=stats(data);return{label,pair,st,margin:(pair[0]?.pct||0)-(pair[1]?.pct||0)}}
-function heroHtml(data){return presPair(data).map(c=>{
+function heroHtml(data){return resultCandidates(data).map(c=>{
   const ph=candidatePhoto(c,'pres','br');
   return `<div class="cand" style="--c:${c.color}"><div class="candTop"><div class="freeCandIdentity"><div class="freeCandPhoto">${ph?`<img src="${ph}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}</div><div><div class="candName">${esc(c.name)}</div><div class="votes">${esc(c.party)} · ${esc(c.n)} · ${nf(c.votes)} votos</div></div></div><div class="pct">${ptxt(c.pct)}</div></div><div class="bar"><i style="width:${Math.min(100,c.pct)}%"></i></div></div>`;
 }).join('')}
@@ -149,16 +181,16 @@ async function fillCities(ufSel,citySel,allowAll=true){const uf=$(ufSel).value,c
 function showView(id){$$('.view').forEach(v=>v.classList.toggle('on',v.id===id));$$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.view===id))}
 $$('.tab').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
 
-async function loadResults(){try{const uf=$('#rUf').value,mun=$('#rCity').value;$('#rStatus').textContent='Atualizando…';const j=await api({mode:'result',election:'6258',cargo:'1',uf,mun});$('#rHero').innerHTML=heroHtml(j.data);$('#rStats').innerHTML=statsHtml(j.data);const city=$('#rCity').selectedOptions[0]?.textContent,label=mun?`${city} · ${uf.toUpperCase()}`:UFS[uf];$('#rScope').textContent=label;let e=null;if(mun)e=await municipalElectorate(uf,mun);else e=(await loadElectorateScopes())?.[uf]||null;$('#rElectorate').innerHTML=e?.voters!=null?`<div class="elect"><b>${nf(e.voters)}</b><span>eleitores aptos</span></div><div class="elect"><b>${esc(label)}</b><span>recorte cadastral</span></div><div class="elect"><b>${esc(e.reference_date||'2026')}</b><span>referência oficial</span></div><div class="elect"><b>Cadastro</b><span>separado da totalização</span></div>`:`<div class="elect"><b>—</b><span>eleitorado apto ainda não disponível neste recorte</span></div>`;$('#rStatus').textContent='Atualizado às '+new Date().toLocaleTimeString('pt-BR')}catch(e){$('#rStatus').textContent='Falha na atualização: '+e.message}}
+async function loadResults(){try{const uf=$('#rUf').value,mun=$('#rCity').value;$('#rStatus').textContent='Atualizando…';const j=await api({mode:'result',election:freePresElection(),cargo:'1',uf,mun});$('#rHero').innerHTML=heroHtml(j.data);$('#rStats').innerHTML=statsHtml(j.data);const city=$('#rCity').selectedOptions[0]?.textContent,label=mun?`${city} · ${uf.toUpperCase()}`:UFS[uf];$('#rScope').textContent=label;let e=null;if(mun)e=await municipalElectorate(uf,mun);else e=(await loadElectorateScopes())?.[uf]||null;$('#rElectorate').innerHTML=e?.voters!=null?`<div class="elect"><b>${nf(e.voters)}</b><span>eleitores aptos</span></div><div class="elect"><b>${esc(label)}</b><span>recorte cadastral</span></div><div class="elect"><b>${esc(e.reference_date||'2026')}</b><span>referência oficial</span></div><div class="elect"><b>Cadastro</b><span>separado da totalização</span></div>`:`<div class="elect"><b>—</b><span>eleitorado apto ainda não disponível neste recorte</span></div>`;syncFreeRoundUI(j.data);$('#rStatus').textContent=`${freeRoundLabel(j.data)} · Atualizado às `+new Date().toLocaleTimeString('pt-BR')}catch(e){$('#rStatus').textContent='Falha na atualização: '+e.message}}
 
 function mapColor(margin,has=true){if(!has)return'#173044';const m=Math.max(-35,Math.min(35,num(margin))),a=Math.abs(m);if(a<=2)return'#7d8791';const t=Math.max(0,Math.min(1,(a-2)/23));const lerp=(a,b,t)=>{const A=a.match(/\w\w/g).map(x=>parseInt(x,16)),B=b.match(/\w\w/g).map(x=>parseInt(x,16));return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')};return m>0?lerp('#d9999c','#d71920',t):lerp('#91add0','#2374e1',t)}
 function mapSide(rows,type){const v=rows.filter(r=>r.has),l=v.filter(r=>r.margin>2).length,f=v.filter(r=>r.margin<-2).length,t=v.filter(r=>Math.abs(r.margin)<=2).length,c=[...v].sort((a,b)=>Math.abs(a.margin)-Math.abs(b.margin))[0];return `<div class="mapKpi"><b>${nf(l)}</b><span>${type==='br'?'estados':'municípios'} com Lula à frente</span></div><div class="mapKpi"><b>${nf(f)}</b><span>${type==='br'?'estados':'municípios'} com Flávio à frente</span></div><div class="mapKpi"><b>${nf(t)}</b><span>equilíbrio · até 2 p.p.</span></div><div class="mapKpi"><b>${esc(c?.name||'—')}</b><span>menor diferença</span></div><div class="mapKpi"><span>INTENSIDADE DA VANTAGEM</span><div class="legend"></div><div class="legendText"><span>Lula</span><span>equilíbrio</span><span>Flávio</span></div></div>`}
-async function drawBrazil(){const [geo,j]=await Promise.all([loadGeo(GEO_URL),api({mode:'president-map'})]),data={},rows=[];(j.data?.states||[]).forEach(x=>{const p=presPair(x.payload),r={uf:x.uf,name:UFS[x.uf],p13:p[0]?.pct||0,p22:p[1]?.pct||0,margin:(p[0]?.pct||0)-(p[1]?.pct||0),has:(p[0]?.votes||0)+(p[1]?.votes||0)>0};data[x.uf]=r;rows.push(r)});const svg=d3.select('#mapSvg');svg.selectAll('*').remove();const pr=d3.geoMercator().fitExtent([[20,15],[880,630]],geo),path=d3.geoPath(pr);svg.selectAll('path').data(geo.features||[]).enter().append('path').attr('class','mapShape').attr('d',path).attr('fill',f=>{const uf=NAME_TO_UF[norm(f.properties?.name||f.properties?.NAME_1||'')],r=data[uf];return mapColor(r?.margin,r?.has)}).on('click',(_e,f)=>{const uf=NAME_TO_UF[norm(f.properties?.name||f.properties?.NAME_1||'')];if(uf){$('#rUf').value=uf;fillCities('#rUf','#rCity').then(loadResults);showView('results')}});$('#mapSide').innerHTML=mapSide(rows,'br')}
-async function drawState(){const uf=$('#mUf').value;if(!uf)return;$('#mapSide').innerHTML='<div class="loading">Carregando municípios…</div>';const [geo,j]=await Promise.all([loadGeo(`${MUN_GEO_BASE}/${uf.toUpperCase()}.geojson`),api({mode:'state-municipal-map',uf,election:'6258',cargo:'1'})]);const src=j.data?.municipalities||[],byId=new Map(src.map(r=>[String(r.cdi||'').replace(/\D/g,''),r])),byName=new Map(src.map(r=>[norm(r.nm),r])),rows=src.map(r=>({name:r.nm,margin:num(r.margin),has:(num(r.v13)+num(r.v22)>0)||num(r.valid)>0,...r}));const svg=d3.select('#mapSvg');svg.selectAll('*').remove();const pr=d3.geoIdentity().reflectY(true).fitExtent([[15,12],[885,630]],geo),path=d3.geoPath(pr);const paths=svg.selectAll('path').data(geo.features||[]).enter().append('path').attr('class','mapMun').attr('d',path).attr('fill',f=>{const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,''),name=f.properties?.nome||f.properties?.name||'',r=byId.get(id)||byName.get(norm(name));return mapColor(num(r?.margin),(num(r?.v13)+num(r?.v22)>0)||num(r?.valid)>0)}).on('click',(_e,f)=>{const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,''),name=f.properties?.nome||f.properties?.name||'',r=byId.get(id)||byName.get(norm(name));if(r?.cd){$('#rUf').value=uf;fillCities('#rUf','#rCity').then(()=>{$('#rCity').value=String(r.cd).padStart(5,'0');loadResults();showView('results')})}});
+async function drawBrazil(){const [geo,j]=await Promise.all([loadGeo(GEO_URL),api({mode:'president-map',election:freePresElection()})]),data={},rows=[];(j.data?.states||[]).forEach(x=>{const p=presPair(x.payload),r={uf:x.uf,name:UFS[x.uf],p13:p[0]?.pct||0,p22:p[1]?.pct||0,margin:(p[0]?.pct||0)-(p[1]?.pct||0),has:(p[0]?.votes||0)+(p[1]?.votes||0)>0};data[x.uf]=r;rows.push(r)});const svg=d3.select('#mapSvg');svg.selectAll('*').remove();const pr=d3.geoMercator().fitExtent([[20,15],[880,630]],geo),path=d3.geoPath(pr);svg.selectAll('path').data(geo.features||[]).enter().append('path').attr('class','mapShape').attr('d',path).attr('fill',f=>{const uf=NAME_TO_UF[norm(f.properties?.name||f.properties?.NAME_1||'')],r=data[uf];return mapColor(r?.margin,r?.has)}).on('click',(_e,f)=>{const uf=NAME_TO_UF[norm(f.properties?.name||f.properties?.NAME_1||'')];if(uf){$('#rUf').value=uf;fillCities('#rUf','#rCity').then(loadResults);showView('results')}});$('#mapSide').innerHTML=mapSide(rows,'br')}
+async function drawState(){const uf=$('#mUf').value;if(!uf)return;$('#mapSide').innerHTML='<div class="loading">Carregando municípios…</div>';const [geo,j]=await Promise.all([loadGeo(`${MUN_GEO_BASE}/${uf.toUpperCase()}.geojson`),api({mode:'state-municipal-map',uf,election:freePresElection(),cargo:'1'})]);const src=j.data?.municipalities||[],byId=new Map(src.map(r=>[String(r.cdi||'').replace(/\D/g,''),r])),byName=new Map(src.map(r=>[norm(r.nm),r])),rows=src.map(r=>({name:r.nm,margin:num(r.margin),has:(num(r.v13)+num(r.v22)>0)||num(r.valid)>0,...r}));const svg=d3.select('#mapSvg');svg.selectAll('*').remove();const pr=d3.geoIdentity().reflectY(true).fitExtent([[15,12],[885,630]],geo),path=d3.geoPath(pr);const paths=svg.selectAll('path').data(geo.features||[]).enter().append('path').attr('class','mapMun').attr('d',path).attr('fill',f=>{const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,''),name=f.properties?.nome||f.properties?.name||'',r=byId.get(id)||byName.get(norm(name));return mapColor(num(r?.margin),(num(r?.v13)+num(r?.v22)>0)||num(r?.valid)>0)}).on('click',(_e,f)=>{const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,''),name=f.properties?.nome||f.properties?.name||'',r=byId.get(id)||byName.get(norm(name));if(r?.cd){$('#rUf').value=uf;fillCities('#rUf','#rCity').then(()=>{$('#rCity').value=String(r.cd).padStart(5,'0');loadResults();showView('results')})}});
 paths.append('title').text(f=>{const id=String(f.properties?.cd_geocmu||'').replace(/\D/g,''),name=f.properties?.nome||f.properties?.name||'',r=byId.get(id)||byName.get(norm(name));return r?.nm||name||'Município'});
 $('#mapSide').innerHTML=mapSide(rows,'state')}
 
-async function loadRadar(){const uf=$('#radUf').value,mun=$('#radCity').value;if(!mun)return;const city=$('#radCity').selectedOptions[0]?.textContent||'Município';$('#radarGrid').innerHTML='<div class="loading">Carregando…</div>';const [a,b,c]=await Promise.all([api({mode:'result',election:'6258',cargo:'1',uf,mun}),api({mode:'result',election:'6258',cargo:'1',uf}),api({mode:'result',election:'6258',cargo:'1',uf:'br'})]);const cards=[resultCard(a.data,city),resultCard(b.data,UFS[uf]),resultCard(c.data,'Brasil')];$('#radarGrid').innerHTML=cards.map(x=>`<div class="radarBox"><h3>${esc(x.label)}</h3>${x.pair.map(p=>`<div class="radarPct"><span>${esc(p.name)}</span><b style="color:${p.color}">${ptxt(p.pct)}</b></div>`).join('')}<div class="notice">Diferença: ${Math.abs(x.margin).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})} p.p.</div></div>`).join('')}
+async function loadRadar(){const uf=$('#radUf').value,mun=$('#radCity').value;if(!mun)return;const city=$('#radCity').selectedOptions[0]?.textContent||'Município';$('#radarGrid').innerHTML='<div class="loading">Carregando…</div>';const [a,b,c]=await Promise.all([api({mode:'result',election:freePresElection(),cargo:'1',uf,mun}),api({mode:'result',election:freePresElection(),cargo:'1',uf}),api({mode:'result',election:freePresElection(),cargo:'1',uf:'br'})]);const cards=[resultCard(a.data,city),resultCard(b.data,UFS[uf]),resultCard(c.data,'Brasil')];$('#radarGrid').innerHTML=cards.map(x=>`<div class="radarBox"><h3>${esc(x.label)}</h3>${x.pair.map(p=>`<div class="radarPct"><span>${esc(p.name)}</span><b style="color:${p.color}">${ptxt(p.pct)}</b></div>`).join('')}<div class="notice">Diferença: ${Math.abs(x.margin).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})} p.p.</div></div>`).join('')}
 
 async function compare(){const uf1=$('#cUf1').value,m1=$('#cCity1').value,uf2=$('#cUf2').value,m2=$('#cCity2').value;if(!m1||!m2)return;const [a,b]=await Promise.all([api({mode:'result',election:'6258',cargo:'1',uf:uf1,mun:m1}),api({mode:'result',election:'6258',cargo:'1',uf:uf2,mun:m2})]);const ca=resultCard(a.data,$('#cCity1').selectedOptions[0].textContent),cb=resultCard(b.data,$('#cCity2').selectedOptions[0].textContent);$('#compareGrid').innerHTML=[ca,cb].map(x=>`<div class="compareCard"><h3>${esc(x.label)}</h3>${x.pair.map(p=>`<div class="radarPct"><span>${esc(p.name)}</span><b style="color:${p.color}">${ptxt(p.pct)}</b></div>`).join('')}<div class="notice">Diferença: ${Math.abs(x.margin).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})} p.p.</div></div>`).join('')}
 
@@ -168,14 +200,14 @@ async function rankings(){
   $('#rankGrid').innerHTML='<div class="loading">Preparando ranking municipal…</div>';
 
   try{
-    let j=await api({mode:'state-municipal-map',uf,election:'6258',cargo:'1'});
-    let source='2º turno';
+    let j=await api({mode:'state-municipal-map',uf,election:freePresElection(),cargo:'1'});
+    let source=FREE_ROUND==='1'?'resultado final do 1º turno':'2º turno';
     let rows=(j.data?.municipalities||[]).filter(r=>(num(r.v13)+num(r.v22)>0));
 
-    // Antes de haver votos no 2º turno, usa a referência final do 1º turno.
-    if(!rows.length){
+    // Antes de haver votos no 2º turno, mostra a referência final do 1º turno e sinaliza isso.
+    if(FREE_ROUND==='2'&&!rows.length){
       j=await api({mode:'state-municipal-map',uf,election:'6257',cargo:'1'});
-      source='referência final do 1º turno';
+      source='referência final do 1º turno · 2º turno ainda sem votos';
       rows=(j.data?.municipalities||[]).filter(r=>(num(r.v13)+num(r.v22)>0));
     }
 
@@ -218,7 +250,7 @@ async function rankings(){
   }
 }
 
-async function governors(){const rows=await Promise.all(GOV2.map(async uf=>{try{const j=await api({mode:'result',election:'6260',cargo:'3',uf}),arr=candidates(j.data).sort((a,b)=>num(b.vap)-num(a.vap)).slice(0,2);return{uf,total:num(j.data?.s?.pst??j.data?.s?.psa),arr}}catch(_){return{uf,total:0,arr:[]}}}));$('#govs').innerHTML=rows.map(r=>`<div class="gov"><h3>${esc(UFS[r.uf])} · ${r.uf.toUpperCase()}</h3><div class="muted">${ptxt(r.total)} totalizado</div>${r.arr.map(c=>{const ph=candidatePhoto(c,'gov',r.uf);return `<div class="freeGovCand"><div class="freeGovPhoto">${ph?`<img src="${ph}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}</div><div class="freeGovText"><b>${esc(c.nmu||c.nm)}</b><span>${esc(c.party||'')} · ${esc(c.n||'')}</span></div><b>${ptxt(c.pvap)}</b></div>`}).join('')||'<div class="notice">Aguardando dados.</div>'}</div>`).join('')}
+async function governors(){const rows=await Promise.all(GOV2.map(async uf=>{try{const j=await api({mode:'result',election:freeGovElection(),cargo:'3',uf}),arr=candidates(j.data).sort((a,b)=>num(b.vap)-num(a.vap)).slice(0,2);return{uf,total:num(j.data?.s?.pst??j.data?.s?.psa),arr}}catch(_){return{uf,total:0,arr:[]}}}));$('#govs').innerHTML=rows.map(r=>`<div class="gov"><h3>${esc(UFS[r.uf])} · ${r.uf.toUpperCase()}</h3><div class="muted">${ptxt(r.total)} totalizado</div>${r.arr.map(c=>{const ph=candidatePhoto(c,'gov',r.uf);return `<div class="freeGovCand"><div class="freeGovPhoto">${ph?`<img src="${ph}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}</div><div class="freeGovText"><b>${esc(c.nmu||c.nm)}</b><span>${esc(c.party||'')} · ${esc(c.n||'')}</span></div><b>${ptxt(c.pvap)}</b></div>`}).join('')||'<div class="notice">Aguardando dados.</div>'}</div>`).join('')}
 
 $('#rUf').innerHTML=ufOptions(true);$('#mUf').innerHTML=ufOptions(false);$('#radUf').innerHTML=ufOptions(false);$('#cUf1').innerHTML=ufOptions(false);$('#cUf2').innerHTML=ufOptions(false);$('#rankUf').innerHTML=ufOptions(false);
 $('#rUf').value='br';$('#mUf').value='mg';$('#radUf').value='mg';$('#cUf1').value='mg';$('#cUf2').value='sp';$('#rankUf').value='mg';
@@ -253,6 +285,19 @@ $('#radUf').addEventListener('change',()=>fillCities('#radUf','#radCity',false))
 $('#cUf1').addEventListener('change',()=>fillCities('#cUf1','#cCity1',false));$('#cUf2').addEventListener('change',()=>fillCities('#cUf2','#cCity2',false));$('#cLoad').addEventListener('click',compare);
 $('#rankLoad').addEventListener('click',rankings);
 $$('.proBtn').forEach(b=>b.addEventListener('click',()=>$('#proCta').classList.add('on')));
+async function setFreeRound(round){
+  FREE_ROUND=round==='1'?'1':'2';
+  syncFreeRoundUI();
+  if($('#results').classList.contains('on'))await loadResults();
+  else if($('#maps').classList.contains('on')){if($('#mMode').value==='br')await drawBrazil();else await drawState();}
+  else if($('#radar').classList.contains('on'))await loadRadar();
+  else if($('#rankings').classList.contains('on'))await rankings();
+  else if($('#governors').classList.contains('on'))await governors();
+}
+$('#freeRound1').addEventListener('click',()=>setFreeRound('1'));
+$('#freeRound2').addEventListener('click',()=>setFreeRound('2'));
+syncFreeRoundUI();
+
 
 (async()=>{await Promise.all([fillCities('#radUf','#radCity',false),fillCities('#cUf1','#cCity1',false),fillCities('#cUf2','#cCity2',false)]);await syncMapControls();loadResults();governors()})();
 setInterval(()=>{if(!document.hidden){loadResults();governors()}},30000);
