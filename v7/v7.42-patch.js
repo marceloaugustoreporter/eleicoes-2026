@@ -538,9 +538,9 @@ renderBroadcast=async function(){
         <div class="v723SectionTitle" style="margin-bottom:7px">FORMATO DE TRABALHO</div>
         <div class="v734Format">
           <button type="button" id="v734Horizontal" class="v734FormatBtn on"><strong>HORIZONTAL · 16:9</strong><small>OBS/vMix · 1920×1080</small></button>
-          <button type="button" id="v734Vertical" class="v734FormatBtn vertical"><strong>VERTICAL · 9:16</strong><small>Live vertical · 1080×1920</small></button>
+          <button type="button" id="v734Vertical" class="v734FormatBtn vertical" disabled style="display:none"><strong>VERTICAL · 9:16</strong><small>Temporariamente desativado</small></button>
         </div>
-        <div id="v734FormatNote" class="v734FormatNote">A prévia, a URL e a tipografia seguem o formato selecionado.</div>
+        <div id="v734FormatNote" class="v734FormatNote">HORIZONTAL · 16:9 ativo. A saída vertical está temporariamente desativada para priorizar estabilidade na transmissão.</div>
       </div>
 
       <div class="v723Program">
@@ -888,19 +888,17 @@ renderBroadcast=async function(){
       }
     }
     function syncWorkLayout(){
-      const vertical=workLayout==='vertical';
-      $('#v734Horizontal')?.classList.toggle('on',!vertical);
-      $('#v734Vertical')?.classList.toggle('on',vertical);
-      $('#v734OutH')?.classList.toggle('v734OutputHidden',vertical);
-      $('#v734OutV')?.classList.toggle('v734OutputHidden',!vertical);
-      frame.closest('.v723Mini')?.classList.toggle('verticalPreview',vertical);
+      workLayout='horizontal';
+      $('#v734Horizontal')?.classList.add('on');
+      $('#v734Vertical')?.classList.remove('on');
+      $('#v734OutH')?.classList.remove('v734OutputHidden');
+      $('#v734OutV')?.classList.add('v734OutputHidden');
+      frame.closest('.v723Mini')?.classList.remove('verticalPreview');
       const n=$('#v734FormatNote');
-      if(n)n.textContent=vertical
-        ? 'VERTICAL ativo · prévia 9:16 · use a saída 1080×1920 no OBS.'
-        : 'HORIZONTAL ativo · prévia 16:9 · use a saída 1920×1080 no OBS/vMix.';
+      if(n)n.textContent='HORIZONTAL · 16:9 ativo. A saída vertical está temporariamente desativada para priorizar estabilidade na transmissão.';
     }
     async function setWorkLayout(next){
-      workLayout=next==='vertical'?'vertical':'horizontal';
+      workLayout='horizontal';
       syncWorkLayout();
       showPreview();
     }
@@ -1108,11 +1106,8 @@ renderBroadcast=async function(){
 
     $('#v723Take').addEventListener('click',take);
     $('#v734Horizontal')?.addEventListener('click',()=>setWorkLayout('horizontal'));
-    $('#v734Vertical')?.addEventListener('click',()=>setWorkLayout('vertical'));
     $('#v723OpenH').addEventListener('click',()=>{const r=current();if(r)window.open(outputUrl(r,'horizontal'),'_blank','noopener')});
-    $('#v723OpenV').addEventListener('click',()=>{const r=current();if(r)window.open(outputUrl(r,'vertical'),'_blank','noopener')});
     $('#v723CopyH').addEventListener('click',()=>current()&&copy(outputUrl(current(),'horizontal'),$('#v723CopyH')));
-    $('#v723CopyV').addEventListener('click',()=>current()&&copy(outputUrl(current(),'vertical'),$('#v723CopyV')));
 
     await applyRoom();
   }catch(e){
