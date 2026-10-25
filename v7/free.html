@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Central de Apuração · FREE V7.38</title>
+<title>Central de Apuração · FREE V7.39</title>
 <style>
 :root{--bg:#06101a;--panel:#081827;--line:#24445d;--line2:#31536d;--text:#f7fbff;--muted:#91a9bb;--cyan:#35d0f6;--green:#4fe0ad;--yellow:#ffd34e;--red:#d71920;--blue:#2374e1;--neutral:#7d8791}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#0d2437 0,#06101a 43%,#04101a 100%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
@@ -35,7 +35,7 @@ button,select,input{font:inherit}.wrap{max-width:1280px;margin:auto;padding:18px
 </style>
 
 <style>
-/* V7.38 · leitura pública */
+/* V7.39 · leitura pública */
 .tabs .tab{font-size:10px;padding:10px 12px}
 .card h2{font-size:22px}
 .controls select,.controls input,.controls .btn{font-size:11px}
@@ -44,6 +44,19 @@ button,select,input{font:inherit}.wrap{max-width:1280px;margin:auto;padding:18px
 .mapKpi b{font-size:19px}
 .mapKpi span{font-size:9px;line-height:1.4}
 .notice{font-size:10px}
+</style>
+
+
+<style>
+/* V7.39 · fotos oficiais na FREE */
+.freeCandIdentity{display:flex;align-items:center;gap:10px}
+.freeCandPhoto{width:54px;height:54px;border-radius:50%;overflow:hidden;background:#10283a;border:1px solid #31526b;flex:0 0 auto}
+.freeCandPhoto img{width:100%;height:100%;object-fit:cover;display:block}
+.freeGovCand{display:grid;grid-template-columns:42px 1fr auto;gap:9px;align-items:center;border-top:1px solid #173247;padding:8px 0}
+.freeGovPhoto{width:40px;height:40px;border-radius:50%;overflow:hidden;background:#10283a;border:1px solid #31526b}
+.freeGovPhoto img{width:100%;height:100%;object-fit:cover;display:block}
+.freeGovText{min-width:0}.freeGovText b{display:block;font-size:10px}.freeGovText span{display:block;font-size:8px;color:#8da7b8;margin-top:2px}
+@media(max-width:520px){.freeCandPhoto{width:48px;height:48px}.freeGovCand{grid-template-columns:38px 1fr auto}.freeGovPhoto{width:36px;height:36px}}
 </style>
 
 </head>
@@ -87,6 +100,13 @@ const MUN_GEO_BASE='https://cdn.jsdelivr.net/gh/henriquemalvar/br-geojson@main/d
 const UFS={br:'Brasil',ac:'Acre',al:'Alagoas',ap:'Amapá',am:'Amazonas',ba:'Bahia',ce:'Ceará',df:'Distrito Federal',es:'Espírito Santo',go:'Goiás',ma:'Maranhão',mt:'Mato Grosso',ms:'Mato Grosso do Sul',mg:'Minas Gerais',pa:'Pará',pb:'Paraíba',pr:'Paraná',pe:'Pernambuco',pi:'Piauí',rj:'Rio de Janeiro',rn:'Rio Grande do Norte',rs:'Rio Grande do Sul',ro:'Rondônia',rr:'Roraima',sc:'Santa Catarina',sp:'São Paulo',se:'Sergipe',to:'Tocantins'};
 const NAME_TO_UF=Object.fromEntries(Object.entries(UFS).filter(([k])=>k!=='br').map(([k,v])=>[norm(v),k]));
 const GOV2=['ac','am','df','es','rn','to'];
+const TSE_BASE='https://resultados.tse.jus.br/oficial/ele2026';
+function candidatePhoto(c,office='pres',uf='br'){
+  if(!c?.sqcand)return'';
+  const ele=office==='pres'?'6257':'6259';
+  const folder=office==='pres'?'br':uf;
+  return `${TSE_BASE}/${ele}/fotos/${folder}/${c.sqcand}.jpeg`;
+}
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const nf=n=>new Intl.NumberFormat('pt-BR').format(Number(n||0));
 const num=v=>{if(typeof v==='number')return v;if(v==null||v==='')return 0;return Number(String(v).replace(/\./g,'').replace(',','.'))||0};
@@ -105,7 +125,10 @@ function candidates(data){const out=[],c=data?.carg?.[0];(c?.agr||[]).forEach(a=
 function presPair(data){return candidates(data).filter(c=>['13','22'].includes(String(c.n))).sort((a,b)=>String(a.n)==='13'?-1:1).map(c=>({n:String(c.n),name:c.nmu||c.nm,party:c.party,votes:num(c.vap),pct:num(c.pvap),color:String(c.n)==='13'?'#d71920':'#2374e1'}))}
 function stats(data){return{total:num(data?.s?.pst??data?.s?.psa),valid:num(data?.v?.vv),comp:num(data?.e?.c),abst:num(data?.e?.a)}}
 function resultCard(data,label){const pair=presPair(data),st=stats(data);return{label,pair,st,margin:(pair[0]?.pct||0)-(pair[1]?.pct||0)}}
-function heroHtml(data){return presPair(data).map(c=>`<div class="cand" style="--c:${c.color}"><div class="candTop"><div><div class="candName">${esc(c.name)}</div><div class="votes">${esc(c.party)} · ${esc(c.n)} · ${nf(c.votes)} votos</div></div><div class="pct">${ptxt(c.pct)}</div></div><div class="bar"><i style="width:${Math.min(100,c.pct)}%"></i></div></div>`).join('')}
+function heroHtml(data){return presPair(data).map(c=>{
+  const ph=candidatePhoto(c,'pres','br');
+  return `<div class="cand" style="--c:${c.color}"><div class="candTop"><div class="freeCandIdentity"><div class="freeCandPhoto">${ph?`<img src="${ph}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}</div><div><div class="candName">${esc(c.name)}</div><div class="votes">${esc(c.party)} · ${esc(c.n)} · ${nf(c.votes)} votos</div></div></div><div class="pct">${ptxt(c.pct)}</div></div><div class="bar"><i style="width:${Math.min(100,c.pct)}%"></i></div></div>`;
+}).join('')}
 function statsHtml(data){const s=stats(data);return `<div class="stat"><b>${ptxt(s.total)}</b><span>seções totalizadas</span></div><div class="stat"><b>${nf(s.valid)}</b><span>votos válidos</span></div><div class="stat"><b>${nf(s.comp)}</b><span>comparecimento</span></div><div class="stat"><b>${nf(s.abst)}</b><span>abstenção</span></div>`}
 function ufOptions(includeBr=true){return Object.entries(UFS).filter(([k])=>includeBr||k!=='br').map(([k,v])=>`<option value="${k}">${v}${k==='br'?'':' · '+k.toUpperCase()}</option>`).join('')}
 async function fillCities(ufSel,citySel,allowAll=true){const uf=$(ufSel).value,c=$(citySel);c.innerHTML=allowAll?'<option value="">Estado inteiro</option>':'<option value="">Selecione um município</option>';if(uf==='br')return;const all=await loadMunicipalities();(all[uf]||[]).forEach(m=>c.insertAdjacentHTML('beforeend',`<option value="${m.cd}">${esc(m.nm)}</option>`))}
@@ -126,7 +149,7 @@ async function compare(){const uf1=$('#cUf1').value,m1=$('#cCity1').value,uf2=$(
 
 async function rankings(){const uf=$('#rankUf').value;$('#rankStatus').textContent='Carregando base municipal…';const j=await api({mode:'state-municipal-map',uf,election:'6258',cargo:'1'});const rows=(j.data?.municipalities||[]).filter(r=>(num(r.v13)+num(r.v22)>0)).map(r=>({...r,margin:num(r.margin)}));const topL=[...rows].sort((a,b)=>b.margin-a.margin).slice(0,5),topF=[...rows].sort((a,b)=>a.margin-b.margin).slice(0,5),tight=[...rows].sort((a,b)=>Math.abs(a.margin)-Math.abs(b.margin)).slice(0,5);const box=(title,list,cls)=>`<div class="rankBox"><div class="rankHead">${title}</div>${list.map((r,i)=>`<div class="rankRow"><span class="pos">${i+1}</span><span>${esc(r.nm)}</span><b class="${cls}">${Math.abs(r.margin).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})} p.p.</b></div>`).join('')}</div>`;$('#rankGrid').innerHTML=box('Maior vantagem · Lula',topL,'value red')+box('Mais equilibradas',tight,'value neutral')+box('Maior vantagem · Flávio',topF,'value blue');$('#rankStatus').textContent=`${rows.length} municípios com dados analisados.`}
 
-async function governors(){const rows=await Promise.all(GOV2.map(async uf=>{try{const j=await api({mode:'result',election:'6260',cargo:'3',uf}),arr=candidates(j.data).sort((a,b)=>num(b.vap)-num(a.vap)).slice(0,2);return{uf,total:num(j.data?.s?.pst??j.data?.s?.psa),arr}}catch(_){return{uf,total:0,arr:[]}}}));$('#govs').innerHTML=rows.map(r=>`<div class="gov"><h3>${esc(UFS[r.uf])} · ${r.uf.toUpperCase()}</h3><div class="muted">${ptxt(r.total)} totalizado</div>${r.arr.map(c=>`<div class="mini"><span>${esc(c.nmu||c.nm)}</span><b>${ptxt(c.pvap)}</b></div>`).join('')||'<div class="notice">Aguardando dados.</div>'}</div>`).join('')}
+async function governors(){const rows=await Promise.all(GOV2.map(async uf=>{try{const j=await api({mode:'result',election:'6260',cargo:'3',uf}),arr=candidates(j.data).sort((a,b)=>num(b.vap)-num(a.vap)).slice(0,2);return{uf,total:num(j.data?.s?.pst??j.data?.s?.psa),arr}}catch(_){return{uf,total:0,arr:[]}}}));$('#govs').innerHTML=rows.map(r=>`<div class="gov"><h3>${esc(UFS[r.uf])} · ${r.uf.toUpperCase()}</h3><div class="muted">${ptxt(r.total)} totalizado</div>${r.arr.map(c=>{const ph=candidatePhoto(c,'gov',r.uf);return `<div class="freeGovCand"><div class="freeGovPhoto">${ph?`<img src="${ph}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}</div><div class="freeGovText"><b>${esc(c.nmu||c.nm)}</b><span>${esc(c.party||'')} · ${esc(c.n||'')}</span></div><b>${ptxt(c.pvap)}</b></div>`}).join('')||'<div class="notice">Aguardando dados.</div>'}</div>`).join('')}
 
 $('#rUf').innerHTML=ufOptions(true);$('#mUf').innerHTML=ufOptions(false);$('#radUf').innerHTML=ufOptions(false);$('#cUf1').innerHTML=ufOptions(false);$('#cUf2').innerHTML=ufOptions(false);$('#rankUf').innerHTML=ufOptions(false);
 $('#rUf').value='br';$('#mUf').value='mg';$('#radUf').value='mg';$('#cUf1').value='mg';$('#cUf2').value='sp';$('#rankUf').value='mg';
