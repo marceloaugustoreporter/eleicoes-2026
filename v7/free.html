@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Central de Apuração · FREE V7.39</title>
+<title>Central de Apuração · FREE V7.41</title>
 <style>
 :root{--bg:#06101a;--panel:#081827;--line:#24445d;--line2:#31536d;--text:#f7fbff;--muted:#91a9bb;--cyan:#35d0f6;--green:#4fe0ad;--yellow:#ffd34e;--red:#d71920;--blue:#2374e1;--neutral:#7d8791}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#0d2437 0,#06101a 43%,#04101a 100%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
@@ -35,7 +35,7 @@ button,select,input{font:inherit}.wrap{max-width:1280px;margin:auto;padding:18px
 </style>
 
 <style>
-/* V7.39 · leitura pública */
+/* V7.41 · leitura pública */
 .tabs .tab{font-size:10px;padding:10px 12px}
 .card h2{font-size:22px}
 .controls select,.controls input,.controls .btn{font-size:11px}
@@ -48,7 +48,7 @@ button,select,input{font:inherit}.wrap{max-width:1280px;margin:auto;padding:18px
 
 
 <style>
-/* V7.39 · fotos oficiais na FREE */
+/* V7.41 · fotos oficiais na FREE */
 .freeCandIdentity{display:flex;align-items:center;gap:10px}
 .freeCandPhoto{width:54px;height:54px;border-radius:50%;overflow:hidden;background:#10283a;border:1px solid #31526b;flex:0 0 auto}
 .freeCandPhoto img{width:100%;height:100%;object-fit:cover;display:block}
@@ -66,7 +66,11 @@ button,select,input{font:inherit}.wrap{max-width:1280px;margin:auto;padding:18px
 
 <section id="results" class="view on"><div class="card"><div class="ey">PRESIDENTE · 2º TURNO</div><h2>Brasil, estado ou município</h2><div class="controls"><select id="rUf"></select><select id="rCity"><option value="">Estado inteiro</option></select><button id="rRefresh" class="btn">ATUALIZAR</button></div><div id="rScope" class="muted" style="margin-top:8px">Brasil</div><div id="rElectorate" class="electorate"></div><div id="rHero" class="hero"></div><div id="rStats" class="stats"></div><div id="rStatus" class="notice"></div></div></section>
 
-<section id="maps" class="view"><div class="card"><div class="ey">MAPAS</div><h2>Brasil ou mapa municipal de qualquer estado</h2><div class="controls"><select id="mMode"><option value="br">Brasil · estados</option><option value="state">Estado · municípios</option></select><select id="mUf"></select><button id="mLoad" class="btn">ABRIR MAPA</button></div><div class="mapLayout"><div class="mapBox"><svg id="mapSvg" viewBox="0 0 900 650"></svg></div><div id="mapSide" class="mapSide"></div></div><div class="notice">Clique em um estado ou município para abrir o resultado correspondente.</div></div></section>
+<section id="maps" class="view"><div class="card"><div class="ey">MAPAS</div><h2>Brasil ou mapa municipal de qualquer estado</h2>
+<div class="controls"><select id="mMode"><option value="br">Brasil · estados</option><option value="state">Estado · municípios</option></select><select id="mUf"></select><button id="mLoad" class="btn">ABRIR MAPA</button></div>
+<div id="mCityRow" class="controls" style="display:none"><select id="mCity"><option value="">Selecione um município</option></select><button id="mOpenCity" class="btn">ABRIR MUNICÍPIO</button><span></span></div>
+<div class="mapLayout"><div class="mapBox"><svg id="mapSvg" viewBox="0 0 900 650"></svg></div><div id="mapSide" class="mapSide"></div></div>
+<div id="mStatus" class="notice">No mapa do estado, você pode clicar diretamente no município ou escolhê-lo na lista acima.</div></div></section>
 
 <section id="radar" class="view"><div class="card"><div class="ey">RADAR MUNICIPAL</div><h2>Município × estado × Brasil</h2><div class="controls"><select id="radUf"></select><select id="radCity"></select><button id="radLoad" class="btn">COMPARAR</button></div><div id="radarGrid" class="radar"></div><div id="radStatus" class="notice"></div></div></section>
 
@@ -147,7 +151,52 @@ async function loadRadar(){const uf=$('#radUf').value,mun=$('#radCity').value;if
 
 async function compare(){const uf1=$('#cUf1').value,m1=$('#cCity1').value,uf2=$('#cUf2').value,m2=$('#cCity2').value;if(!m1||!m2)return;const [a,b]=await Promise.all([api({mode:'result',election:'6258',cargo:'1',uf:uf1,mun:m1}),api({mode:'result',election:'6258',cargo:'1',uf:uf2,mun:m2})]);const ca=resultCard(a.data,$('#cCity1').selectedOptions[0].textContent),cb=resultCard(b.data,$('#cCity2').selectedOptions[0].textContent);$('#compareGrid').innerHTML=[ca,cb].map(x=>`<div class="compareCard"><h3>${esc(x.label)}</h3>${x.pair.map(p=>`<div class="radarPct"><span>${esc(p.name)}</span><b style="color:${p.color}">${ptxt(p.pct)}</b></div>`).join('')}<div class="notice">Diferença: ${Math.abs(x.margin).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})} p.p.</div></div>`).join('')}
 
-async function rankings(){const uf=$('#rankUf').value;$('#rankStatus').textContent='Carregando base municipal…';const j=await api({mode:'state-municipal-map',uf,election:'6258',cargo:'1'});const rows=(j.data?.municipalities||[]).filter(r=>(num(r.v13)+num(r.v22)>0)).map(r=>({...r,margin:num(r.margin)}));const topL=[...rows].sort((a,b)=>b.margin-a.margin).slice(0,5),topF=[...rows].sort((a,b)=>a.margin-b.margin).slice(0,5),tight=[...rows].sort((a,b)=>Math.abs(a.margin)-Math.abs(b.margin)).slice(0,5);const box=(title,list,cls)=>`<div class="rankBox"><div class="rankHead">${title}</div>${list.map((r,i)=>`<div class="rankRow"><span class="pos">${i+1}</span><span>${esc(r.nm)}</span><b class="${cls}">${Math.abs(r.margin).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})} p.p.</b></div>`).join('')}</div>`;$('#rankGrid').innerHTML=box('Maior vantagem · Lula',topL,'value red')+box('Mais equilibradas',tight,'value neutral')+box('Maior vantagem · Flávio',topF,'value blue');$('#rankStatus').textContent=`${rows.length} municípios com dados analisados.`}
+async function rankings(){
+  const uf=$('#rankUf').value;
+  $('#rankStatus').textContent='Carregando base municipal…';
+  $('#rankGrid').innerHTML='<div class="loading">Preparando ranking municipal…</div>';
+
+  try{
+    let j=await api({mode:'state-municipal-map',uf,election:'6258',cargo:'1'});
+    let source='2º turno';
+    let rows=(j.data?.municipalities||[]).filter(r=>(num(r.v13)+num(r.v22)>0));
+
+    // Antes de haver votos no 2º turno, usa a referência final do 1º turno.
+    if(!rows.length){
+      j=await api({mode:'state-municipal-map',uf,election:'6257',cargo:'1'});
+      source='referência final do 1º turno';
+      rows=(j.data?.municipalities||[]).filter(r=>(num(r.v13)+num(r.v22)>0));
+    }
+
+    rows=rows.map(r=>({...r,margin:num(r.margin)}));
+
+    if(!rows.length){
+      $('#rankGrid').innerHTML='<div class="loading">A base municipal ainda está sendo preparada. Tente novamente em instantes.</div>';
+      $('#rankStatus').textContent='Nenhum município disponível nesta leitura.';
+      return;
+    }
+
+    const topL=[...rows].filter(r=>r.margin>0).sort((a,b)=>b.margin-a.margin).slice(0,5);
+    const topF=[...rows].filter(r=>r.margin<0).sort((a,b)=>a.margin-b.margin).slice(0,5);
+    const tight=[...rows].sort((a,b)=>Math.abs(a.margin)-Math.abs(b.margin)).slice(0,5);
+
+    const box=(title,list)=>`<div class="rankBox"><div class="rankHead">${title}</div>${
+      list.length
+        ? list.map((r,i)=>`<div class="rankRow"><span class="pos">${i+1}</span><span>${esc(r.nm)}</span><b>${Math.abs(r.margin).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})} p.p.</b></div>`).join('')
+        : '<div class="notice" style="padding:10px">Nenhum município nesta categoria.</div>'
+    }</div>`;
+
+    $('#rankGrid').innerHTML=
+      box('Maior vantagem · Lula',topL)+
+      box('Mais equilibradas',tight)+
+      box('Maior vantagem · Flávio',topF);
+
+    $('#rankStatus').textContent=`${rows.length} municípios analisados · ${source}.`;
+  }catch(e){
+    $('#rankGrid').innerHTML='<div class="loading">Não foi possível montar o ranking agora.</div>';
+    $('#rankStatus').textContent='Falha ao carregar ranking: '+e.message;
+  }
+}
 
 async function governors(){const rows=await Promise.all(GOV2.map(async uf=>{try{const j=await api({mode:'result',election:'6260',cargo:'3',uf}),arr=candidates(j.data).sort((a,b)=>num(b.vap)-num(a.vap)).slice(0,2);return{uf,total:num(j.data?.s?.pst??j.data?.s?.psa),arr}}catch(_){return{uf,total:0,arr:[]}}}));$('#govs').innerHTML=rows.map(r=>`<div class="gov"><h3>${esc(UFS[r.uf])} · ${r.uf.toUpperCase()}</h3><div class="muted">${ptxt(r.total)} totalizado</div>${r.arr.map(c=>{const ph=candidatePhoto(c,'gov',r.uf);return `<div class="freeGovCand"><div class="freeGovPhoto">${ph?`<img src="${ph}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}</div><div class="freeGovText"><b>${esc(c.nmu||c.nm)}</b><span>${esc(c.party||'')} · ${esc(c.n||'')}</span></div><b>${ptxt(c.pvap)}</b></div>`}).join('')||'<div class="notice">Aguardando dados.</div>'}</div>`).join('')}
 
@@ -155,12 +204,36 @@ $('#rUf').innerHTML=ufOptions(true);$('#mUf').innerHTML=ufOptions(false);$('#rad
 $('#rUf').value='br';$('#mUf').value='mg';$('#radUf').value='mg';$('#cUf1').value='mg';$('#cUf2').value='sp';$('#rankUf').value='mg';
 
 $('#rUf').addEventListener('change',async()=>{await fillCities('#rUf','#rCity');loadResults()});$('#rCity').addEventListener('change',loadResults);$('#rRefresh').addEventListener('click',loadResults);
-$('#mMode').addEventListener('change',()=>{$('#mUf').disabled=$('#mMode').value==='br'});$('#mLoad').addEventListener('click',()=>$('#mMode').value==='br'?drawBrazil():drawState());
+async function syncMapControls(){
+  const stateMode=$('#mMode').value==='state';
+  $('#mUf').disabled=!stateMode;
+  $('#mCityRow').style.display=stateMode?'grid':'none';
+  if(stateMode){
+    await fillCities('#mUf','#mCity',false);
+    $('#mStatus').textContent='Escolha um município na lista ou clique diretamente no mapa.';
+  }else{
+    $('#mStatus').textContent='Clique em um estado para abrir o resultado correspondente.';
+  }
+}
+$('#mMode').addEventListener('change',syncMapControls);
+$('#mUf').addEventListener('change',async()=>{
+  if($('#mMode').value==='state')await fillCities('#mUf','#mCity',false);
+});
+$('#mLoad').addEventListener('click',()=>$('#mMode').value==='br'?drawBrazil():drawState());
+$('#mOpenCity').addEventListener('click',async()=>{
+  const uf=$('#mUf').value,mun=$('#mCity').value;
+  if(!mun){$('#mStatus').textContent='Selecione um município.';return}
+  $('#rUf').value=uf;
+  await fillCities('#rUf','#rCity');
+  $('#rCity').value=mun;
+  await loadResults();
+  showView('results');
+});
 $('#radUf').addEventListener('change',()=>fillCities('#radUf','#radCity',false));$('#radLoad').addEventListener('click',loadRadar);
 $('#cUf1').addEventListener('change',()=>fillCities('#cUf1','#cCity1',false));$('#cUf2').addEventListener('change',()=>fillCities('#cUf2','#cCity2',false));$('#cLoad').addEventListener('click',compare);
 $('#rankLoad').addEventListener('click',rankings);
 $$('.proBtn').forEach(b=>b.addEventListener('click',()=>$('#proCta').classList.add('on')));
 
-(async()=>{await Promise.all([fillCities('#radUf','#radCity',false),fillCities('#cUf1','#cCity1',false),fillCities('#cUf2','#cCity2',false)]);loadResults();governors()})();
+(async()=>{await Promise.all([fillCities('#radUf','#radCity',false),fillCities('#cUf1','#cCity1',false),fillCities('#cUf2','#cCity2',false)]);await syncMapControls();loadResults();governors()})();
 setInterval(()=>{if(!document.hidden){loadResults();governors()}},30000);
 </script></body></html>
